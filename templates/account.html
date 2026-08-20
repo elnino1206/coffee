@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Личный кабинет — Al Jar Coffee</title>
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="account">
+  <div data-header></div>
+  <main id="main" class="container account">
+    <nav class="account-nav" aria-label="Кабинет">
+      <a class="is-active" href="account.html">Обзор</a>
+      <a href="account.html#sub">Подписка</a>
+      <a href="account.html#orders">История заказов</a>
+      <a href="account.html#ref">Реферальная ссылка</a>
+      <a href="contacts.html">Поддержка</a>
+    </nav>
+    <div class="stack-l">
+      <div>
+        <p class="eyebrow">Личный кабинет</p>
+        <h1 class="h2">Здравствуйте, Михаил</h1>
+        <p class="muted">Управляйте подпиской и заказами в 1–2 клика.</p>
+      </div>
+
+      <section class="panel" id="sub">
+        <div class="cluster" style="justify-content:space-between">
+          <h2 class="h3">Активная подписка</h2>
+          <span class="sub-status">● Активна</span>
+        </div>
+        <div class="heritage" style="margin-top:16px;gap:20px">
+          <img src="img/bag-kraft.jpg" alt="Эфиопия Юрумсо" style="height:180px;object-fit:cover;border-radius:16px;background:var(--sand)">
+          <div class="stack">
+            <p class="tiny">Следующая доставка</p>
+            <p class="h3">29 августа 2026</p>
+            <p>Эфиопия · Sidamo · 250 г · светлая обжарка</p>
+            <p class="tiny">Каждые 4 недели · доставка бесплатно</p>
+            <div class="cluster">
+              <a class="btn btn--primary btn--m" href="subscription.html">Изменить</a>
+              <button class="btn btn--ghost btn--m" type="button" data-open-pause>Пауза</button>
+              <button class="btn btn--danger btn--m" type="button" data-open-cancel>Отменить</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="orders">
+        <div class="cluster" style="justify-content:space-between">
+          <h2 class="h3">История заказов</h2>
+          <a class="tiny" href="#">Смотреть все</a>
+        </div>
+        <div class="order-row">
+          <div>
+            <strong>30 апреля 2026</strong>
+            <div class="tiny">№ AJ-250430 · Sidamo · 250 г</div>
+            <div class="sub-status">Доставлен</div>
+          </div>
+          <button class="btn btn--ghost btn--s" type="button">Повторить</button>
+        </div>
+        <div class="order-row">
+          <div>
+            <strong>2 апреля 2026</strong>
+            <div class="tiny">№ AJ-250402 · Sidamo · 250 г</div>
+            <div class="sub-status">Доставлен</div>
+          </div>
+          <button class="btn btn--ghost btn--s" type="button">Повторить</button>
+        </div>
+        <div class="order-row">
+          <div>
+            <strong>5 марта 2026</strong>
+            <div class="tiny">№ AJ-250305 · Cerrado · 500 г</div>
+            <div class="sub-status">Доставлен</div>
+          </div>
+          <button class="btn btn--ghost btn--s" type="button">Повторить</button>
+        </div>
+      </section>
+
+      <section class="panel" id="ref">
+        <p class="eyebrow">Реферальная программа</p>
+        <h2 class="h3">Пригласите друзей</h2>
+        <p class="muted">Поделитесь ссылкой и получите 500 ₽ на следующую подписку за каждого друга.</p>
+        <div class="cluster" style="margin-top:12px">
+          <input class="field" readonly value="aljar.coffee/i/mikhail" style="max-width:280px">
+          <button class="btn btn--petrol btn--m" type="button" id="copy-ref">Скопировать</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="modal" id="pause-modal">
+    <div class="modal__box">
+      <h3 class="h3">Поставить на паузу?</h3>
+      <p class="muted">Следующая доставка перенесётся. Подписку можно возобновить в любой момент.</p>
+      <div class="cluster">
+        <button class="btn btn--petrol" type="button" data-close-modal>Пауза на 2 недели</button>
+        <button class="btn btn--ghost" type="button" data-close-modal>Отмена</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="cancel-modal">
+    <div class="modal__box">
+      <h3 class="h3">Перед отменой</h3>
+      <p class="muted">Оставим скидку −15% на следующие 2 доставки, если останетесь. Или отмените без вопросов.</p>
+      <div class="cluster">
+        <button class="btn btn--primary" type="button" data-close-modal>Остаться со скидкой</button>
+        <button class="btn btn--ghost" type="button" data-close-modal>Отменить подписку</button>
+      </div>
+    </div>
+  </div>
+
+  <div data-footer></div>
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.getElementById("copy-ref")?.addEventListener("click", () => {
+      navigator.clipboard.writeText("https://aljar.coffee/i/mikhail");
+    });
+    const open = (id) => document.getElementById(id).classList.add("is-open");
+    const closeAll = () => document.querySelectorAll(".modal").forEach((m) => m.classList.remove("is-open"));
+    document.querySelector("[data-open-pause]")?.addEventListener("click", () => open("pause-modal"));
+    document.querySelector("[data-open-cancel]")?.addEventListener("click", () => open("cancel-modal"));
+    document.querySelectorAll("[data-close-modal]").forEach((b) => b.addEventListener("click", closeAll));
+    document.querySelectorAll(".modal").forEach((m) => m.addEventListener("click", (e) => { if (e.target === m) closeAll(); }));
+  </script>
+</body>
+</html>

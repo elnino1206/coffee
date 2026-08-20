@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Для бизнеса — Al Jar Coffee</title>
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="wholesale">
+  <div data-header></div>
+  <main id="main">
+    <section class="hero">
+      <div class="container hero__grid">
+        <div class="hero__copy">
+          <p class="eyebrow">Оптовым покупателям</p>
+          <h1 class="display">Кофе для кофеен, ресторанов и офисов</h1>
+          <p class="lead">Стабильный профиль обжарки, поставки под объём, логистика без сюрпризов. Это не розничная витрина — здесь говорим о партиях, сроках и условиях.</p>
+          <a class="btn btn--primary" href="#lead">Оставить заявку</a>
+        </div>
+        <div class="hero__visual">
+          <span class="blob blob--sand"></span>
+          <img src="img/beans.jpg" alt="Свежеобжаренные зёрна">
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--sand">
+      <div class="container">
+        <div class="steps">
+          <article class="step">
+            <h3 class="h3">Кофейни</h3>
+            <p class="muted">Подбор профиля под концепцию заведения. Стабильность от партии к партии.</p>
+          </article>
+          <article class="step">
+            <h3 class="h3">HoReCa</h3>
+            <p class="muted">Рестораны и отели: сроки поставки, фасовка под кухню и бар.</p>
+          </article>
+          <article class="step">
+            <h3 class="h3">Офисы</h3>
+            <p class="muted">Программы поставки под уровень потребления команды.</p>
+          </article>
+        </div>
+        <p class="tiny" style="margin-top:20px">Минимальная партия и цены от объёма уточняются менеджером — на текущем сайте цифр нет, в новом они появятся, как только заказчик их закрепит. Ориентир: от 10 кг.</p>
+      </div>
+    </section>
+
+    <section class="section" id="lead">
+      <div class="container" style="max-width:820px">
+        <p class="eyebrow">Заявка для отдела продаж B2B</p>
+        <h2 class="h2">Расскажите о задаче</h2>
+        <p class="muted" style="margin-bottom:20px">Это не общая форма «Напишите нам». Заявку получит менеджер по опту, не поддержка розницы.</p>
+
+        <div class="success-box" data-wholesale-ok>
+          <h3 class="h3">Заявка принята</h3>
+          <p>Менеджер свяжется в течение рабочего дня. Если срочно — позвоните <a href="tel:+79851379235">8 (985) 137-92-35</a>.</p>
+        </div>
+
+        <form class="panel stack" data-wholesale>
+          <div class="form-grid">
+            <label class="label">Имя <span class="req">*</span>
+              <input class="field" name="name" required>
+            </label>
+            <label class="label">Компания <span class="req">*</span>
+              <input class="field" name="company" required>
+            </label>
+            <label class="label">Телефон <span class="req">*</span>
+              <input class="field" name="phone" type="tel" required placeholder="+7 …">
+            </label>
+            <label class="label">Email (необязательно)
+              <input class="field" name="email" type="email">
+            </label>
+            <label class="label">Тип бизнеса
+              <select class="select" name="type">
+                <option>Кофейня</option>
+                <option>Ресторан</option>
+                <option>Отель</option>
+                <option>Офис</option>
+                <option>Другое</option>
+              </select>
+            </label>
+            <label class="label">Интересующий объём / позиции
+              <input class="field" name="volume" placeholder="Например, от 10 кг в месяц, эспрессо-смесь">
+            </label>
+            <label class="label full">Комментарий
+              <textarea class="textarea" name="comment"></textarea>
+            </label>
+            <label class="label full">Файл (спецификация, бриф) — необязательно
+              <input class="field" type="file" name="file" style="padding:10px">
+            </label>
+          </div>
+          <label class="checkbox">
+            <input type="checkbox" required>
+            <span>Согласен на обработку персональных данных и с <a href="legal.html#privacy">политикой конфиденциальности</a></span>
+          </label>
+          <button class="btn btn--petrol" type="submit">Отправить заявку</button>
+        </form>
+      </div>
+    </section>
+  </main>
+  <div data-footer></div>
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

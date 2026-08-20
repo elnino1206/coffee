@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Оформление заказа — Al Jar Coffee</title>
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="checkout">
+  <div data-header></div>
+  <main id="main" class="container">
+    <div class="page-hero">
+      <nav class="breadcrumbs"><a href="index.html">Главная</a> · <a href="cart.html">Корзина</a> · Оформление</nav>
+      <h1 class="h2">Оформление заказа</h1>
+    </div>
+
+    <div class="panel success-box is-visible" data-success hidden>
+      <p class="eyebrow">Заказ принят</p>
+      <h2 class="h3">Спасибо. Кофе уже готовим к обжарке.</h2>
+      <p>Номер заказа отправим в SMS. Дальше — обжарка под вашу доставку.</p>
+      <div class="cluster">
+        <a class="btn btn--primary" href="account.html">В личный кабинет</a>
+        <a class="btn btn--ghost" href="subscription.html">Оформить подписку</a>
+      </div>
+    </div>
+
+    <div data-checkout-wrap>
+      <div class="progress">
+        <span class="dot is-done">1</span> <span class="is-done">Корзина</span>
+        →
+        <span class="dot is-current">2</span> <span class="is-current">Доставка</span>
+        →
+        <span class="dot">3</span> Оплата
+      </div>
+      <form class="checkout" data-checkout-form>
+        <div class="stack">
+          <section class="panel">
+            <h2 class="h3">Способ доставки</h2>
+            <div class="pay-options" style="margin-top:12px">
+              <label class="pay-option is-selected" data-ship-card>
+                <input type="radio" name="ship" value="courier" checked>
+                <span><strong>Курьер</strong><br><span class="tiny">По адресу, 1–2 дня · от 350 ₽, бесплатно от 3 000 ₽</span></span>
+              </label>
+              <label class="pay-option" data-ship-card>
+                <input type="radio" name="ship" value="pickup">
+                <span><strong>ПВЗ</strong><br><span class="tiny">Пункт выдачи, 1–3 дня · бесплатно</span></span>
+              </label>
+              <label class="pay-option" data-ship-card>
+                <input type="radio" name="ship" value="post">
+                <span><strong>Почта</strong><br><span class="tiny">3–7 дней, по тарифу перевозчика</span></span>
+              </label>
+            </div>
+          </section>
+          <section class="panel">
+            <h2 class="h3">Контакты</h2>
+            <div class="form-grid" style="margin-top:12px">
+              <label class="label">Телефон <span class="req">*</span>
+                <input class="field" name="phone" type="tel" autocomplete="tel" placeholder="+7 9XX XXX-XX-XX" required>
+                <span class="help help--error" data-phone-error hidden>Укажите телефон — мы подтвердим заказ по SMS.</span>
+              </label>
+              <label class="label">Email (необязательно)
+                <input class="field" name="email" type="email" placeholder="you@email.ru">
+              </label>
+              <label class="label full">Адрес доставки
+                <input class="field" name="address" placeholder="Город, улица, дом, квартира">
+              </label>
+              <label class="label full">Комментарий
+                <textarea class="textarea" name="comment" placeholder="Домофон, пожелания к доставке"></textarea>
+              </label>
+            </div>
+          </section>
+          <section class="panel">
+            <h2 class="h3">Способ оплаты</h2>
+            <div class="pay-options" style="margin-top:12px">
+              <label class="pay-option is-selected" data-pay-card>
+                <input type="radio" name="pay" value="card" checked>
+                <span><strong>Банковская карта</strong><br><span class="tiny">Visa, Mastercard, Мир</span></span>
+              </label>
+              <label class="pay-option" data-pay-card>
+                <input type="radio" name="pay" value="sbp">
+                <span><strong>СБП</strong><br><span class="tiny">Оплата через банк по QR</span></span>
+              </label>
+            </div>
+          </section>
+        </div>
+        <aside class="summary">
+          <h2 class="h3">Ваш заказ</h2>
+          <div data-checkout-items></div>
+          <div class="totals">
+            <div><span>Товары</span><span data-subtotal></span></div>
+            <div><span>Доставка</span><span data-delivery></span></div>
+            <div class="grand"><span>Итого</span><span data-grand></span></div>
+          </div>
+          <label class="checkbox" style="margin:12px 0">
+            <input type="checkbox" required>
+            <span>Согласен с <a href="legal.html">офертой</a> и <a href="legal.html#privacy">политикой</a></span>
+          </label>
+          <button class="btn btn--petrol btn--block" data-pay type="submit">Оплатить</button>
+          <p class="tiny">Все данные защищены и используются только для оформления заказа.</p>
+        </aside>
+      </form>
+    </div>
+  </main>
+  <div data-footer></div>
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

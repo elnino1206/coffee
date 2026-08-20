@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Подписка на кофе — Al Jar Coffee</title>
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body data-page="subscription">
+  <div data-header></div>
+  <main id="main">
+    <section class="hero">
+      <div class="container hero__grid">
+        <div class="hero__copy">
+          <p class="eyebrow">Кофе всегда свежий. Без забот.</p>
+          <h1 class="display">Кофе по подписке — всегда свежий</h1>
+          <p class="lead">Свежеобжаренный кофе из specialty зерна доставляем регулярно. Выбираете вы — мы заботимся о свежести.</p>
+          <div class="cluster">
+            <a class="btn btn--primary" href="#constructor">Настроить подписку →</a>
+            <a class="btn btn--ghost" href="account.html">Управлять в кабинете</a>
+          </div>
+          <div class="trust-row">
+            <span class="trust-item">Пауза или отмена в любой момент</span>
+            <span class="trust-item">Обжарка небольшими партиями</span>
+            <span class="trust-item">−10% с каждого заказа</span>
+          </div>
+        </div>
+        <div class="hero__visual">
+          <span class="blob blob--baby"></span>
+          <img src="img/brew.jpg" alt="Ритуал заваривания кофе">
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <p class="eyebrow">Как это работает</p>
+        <h2 class="h2" style="margin-bottom:24px">Три шага до ритуала</h2>
+        <div class="steps">
+          <article class="step">
+            <span class="step__n">1</span>
+            <h3 class="h3">Выбираете кофе</h3>
+            <p class="muted">Объём, помол и частоту доставки — под ваш вкус и ритм.</p>
+          </article>
+          <article class="step">
+            <span class="step__n">2</span>
+            <h3 class="h3">Доставляем свежий</h3>
+            <p class="muted">Обжариваем небольшими партиями и привозим к нужной дате.</p>
+          </article>
+          <article class="step">
+            <span class="step__n">3</span>
+            <h3 class="h3">Наслаждаетесь</h3>
+            <p class="muted">Всегда свежий кофе без забот. Пауза или отмена — в любой момент.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--ice">
+      <div class="container">
+        <h2 class="h2" style="margin-bottom:24px">Разовая покупка vs подписка</h2>
+        <div class="compare">
+          <div class="compare-card">
+            <p class="eyebrow">Разовая покупка</p>
+            <p class="h3">1 590 ₽ <span class="tiny">за 1 кг</span></p>
+            <p class="muted">Одна покупка · без обжарки под вас · без регулярной доставки</p>
+          </div>
+          <div class="compare-mid">Экономия 22%</div>
+          <div class="compare-card compare-card--best">
+            <p class="eyebrow" style="color:var(--tiffany)">Подписка Al Jar</p>
+            <p class="h3" style="color:#fff">1 240 ₽ <span class="tiny">за 1 кг</span></p>
+            <p>Свежая обжарка под вас · регулярная доставка · управление в 1 клик</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="constructor">
+      <div class="container constructor">
+        <div>
+          <p class="eyebrow">Конструктор</p>
+          <h2 class="h3">Настройте свою подписку</h2>
+        </div>
+        <form data-constructor>
+          <div class="constructor-grid">
+            <label class="label">Кофе
+              <select class="select" name="coffee">
+                <option value="pink-bourbon">Pink Bourbon</option>
+                <option value="cerrado">Cerrado</option>
+                <option value="sidamo">Sidamo</option>
+                <option value="intensive">Intensive</option>
+                <option value="geisha">Geisha</option>
+              </select>
+            </label>
+            <label class="label">Объём
+              <select class="select" name="weight">
+                <option value="250">250 г</option>
+                <option value="500">500 г</option>
+                <option value="1000" selected>1 кг</option>
+              </select>
+            </label>
+            <label class="label">Помол
+              <select class="select" name="grind">
+                <option value="whole">В зёрнах</option>
+                <option value="cezve">Под турку</option>
+                <option value="french">Френч-пресс</option>
+                <option value="filter">Фильтр</option>
+              </select>
+            </label>
+            <label class="label full">Частота
+              <select class="select" name="freq">
+                <option value="2">Каждые 2 недели</option>
+                <option value="3">Каждые 3 недели</option>
+                <option value="4" selected>Каждые 4 недели</option>
+              </select>
+            </label>
+          </div>
+          <button class="btn btn--primary" data-constructor-price type="submit">Добавить подписку</button>
+          <p class="tiny">Бесплатная доставка · Отмена в любой момент</p>
+        </form>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container" data-faq>
+        <h2 class="h2" style="margin-bottom:16px">Часто задаваемые вопросы</h2>
+        <div class="accordion">
+          <details>
+            <summary>Как отменить или приостановить подписку?</summary>
+            <p>В личном кабинете: «Пауза» или «Отменить». Перед отменой покажем удерживающее предложение — без тёмных паттернов, решение за вами.</p>
+          </details>
+          <details>
+            <summary>Можно ли изменить заказ или помол?</summary>
+            <p>Да. Сорт, объём, помол и частоту меняете до следующей обжарки — обычно за несколько дней до доставки.</p>
+          </details>
+          <details>
+            <summary>Из какого кофе вы обжариваете?</summary>
+            <p>Арабика под эспрессо и ливанский кофе, а также лоты под фильтр. Актуальный список — в каталоге, с датой обжарки на каждой карточке.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div data-footer></div>
+  <script src="js/data.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
