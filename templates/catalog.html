@@ -7,53 +7,102 @@
   <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body data-page="catalog">
   <div data-header></div>
-  <main id="main" class="container">
-    <div class="page-hero">
-      <nav class="breadcrumbs"><a href="index.html">Главная</a> · Каталог</nav>
-      <h1 class="h2">Наш кофе</h1>
-      <p class="lead">10 позиций. Дата обжарки на каждой карточке. Фильтры работают вместе.</p>
-    </div>
-
-    <div class="toolbar">
-      <input class="field" style="max-width:280px" type="search" placeholder="Поиск кофе…" data-catalog-q>
-      <div class="cluster">
-        <label class="tiny">Сортировка
-          <select class="select" data-sort>
-            <option value="fresh">По свежести</option>
-            <option value="rating">По рейтингу</option>
-            <option value="price-asc">Цена ↑</option>
-            <option value="price-desc">Цена ↓</option>
-          </select>
-        </label>
-      </div>
-    </div>
-    <div class="chips" data-chips></div>
-    <p class="tiny" data-count></p>
-    <button class="btn btn--ghost btn--m filters-toggle" type="button" id="filters-toggle">Фильтры</button>
-
-    <div class="catalog-layout">
+  <main id="main" class="catalog-page">
+    <div class="catalog-shell">
       <aside class="filters" id="filters-panel">
-        <h3>Обжарка</h3>
-        <label class="filter-option"><span><input type="checkbox" data-filter-roast="light"> Светлая</span></label>
-        <label class="filter-option"><span><input type="checkbox" data-filter-roast="medium"> Средняя</span></label>
-        <label class="filter-option"><span><input type="checkbox" data-filter-roast="dark"> Тёмная</span></label>
-        <h3>Регион</h3>
-        <label class="filter-option"><span><input type="checkbox" data-filter-origin="Бразилия"> Бразилия</span></label>
-        <label class="filter-option"><span><input type="checkbox" data-filter-origin="Эфиопия"> Эфиопия</span></label>
-        <label class="filter-option"><span><input type="checkbox" data-filter-origin="Колумбия"> Колумбия</span></label>
-        <label class="filter-option"><span><input type="checkbox" data-filter-origin="Смесь"> Смесь</span></label>
-        <h3>Приготовление</h3>
-        <label class="filter-option"><span><input type="checkbox" data-filter-method="espresso"> Эспрессо</span></label>
-        <label class="filter-option"><span><input type="checkbox" data-filter-method="filter"> Фильтр</span></label>
-        <label class="filter-option"><span><input type="checkbox" data-filter-method="cezve"> Турка</span></label>
-        <button class="btn btn--ghost btn--m btn--block" type="button" data-clear-filters style="margin-top:16px">Сбросить всё</button>
+        <div class="filters__head">
+          <nav class="breadcrumbs"><a href="index.html">Главная</a> · Каталог</nav>
+          <h1 class="h2 filters__title">Весь кофе</h1>
+          <p class="tiny">Моносорта и смеси — обжариваем небольшими партиями ради чистоты, баланса и характера.</p>
+        </div>
+
+        <div class="filter-group" data-group>
+          <button class="filter-group__head" type="button" data-group-toggle aria-expanded="true">
+            <span>Обжарка</span>
+            <svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10l4-4 4 4"/></svg>
+          </button>
+          <div class="filter-group__body" data-roast-list></div>
+        </div>
+
+        <div class="filter-group" data-group>
+          <button class="filter-group__head" type="button" data-group-toggle aria-expanded="true">
+            <span>Происхождение</span>
+            <svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10l4-4 4 4"/></svg>
+          </button>
+          <div class="filter-group__body" data-origin-list></div>
+        </div>
+
+        <div class="filter-group" data-group>
+          <button class="filter-group__head" type="button" data-group-toggle aria-expanded="true">
+            <span>Цена</span>
+            <svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10l4-4 4 4"/></svg>
+          </button>
+          <div class="filter-group__body">
+            <div class="price-range" data-price-range>
+              <div class="price-range__track"><div class="price-range__fill" data-price-fill></div></div>
+              <input type="range" data-price-min aria-label="Цена от">
+              <input type="range" data-price-max aria-label="Цена до">
+            </div>
+            <div class="price-range__labels">
+              <span data-price-lo></span>
+              <span data-price-hi></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="filter-group" data-group>
+          <button class="filter-group__head" type="button" data-group-toggle aria-expanded="true">
+            <span>Способ приготовления</span>
+            <svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10l4-4 4 4"/></svg>
+          </button>
+          <div class="filter-group__body method-grid" data-method-list></div>
+        </div>
+
+        <div class="filters__actions">
+          <button class="btn btn--petrol btn--m" type="button" data-apply-filters>Показать</button>
+          <button class="btn btn--ghost btn--m" type="button" data-clear-filters>Сбросить</button>
+        </div>
       </aside>
-      <div class="product-grid" data-catalog></div>
+
+      <section class="catalog-main">
+        <header class="results-head">
+          <div>
+            <p class="eyebrow">Результаты</p>
+            <h2 class="h2" data-results-count>Кофе</h2>
+          </div>
+          <div class="results-tools">
+            <label class="sort-label">Сортировка
+              <select class="select" data-sort>
+                <option value="fresh">Сначала свежие</option>
+                <option value="rating">По рейтингу</option>
+                <option value="price-asc">Цена по возрастанию</option>
+                <option value="price-desc">Цена по убыванию</option>
+              </select>
+            </label>
+            <div class="view-toggle" role="group" aria-label="Вид списка">
+              <button type="button" class="is-active" data-view="grid" aria-label="Сеткой" aria-pressed="true">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+              </button>
+              <button type="button" data-view="list" aria-label="Списком" aria-pressed="false">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 4h12M2 8h12M2 12h12"/></svg>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <div class="toolbar-row">
+          <input class="field" type="search" placeholder="Поиск по названию, региону, вкусу…" data-catalog-q>
+          <button class="btn btn--ghost btn--m filters-toggle" type="button" id="filters-toggle">Фильтры</button>
+        </div>
+        <div class="chips" data-chips></div>
+
+        <div class="product-grid" data-catalog></div>
+      </section>
     </div>
   </main>
 

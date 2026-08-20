@@ -7,7 +7,7 @@
   <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body data-page="catalog">
@@ -21,7 +21,7 @@
         <img data-pdp-img src="img/bag-kraft.jpg" alt="">
       </div>
       <div class="stack">
-        <span class="badge badge--ice" data-pdp-roast-date>Обжарено</span>
+        <span data-pdp-roast-date></span>
         <h1 class="h2" data-pdp-name></h1>
         <p class="muted" data-pdp-full></p>
         <p class="tiny"><span data-pdp-origin></span> · <span data-pdp-species></span></p>
@@ -29,34 +29,30 @@
         <div data-price></div>
         <div class="taste">
           <strong>Профиль вкуса</strong>
-          <div class="bar"><span>Кислотность</span><span data-bar-acid></span></div>
-          <div class="bar"><span>Тело</span><span data-bar-body></span></div>
-          <div class="bar"><span>Сладость</span><span data-bar-sweet></span></div>
+          <div class="taste-profile" data-taste></div>
           <p class="tiny" data-pdp-notes></p>
         </div>
-        <div class="selectors">
-          <label class="label">Вес
-            <select class="select" data-weight>
-              <option value="250">250 г</option>
-              <option value="500">500 г</option>
-              <option value="1000">1 кг</option>
-            </select>
-          </label>
-          <label class="label">Помол
-            <select class="select" data-grind>
-              <option value="whole">В зёрнах</option>
-              <option value="cezve">Под турку</option>
-              <option value="french">Френч-пресс</option>
-              <option value="filter">Фильтр</option>
-            </select>
+        <label class="label">Вес
+          <select class="select" data-weight>
+            <option value="250">250 г</option>
+            <option value="500">500 г</option>
+            <option value="1000">1 кг</option>
+          </select>
+        </label>
+        <fieldset class="grind-picker">
+          <legend class="label">Помол</legend>
+          <div class="grind-grid" data-grind-grid></div>
+        </fieldset>
+        <div class="sub-toggle" data-sub-toggle>
+          <div class="sub-toggle__copy">
+            <span class="sub-toggle__title">Подписка — выгода 10%</span>
+            <span class="tiny" data-save>−10% при подписке</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" data-sub-switch aria-label="Оформить подпиской">
+            <span class="switch__knob"></span>
           </label>
         </div>
-        <div class="dual">
-          <button type="button" class="is-active" data-buy-mode="once">Разовая покупка</button>
-          <button type="button" data-buy-mode="sub">Подписка</button>
-          <span class="save-pill">−10%</span>
-        </div>
-        <p class="tiny" data-save>−10% при подписке</p>
         <button class="btn btn--petrol btn--block" type="button" data-pdp-add data-cta>Добавить в корзину</button>
         <p class="tiny">Доставка по всей России · Свежий обжар ежедневно</p>
         <div class="accordion">

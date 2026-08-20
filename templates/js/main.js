@@ -8,6 +8,10 @@
     plus: '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>',
     leaf: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 19c8-1 13-8 14-16-8 1-15 7-14 16z"/><path d="M5 19c3-6 8-10 14-12"/></svg>',
     check: '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12l5 5 11-11"/></svg>',
+    calendar: '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4.5" width="14" height="13" rx="2.5"/><path d="M3 8.5h14M7 2.5v3M13 2.5v3"/></svg>',
+    tag: '<svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8.5V4a1 1 0 0 1 1-1h4.5L17 11.5 11.5 17 3 8.5z"/><circle cx="6.6" cy="6.6" r="1.1"/></svg>',
+    bean: '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="10" cy="10" rx="5.5" ry="7.5" transform="rotate(-35 10 10)"/><path d="M7 13.5c1.5-2.5 4-4.5 6-5.5"/></svg>',
+    bagSmall: '<svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4.5 6.5h11l-1 10h-9l-1-10z"/><path d="M7.5 6.5V5a2.5 2.5 0 0 1 5 0v1.5"/></svg>',
   };
 
   const formatPrice = (n) =>
@@ -21,6 +25,26 @@
   const formatBadgeDate = (iso) => {
     const [, m, d] = iso.split("-");
     return `${Number(d)} ${MONTHS[Number(m) - 1]}`;
+  };
+
+  const DAY = 86400000;
+  const daysSinceRoast = (iso) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    const roast = Date.UTC(y, m - 1, d);
+    const today = new Date();
+    const now = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+    return Math.max(0, Math.round((now - roast) / DAY));
+  };
+  const freshness = (iso) => {
+    const days = daysSinceRoast(iso);
+    const steps = window.ALJAR.freshness;
+    const idx = steps.findIndex((s) => days <= s.maxDays);
+    const i = idx === -1 ? steps.length - 1 : idx;
+    return { ...steps[i], index: i, days };
+  };
+  const roastBadge = (iso) => {
+    const f = freshness(iso);
+    return `<span class="badge badge--roast badge--fresh-${f.index}" title="${f.note}">${ICONS.calendar}Обжарено: ${formatBadgeDate(iso)}</span>`;
   };
 
   const getCart = () => JSON.parse(localStorage.getItem("aljar-cart") || "[]");
@@ -178,7 +202,7 @@
     return `
       <article class="card">
         <div class="card__media">
-          <span class="badge badge--roast">${formatBadgeDate(p.roastDate)}</span>
+          ${roastBadge(p.roastDate)}
           <button class="fav" type="button" aria-label="В избранное" data-fav="${p.id}">♡</button>
           <a href="product.html?id=${p.id}"><img src="${p.image}" alt="${p.name}"></a>
         </div>
@@ -187,12 +211,11 @@
           <p class="card__notes">${p.notes}</p>
           <div class="card__meta">
             <span>${p.roastLabel}</span>
-            <span>·</span>
-            <span>${p.species}</span>
+            <span>${ICONS.bean}${p.species}</span>
           </div>
           <div class="card__row">
-            <span class="price">от ${formatPrice(p.price)}</span>
-            <button class="add-quick" type="button" data-add='${JSON.stringify({
+            <span class="price">${formatPrice(p.price)}</span>
+            <button class="add-quick" type="button" aria-label="Добавить ${p.name} в корзину" data-add='${JSON.stringify({
               id: p.id,
               name: p.name,
               price: p.price,
@@ -201,7 +224,30 @@
               weight: "250",
               grind: "whole",
               subscribe: false,
-            })}' aria-label="В корзину">${ICONS.plus}</button>
+            })}'>${ICONS.bagSmall}</button>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function catalogCard(p) {
+    const payload = JSON.stringify({
+      id: p.id, name: p.name, price: p.price, image: p.image,
+      roastDate: p.roastDate, weight: "250", grind: "whole", subscribe: false,
+    });
+    return `
+      <article class="catalog-card">
+        <div class="catalog-card__media">
+          <a href="product.html?id=${p.id}"><img src="${p.image}" alt="${p.name}"></a>
+        </div>
+        <div class="catalog-card__body">
+          ${roastBadge(p.roastDate)}
+          <a class="catalog-card__title" href="product.html?id=${p.id}">${p.name}</a>
+          <p class="catalog-card__origin">${p.origin}${p.region && p.region !== p.origin ? " · " + p.region : ""}</p>
+          <p class="catalog-card__notes">${p.notes.split(", ").join(" · ")}</p>
+          <p class="catalog-card__price">${ICONS.tag}${formatPrice(p.price)} <small>/ 250 г</small></p>
+          <div class="catalog-card__cta">
+            <button class="add-quick add-quick--wide" type="button" data-add='${payload}'>${ICONS.bagSmall}В корзину</button>
           </div>
         </div>
       </article>`;
@@ -246,6 +292,23 @@
     });
   }
 
+  function bindFavButtons(root = document) {
+    const favs = new Set(JSON.parse(localStorage.getItem("aljar-fav") || "[]"));
+    root.querySelectorAll("[data-fav]").forEach((btn) => {
+      const id = btn.dataset.fav;
+      btn.classList.toggle("is-active", favs.has(id));
+      btn.textContent = favs.has(id) ? "♥" : "♡";
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const cur = new Set(JSON.parse(localStorage.getItem("aljar-fav") || "[]"));
+        cur.has(id) ? cur.delete(id) : cur.add(id);
+        localStorage.setItem("aljar-fav", JSON.stringify([...cur]));
+        btn.classList.toggle("is-active", cur.has(id));
+        btn.textContent = cur.has(id) ? "♥" : "♡";
+      });
+    });
+  }
+
   function bindAddButtons(root = document) {
     root.querySelectorAll("[data-add]").forEach((btn) => {
       btn.addEventListener("click", (e) => {
@@ -261,43 +324,130 @@
     if (!grid) return;
     grid.innerHTML = window.ALJAR.products.filter((p) => p.featured).map(productCard).join("");
     bindAddButtons(grid);
+    bindFavButtons(grid);
   }
 
   function renderCatalog() {
     const grid = document.querySelector("[data-catalog]");
     if (!grid) return;
+    const A = window.ALJAR;
     const params = new URLSearchParams(location.search);
+    const prices = A.products.map((p) => p.price);
+    const PMIN = Math.min(...prices);
+    const PMAX = Math.max(...prices);
+
+    const ROASTS = [
+      { id: "light", label: "Светлая", level: 1 },
+      { id: "medium", label: "Средняя", level: 3 },
+      { id: "dark", label: "Тёмная", level: 5 },
+    ];
+    const SCALE = 5;
+
     const state = {
       roast: new Set(),
       origin: new Set(),
       method: params.get("method") ? new Set([params.get("method")]) : new Set(),
       q: "",
       sort: "fresh",
+      lo: PMIN,
+      hi: PMAX,
+      view: "grid",
     };
 
+    /* ── сайдбар ── */
+    const roastHost = document.querySelector("[data-roast-list]");
+    if (roastHost) {
+      roastHost.innerHTML = ROASTS.map((r) => {
+        const dots = Array.from({ length: SCALE }, (_, i) =>
+          `<i class="${i < r.level ? "on" : ""}"></i>`).join("");
+        return `<label class="facet">
+          <input type="checkbox" data-filter-roast="${r.id}">
+          <span class="facet__label">${r.label}</span>
+          <span class="roast-scale" aria-hidden="true">${dots}</span>
+        </label>`;
+      }).join("");
+    }
+
+    const originHost = document.querySelector("[data-origin-list]");
+    if (originHost) {
+      const counts = A.products.reduce((acc, p) => ((acc[p.origin] = (acc[p.origin] || 0) + 1), acc), {});
+      originHost.innerHTML = Object.keys(counts)
+        .sort((a, b) => counts[b] - counts[a])
+        .map((o) => `<label class="facet">
+          <input type="checkbox" data-filter-origin="${o}">
+          <span class="facet__label">${o}</span>
+          <span class="facet__count">${counts[o]}</span>
+        </label>`).join("");
+    }
+
+    const methodHost = document.querySelector("[data-method-list]");
+    if (methodHost) {
+      const M = [
+        { id: "espresso", label: "Эспрессо", image: "img/method-espresso.svg" },
+        { id: "filter", label: "Фильтр", image: "img/method-filter.svg" },
+        { id: "cezve", label: "Турка", image: "img/method-cezve.svg" },
+      ];
+      methodHost.innerHTML = M.map((m) => `<label class="facet">
+        <input type="checkbox" data-filter-method="${m.id}">
+        <img src="${m.image}" alt="">
+        <span class="facet__label">${m.label}</span>
+      </label>`).join("");
+    }
+
+    /* ── ползунок цены ── */
+    const lo = document.querySelector("[data-price-min]");
+    const hi = document.querySelector("[data-price-max]");
+    const fill = document.querySelector("[data-price-fill]");
+    if (lo && hi) {
+      [lo, hi].forEach((el) => { el.min = PMIN; el.max = PMAX; el.step = 25; });
+      lo.value = PMIN;
+      hi.value = PMAX;
+    }
+    const paintPrice = () => {
+      if (!lo || !hi) return;
+      const a = Math.min(+lo.value, +hi.value);
+      const b = Math.max(+lo.value, +hi.value);
+      state.lo = a; state.hi = b;
+      const span = PMAX - PMIN || 1;
+      fill.style.left = ((a - PMIN) / span) * 100 + "%";
+      fill.style.right = 100 - ((b - PMIN) / span) * 100 + "%";
+      document.querySelector("[data-price-lo]").textContent = formatPrice(a);
+      document.querySelector("[data-price-hi]").textContent = formatPrice(b);
+    };
+
+    /* ── применение фильтров ── */
     const apply = () => {
-      let list = [...window.ALJAR.products];
+      let list = A.products.filter((p) => p.price >= state.lo && p.price <= state.hi);
       if (state.roast.size) list = list.filter((p) => state.roast.has(p.roast));
       if (state.origin.size) list = list.filter((p) => state.origin.has(p.origin));
       if (state.method.size) list = list.filter((p) => state.method.has(p.method));
       if (state.q) {
         const q = state.q.toLowerCase();
-        list = list.filter((p) => (p.name + p.notes + p.origin).toLowerCase().includes(q));
+        list = list.filter((p) => (p.name + p.notes + p.origin + p.region).toLowerCase().includes(q));
       }
       if (state.sort === "price-asc") list.sort((a, b) => a.price - b.price);
       if (state.sort === "price-desc") list.sort((a, b) => b.price - a.price);
       if (state.sort === "fresh") list.sort((a, b) => b.roastDate.localeCompare(a.roastDate));
       if (state.sort === "rating") list.sort((a, b) => b.rating - a.rating);
 
-      const count = document.querySelector("[data-count]");
-      if (count) count.textContent = `Найдено ${list.length} ${list.length === 1 ? "товар" : "товаров"}`;
-      grid.innerHTML = list.length ? list.map(productCard).join("") : `<p class="empty" style="grid-column:1/-1">Нет товаров по этим фильтрам.</p>`;
+      const n = list.length;
+      const count = document.querySelector("[data-results-count]");
+      if (count) {
+        const word = n % 10 === 1 && n % 100 !== 11 ? "позиция"
+          : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? "позиции" : "позиций";
+        count.textContent = `${n} ${word}`;
+      }
+
+      grid.classList.toggle("is-list", state.view === "list");
+      grid.innerHTML = n
+        ? list.map(catalogCard).join("")
+        : `<p class="empty" style="grid-column:1/-1">Ничего не нашлось. Смягчите фильтры или сбросьте их.</p>`;
       bindAddButtons(grid);
 
       const chips = document.querySelector("[data-chips]");
       if (chips) {
         const items = [
-          ...[...state.roast].map((v) => ({ k: "roast", v, label: { light: "Светлая", medium: "Средняя", dark: "Тёмная" }[v] })),
+          ...[...state.roast].map((v) => ({ k: "roast", v, label: (ROASTS.find((r) => r.id === v) || {}).label })),
           ...[...state.origin].map((v) => ({ k: "origin", v, label: v })),
           ...[...state.method].map((v) => ({ k: "method", v, label: { espresso: "Эспрессо", filter: "Фильтр", cezve: "Турка" }[v] })),
         ];
@@ -315,25 +465,24 @@
       }
     };
 
-    document.querySelectorAll("[data-filter-roast]").forEach((el) => {
-      el.addEventListener("change", () => {
-        el.checked ? state.roast.add(el.dataset.filterRoast) : state.roast.delete(el.dataset.filterRoast);
-        apply();
+    /* ── подписки на события ── */
+    const bindFacet = (attr, key) => {
+      const prop = "filter" + attr[0].toUpperCase() + attr.slice(1);
+      document.querySelectorAll(`[data-filter-${attr}]`).forEach((el) => {
+        const val = el.dataset[prop];
+        if (state[key].has(val)) el.checked = true;
+        el.addEventListener("change", () => {
+          el.checked ? state[key].add(val) : state[key].delete(val);
+          apply();
+        });
       });
-    });
-    document.querySelectorAll("[data-filter-origin]").forEach((el) => {
-      el.addEventListener("change", () => {
-        el.checked ? state.origin.add(el.dataset.filterOrigin) : state.origin.delete(el.dataset.filterOrigin);
-        apply();
-      });
-    });
-    document.querySelectorAll("[data-filter-method]").forEach((el) => {
-      if (state.method.has(el.dataset.filterMethod)) el.checked = true;
-      el.addEventListener("change", () => {
-        el.checked ? state.method.add(el.dataset.filterMethod) : state.method.delete(el.dataset.filterMethod);
-        apply();
-      });
-    });
+    };
+    bindFacet("roast", "roast");
+    bindFacet("origin", "origin");
+    bindFacet("method", "method");
+
+    [lo, hi].forEach((el) => el && el.addEventListener("input", () => { paintPrice(); apply(); }));
+
     document.querySelector("[data-sort]")?.addEventListener("change", (e) => {
       state.sort = e.target.value;
       apply();
@@ -343,17 +492,37 @@
       apply();
     });
     document.querySelector("[data-clear-filters]")?.addEventListener("click", () => {
-      state.roast.clear();
-      state.origin.clear();
-      state.method.clear();
+      state.roast.clear(); state.origin.clear(); state.method.clear();
       document.querySelectorAll(".filters input[type=checkbox]").forEach((i) => (i.checked = false));
+      if (lo && hi) { lo.value = PMIN; hi.value = PMAX; }
+      paintPrice();
       apply();
     });
-
+    document.querySelector("[data-apply-filters]")?.addEventListener("click", () => {
+      document.getElementById("filters-panel")?.classList.remove("is-open");
+      document.querySelector("[data-catalog]")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.querySelectorAll("[data-view]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.view = btn.dataset.view;
+        document.querySelectorAll("[data-view]").forEach((b) => {
+          const on = b === btn;
+          b.classList.toggle("is-active", on);
+          b.setAttribute("aria-pressed", String(on));
+        });
+        apply();
+      });
+    });
+    document.querySelectorAll("[data-group-toggle]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        btn.setAttribute("aria-expanded", btn.getAttribute("aria-expanded") === "true" ? "false" : "true");
+      });
+    });
     document.getElementById("filters-toggle")?.addEventListener("click", () => {
       document.getElementById("filters-panel")?.classList.toggle("is-open");
     });
 
+    paintPrice();
     apply();
   }
 
@@ -376,13 +545,22 @@
     fill("[data-pdp-origin]", `${p.region}, ${p.origin}`);
     fill("[data-pdp-species]", `${p.species} · ${p.process}`);
     fill("[data-pdp-notes]", p.notes.split(", ").map((n) => n).join(" · "));
-    fill("[data-pdp-roast-date]", `Обжарено ${formatDate(p.roastDate)}`);
+    fill("[data-pdp-roast-date]", `${roastBadge(p.roastDate)} <span class="tiny">${formatDate(p.roastDate)}</span>`);
     fill("[data-pdp-method]", p.methodLabel);
     fill("[data-pdp-roast]", p.roastLabel);
-    const bar = (n) => `<div class="bar__track"><div class="bar__fill" style="width:${(n / 5) * 100}%"></div></div><span>${n}/5</span>`;
-    fill("[data-bar-acid]", bar(p.acidity));
-    fill("[data-bar-body]", bar(p.body));
-    fill("[data-bar-sweet]", bar(p.sweetness));
+    const labels = window.ALJAR.profileLabels;
+    fill(
+      "[data-taste]",
+      Object.keys(labels)
+        .map(
+          (k) => `<div class="bar">
+            <span>${labels[k]}</span>
+            <div class="bar__track"><div class="bar__fill" style="width:${p.profile[k]}%"></div></div>
+            <span class="bar__value">${p.profile[k]}%</span>
+          </div>`
+        )
+        .join("")
+    );
     fill("[data-crumb-name]", p.name);
 
     const priceNow = () => {
@@ -408,16 +586,28 @@
       state.weight = e.target.value;
       paint();
     });
-    root.querySelector("[data-grind]")?.addEventListener("change", (e) => {
-      state.grind = e.target.value;
-      paint();
-    });
-    root.querySelectorAll("[data-buy-mode]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        state.subscribe = btn.dataset.buyMode === "sub";
-        root.querySelectorAll("[data-buy-mode]").forEach((b) => b.classList.toggle("is-active", b === btn));
+    const grindGrid = root.querySelector("[data-grind-grid]");
+    if (grindGrid) {
+      grindGrid.innerHTML = window.ALJAR.grinds
+        .map(
+          (g) => `<label class="grind-tile">
+            <input type="radio" name="grind" value="${g.id}"${g.id === state.grind ? " checked" : ""}>
+            <img src="${g.image}" alt="">
+            <span class="grind-tile__title">${g.tile}</span>
+            <span class="grind-tile__note">${g.note}</span>
+          </label>`
+        )
+        .join("");
+      grindGrid.addEventListener("change", (e) => {
+        if (e.target.name !== "grind") return;
+        state.grind = e.target.value;
         paint();
       });
+    }
+    root.querySelector("[data-sub-switch]")?.addEventListener("change", (e) => {
+      state.subscribe = e.target.checked;
+      root.querySelector("[data-sub-toggle]")?.classList.toggle("is-on", state.subscribe);
+      paint();
     });
     root.querySelector("[data-pdp-add]")?.addEventListener("click", () => {
       addToCart({
@@ -441,6 +631,7 @@
         .map(productCard)
         .join("");
       bindAddButtons(related);
+      bindFavButtons(related);
     }
   }
 
@@ -512,6 +703,7 @@
         .map(productCard)
         .join("");
       bindAddButtons(upsell);
+      bindFavButtons(upsell);
       upsell.addEventListener("click", () => setTimeout(draw, 50));
     }
     draw();
@@ -622,9 +814,45 @@
     }
   }
 
+  /* Поля формы из кита: состояние валидности и счётчик символов */
+  function enhanceFields(root = document) {
+    root.querySelectorAll("input[type=email], input[data-validate]").forEach((el) => {
+      if (el.closest(".field-wrap")) return;
+      const wrap = document.createElement("span");
+      wrap.className = "field-wrap";
+      el.parentNode.insertBefore(wrap, el);
+      wrap.appendChild(el);
+      const check = () => wrap.classList.toggle("is-valid", el.value.trim() !== "" && el.checkValidity());
+      el.addEventListener("input", check);
+      el.addEventListener("blur", check);
+      check();
+    });
+
+    root.querySelectorAll("textarea[maxlength], textarea[data-counter]").forEach((el) => {
+      if (el.closest(".textarea-wrap")) return;
+      const max = Number(el.getAttribute("maxlength")) || Number(el.dataset.counter) || 120;
+      if (!el.getAttribute("maxlength")) el.setAttribute("maxlength", max);
+      const wrap = document.createElement("span");
+      wrap.className = "textarea-wrap";
+      el.parentNode.insertBefore(wrap, el);
+      wrap.appendChild(el);
+      const out = document.createElement("span");
+      out.className = "char-count";
+      wrap.appendChild(out);
+      const draw = () => {
+        out.textContent = `${el.value.length} / ${max}`;
+        out.classList.toggle("is-over", el.value.length >= max);
+      };
+      el.addEventListener("input", draw);
+      draw();
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     mountChrome();
+    enhanceFields();
     bindAddButtons();
+    bindFavButtons();
     renderHome();
     renderCatalog();
     renderProduct();
