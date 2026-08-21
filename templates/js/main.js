@@ -8,6 +8,12 @@
     plus: '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>',
     leaf: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 19c8-1 13-8 14-16-8 1-15 7-14 16z"/><path d="M5 19c3-6 8-10 14-12"/></svg>',
     check: '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12l5 5 11-11"/></svg>',
+    telegram: '<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.9 4.2 2.9 11.5c-.9.35-.86 1.63.05 1.93l4.6 1.5 1.77 5.35c.22.66 1.06.85 1.54.35l2.6-2.7 4.65 3.42c.6.44 1.46.11 1.61-.62l3.1-14.9c.17-.8-.62-1.5-1.4-1.2Zm-3.3 3.05-7.9 6.9c-.28.24-.46.58-.51.95l-.27 1.98c-.03.2-.31.22-.37.03l-1.05-3.2a.62.62 0 0 1 .26-.72l9.5-6.2c.28-.18.57.2.34.44Z"/></svg>',
+    instagram: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3.4" y="3.4" width="17.2" height="17.2" rx="5.2"/><circle cx="12" cy="12" r="4"/><circle cx="16.9" cy="7.1" r="1.15" fill="currentColor" stroke="none"/></svg>',
+    vk: '<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.9 16.6c-5 0-8.2-3.5-8.3-9.3h2.6c.1 4.3 2.1 6.1 3.6 6.5V7.3h2.4v3.6c1.4-.15 2.9-1.8 3.4-3.6h2.4c-.4 2.2-1.9 3.85-3 4.5 1.1.55 2.8 2 3.5 4.8h-2.6c-.5-1.7-1.85-3.05-3.7-3.25v3.25h-.3Z"/></svg>',
+    home: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9.6V20h13V9.6"/><path d="M9.8 20v-5.4h4.4V20"/></svg>',
+    cup: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4.5 7.5h12v6a6 6 0 0 1-12 0v-6z"/><path d="M16.5 9.2h1.6a2.6 2.6 0 0 1 0 5.2h-1.6"/><path d="M3 20.5h15"/></svg>',
+    repeat: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6"/><path d="M20 12a8 8 0 0 1-13.7 5.6"/><path d="M17.8 3v3.6h-3.6"/><path d="M6.2 21v-3.6h3.6"/></svg>',
     calendar: '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="4.5" width="14" height="13" rx="2.5"/><path d="M3 8.5h14M7 2.5v3M13 2.5v3"/></svg>',
     tag: '<svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 8.5V4a1 1 0 0 1 1-1h4.5L17 11.5 11.5 17 3 8.5z"/><circle cx="6.6" cy="6.6" r="1.1"/></svg>',
     bean: '<svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="10" cy="10" rx="5.5" ry="7.5" transform="rotate(-35 10 10)"/><path d="M7 13.5c1.5-2.5 4-4.5 6-5.5"/></svg>',
@@ -96,12 +102,8 @@
       <a class="skip-link" href="#main">К содержанию</a>
       <header class="site-header" id="header">
         <div class="container site-header__inner">
-          <a class="logo" href="index.html" aria-label="Al Jar Coffee">
-            <img src="img/logo.svg" alt="">
-            <span class="logo__text">
-              <span class="logo__name">Al Jar</span>
-              <span class="logo__sub">Coffee</span>
-            </span>
+          <a class="logo" href="index.html">
+            <img src="img/logo.png" alt="Al Jar Coffee" width="187" height="138">
           </a>
           <nav class="nav-desktop" aria-label="Основное меню">
             ${links
@@ -127,7 +129,7 @@
       <div class="mobile-nav" id="mobile-nav">
         <div class="mobile-nav__top">
           <a class="logo" href="index.html">
-            <img src="img/logo.svg" alt=""><span class="logo__text"><span class="logo__name">Al Jar</span><span class="logo__sub">Coffee</span></span>
+            <img src="img/logo.png" alt="Al Jar Coffee" width="187" height="138">
           </a>
           <button class="icon-btn" data-close-menu aria-label="Закрыть">${ICONS.close}</button>
         </div>
@@ -145,21 +147,44 @@
       </div>`;
   }
 
+
+  function tabBar() {
+    const tabs = [
+      ["index.html", "Главная", "home", ICONS.home],
+      ["catalog.html", "Кофе", "catalog", ICONS.cup],
+      ["subscription.html", "Подписка", "subscription", ICONS.repeat],
+      ["cart.html", "Корзина", "cart", ICONS.bag],
+      ["account.html", "Кабинет", "account", ICONS.user],
+    ];
+    return `
+      <nav class="tabbar" aria-label="Разделы сайта">
+        ${tabs
+          .map(([href, label, id, icon]) => {
+            const active = PAGE === id;
+            const badge = id === "cart" ? '<span class="cart-count" data-cart-count>0</span>' : "";
+            return `<a href="${href}" class="tabbar__item${active ? " is-active" : ""}"${active ? ' aria-current="page"' : ""}>
+              <span class="tabbar__icon">${icon}${badge}</span>
+              <span class="tabbar__label">${label}</span>
+            </a>`;
+          })
+          .join("")}
+      </nav>`;
+  }
+
   function footer() {
     const b = window.ALJAR.brand;
     return `
       <footer class="site-footer">
         <div class="container footer-grid">
           <div class="footer-brand">
-            <a class="logo" href="index.html">
-              <img src="img/logo.svg" alt="">
-              <span class="logo__text"><span class="logo__name">Al Jar</span><span class="logo__sub">Coffee</span></span>
+            <a class="logo logo--lg" href="index.html">
+              <img src="img/logo.png" alt="Al Jar Coffee" width="187" height="138">
             </a>
             <p class="tiny">Семейный бренд с ливанскими корнями и современной обжаркой полного цикла в России. От зерна к чашке.</p>
             <div class="socials">
-              <a class="btn--icon" href="#" aria-label="Telegram">Tg</a>
-              <a class="btn--icon" href="#" aria-label="Instagram">Ig</a>
-              <a class="btn--icon" href="#" aria-label="VK">Vk</a>
+              <a class="btn--icon" href="#" aria-label="Instagram" title="Instagram">${ICONS.instagram}</a>
+              <a class="btn--icon" href="#" aria-label="Telegram" title="Telegram">${ICONS.telegram}</a>
+              <a class="btn--icon" href="#" aria-label="ВКонтакте" title="ВКонтакте">${ICONS.vk}</a>
             </div>
           </div>
           <div class="footer-col">
@@ -258,6 +283,8 @@
     const footerHost = document.querySelector("[data-footer]");
     if (headerHost) headerHost.outerHTML = header();
     if (footerHost) footerHost.outerHTML = footer();
+    /* Нижняя панель вкладок — на оформлении заказа скрыта: сфокусированный поток */
+    if (PAGE !== "checkout") document.body.insertAdjacentHTML("beforeend", tabBar());
     updateCartCount();
 
     const headerEl = document.getElementById("header");

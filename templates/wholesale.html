@@ -4,11 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Для бизнеса — Al Jar Coffee</title>
-  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="img/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="img/favicon-16.png" sizes="16x16" type="image/png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=377a4186">
 </head>
 <body data-page="wholesale">
   <div data-header></div>
@@ -61,13 +63,13 @@
 
         <form class="panel stack" data-wholesale>
           <div class="form-grid">
-            <label class="label">Имя <span class="req">*</span>
+            <label class="label"><span class="label__text">Имя <span class="req" aria-hidden="true" title="Обязательное поле">*</span></span>
               <input class="field" name="name" required>
             </label>
-            <label class="label">Компания <span class="req">*</span>
+            <label class="label"><span class="label__text">Компания <span class="req" aria-hidden="true" title="Обязательное поле">*</span></span>
               <input class="field" name="company" required>
             </label>
-            <label class="label">Телефон <span class="req">*</span>
+            <label class="label"><span class="label__text">Телефон <span class="req" aria-hidden="true" title="Обязательное поле">*</span></span>
               <input class="field" name="phone" type="tel" required placeholder="+7 …">
             </label>
             <label class="label">Email (необязательно)
@@ -89,7 +91,7 @@
               <textarea class="textarea" name="comment" maxlength="120" placeholder="Как вы пьёте кофе?"></textarea>
             </label>
             <label class="label full">Файл (спецификация, бриф) — необязательно
-              <input class="field" type="file" name="file" style="padding:10px">
+              <input class="field field--file" type="file" name="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png">
             </label>
           </div>
           <label class="checkbox">
@@ -102,7 +104,7 @@
     </section>
   </main>
   <div data-footer></div>
-  <script src="js/data.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/data.js?v=2d076443"></script>
+  <script src="js/main.js?v=54b61b8e"></script>
 </body>
 </html>

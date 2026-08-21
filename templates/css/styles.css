@@ -265,6 +265,10 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .btn--m { height: 42px; padding: 0 16px; font-size: 14px; }
 .btn--s { height: 32px; padding: 0 12px; font-size: 13px; }
+/* на сенсорных ширинах мелкая кнопка подрастает до комфортной цели нажатия */
+@media (max-width: 559px) {
+  .btn--s { height: 40px; padding: 0 16px; }
+}
 .btn--block { width: 100%; }
 .btn--danger { background: var(--error-bg); color: var(--error); }
 .btn--icon {
@@ -273,7 +277,16 @@ h1, h2, h3, h4, p { margin: 0; }
   padding: 0;
   border-radius: 50%;
   border: 1.5px solid var(--line);
-  background: #fff;
+  background: var(--surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--petrol);
+  transition: border-color .2s, color .2s, background .2s;
+}
+.btn--icon:hover {
+  border-color: var(--teal-ink);
+  color: var(--teal-ink);
 }
 
 /* Forms */
@@ -283,7 +296,17 @@ h1, h2, h3, h4, p { margin: 0; }
   font-size: 14px;
   font-weight: 500;
 }
-.label span.req { color: var(--error); }
+/* подпись и звёздочка — одна ячейка сетки, иначе grid разносит их по строкам */
+.label__text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.label .req {
+  color: var(--error);
+  font-size: 15px;
+  line-height: 1;
+}
 
 .field,
 .select,
@@ -348,8 +371,86 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .char-count.is-over { color: var(--error); }
 
+
+/* ── Поле выбора файла ─────────────────────────────────────────
+   Нативную кнопку браузера оформляем через ::file-selector-button:
+   поведение и доступность остаются штатными, вид — наш. */
+.field--file {
+  display: flex;
+  align-items: center;
+  padding: 0 14px 0 6px;
+  font-size: 13.5px;
+  color: var(--grey);
+  cursor: pointer;
+}
+.field--file::file-selector-button,
+.field--file::-webkit-file-upload-button {
+  height: 34px;
+  margin-right: 12px;
+  padding: 0 14px 0 34px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2314343c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13.5 6.2 7.8 11.9a2.2 2.2 0 0 0 3.1 3.1l5.7-5.7a4 4 0 0 0-5.6-5.6L5.3 9.4a5.8 5.8 0 0 0 8.2 8.2l4.3-4.3'/%3E%3C/svg%3E") no-repeat 12px center;
+  background-size: 15px 15px;
+  color: var(--petrol);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .2s, background-color .2s, color .2s;
+}
+.field--file:hover::file-selector-button,
+.field--file:hover::-webkit-file-upload-button {
+  border-color: var(--teal-ink);
+  background-color: var(--teal-wash);
+}
+.field--file:focus-within {
+  border-color: var(--teal-ink);
+  box-shadow: 0 0 0 3px rgba(23, 126, 122, .18);
+}
+
 .help { font-size: 13px; color: var(--grey); }
 .help--error { color: var(--error); }
+
+
+/* ── Чекбоксы: круг с галочкой (UI Kit, блок 2) ──────────────
+   Форма повторяет индикатор подтверждённого e-mail из кита. */
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 50%;
+  background-color: var(--surface);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 12px 12px;
+  cursor: pointer;
+  transition: border-color .2s, background-color .2s;
+}
+input[type="checkbox"]:hover { border-color: var(--grey); }
+input[type="checkbox"]:checked {
+  border-color: var(--teal-ink);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none' stroke='%23177e7a' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.6 7.3l2.9 2.9 6-6.4'/%3E%3C/svg%3E");
+}
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--teal-ink);
+  outline-offset: 2px;
+}
+input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
+
+/* тоггл подписки прячет свой чекбокс — общий стиль ему не нужен */
+.switch input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  appearance: none;
+}
 
 .checkbox {
   display: flex;
@@ -358,7 +459,59 @@ h1, h2, h3, h4, p { margin: 0; }
   font-size: 14px;
   color: var(--grey);
 }
-.checkbox input { margin-top: 3px; accent-color: var(--teal-ink); }
+.checkbox input { margin-top: 1px; }
+
+
+/* ── Нижняя панель вкладок (мобильные макеты) ──────────────────
+   Основная навигация вынесена из гамбургера вниз, под большой палец.
+   На десктопе скрыта — там работает горизонтальное меню. */
+.tabbar { display: none; }
+@media (max-width: 767px) {
+  .tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    background: rgba(255, 252, 247, .94);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .tabbar__item {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 3px;
+    padding: 8px 2px 9px;
+    color: var(--grey);
+    min-height: 56px;
+    transition: color .2s;
+  }
+  .tabbar__icon { position: relative; display: inline-flex; }
+  .tabbar__label {
+    font-size: 10.5px;
+    line-height: 1.1;
+    letter-spacing: .01em;
+  }
+  .tabbar__item.is-active { color: var(--teal-ink); }
+  .tabbar__item.is-active .tabbar__label { font-weight: 600; }
+  .tabbar__icon .cart-count {
+    position: absolute;
+    top: -5px;
+    right: -7px;
+  }
+
+  /* контент не должен уходить под панель; на чекауте панели нет — отступ не нужен */
+  body:has(.tabbar) { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+
+  /* корзина и кабинет теперь в нижней панели — в шапке дублировать незачем */
+  .header-actions .icon-btn[href="cart.html"],
+  .header-actions .icon-btn[href="account.html"] { display: none; }
+}
 
 /* Header */
 .site-header {
@@ -384,24 +537,20 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 
 .logo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
   flex-shrink: 0;
 }
-.logo img { width: 32px; height: 32px; }
-.logo__text { display: grid; line-height: 1.05; }
-.logo__name {
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+/* логотип-локап уже содержит название бренда, подпись рядом не нужна */
+.logo img {
+  height: 52px;
+  width: auto;
+  display: block;
 }
-.logo__sub {
-  font-size: 10px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--grey);
+.logo--lg img { height: 58px; }
+@media (max-width: 599px) {
+  .logo img { height: 38px; }
+  .logo--lg img { height: 48px; }
 }
 
 .nav-desktop {
@@ -717,10 +866,10 @@ h1, h2, h3, h4, p { margin: 0; }
 .badge--ice { background: var(--sand); border-color: transparent; }
 .fav {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 28px;
-  height: 28px;
+  top: 6px;
+  right: 6px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   background: none;
@@ -756,6 +905,48 @@ h1, h2, h3, h4, p { margin: 0; }
   font-weight: 500;
 }
 .add-quick--wide svg { flex-shrink: 0; }
+
+/* ── Мобильные уточнения компонентов (UI Kit) ──────────────────
+   На узкой карточке мета из двух значений рвётся вразнобой —
+   раскладываем её в две ровные строки вместо space-between. */
+@media (max-width: 559px) {
+  /* на узкой карточке бейдж должен оставаться в одну строку */
+  .card__media .badge--roast {
+    white-space: nowrap;
+    font-size: 10px;
+    height: 24px;
+    padding: 0 8px;
+    gap: 4px;
+    letter-spacing: 0;
+  }
+  /* бейдж и цель нажатия «избранного» не помещаются в один ряд
+     на узкой карточке — уводим сердце в нижний угол изображения */
+  .fav {
+    top: auto;
+    bottom: 2px;
+    right: 2px;
+  }
+  .card__meta {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 3px;
+    font-size: 11px;
+  }
+  .card__title {
+    font-size: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.5em;
+  }
+  .card__notes {
+    font-size: 12px;
+    min-height: 3.4em;
+  }
+  .card__row { flex-wrap: wrap; row-gap: 10px; }
+}
 
 /* Subscribe band */
 .subscribe-band {
@@ -870,16 +1061,45 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 .newsletter-form {
   display: flex;
+  align-items: center;
   gap: 8px;
-  background: #fff;
+  background: var(--surface);
   padding: 6px;
   border-radius: var(--radius-pill);
   border: 1.5px solid var(--line);
+  transition: border-color .2s, box-shadow .2s;
+}
+.newsletter-form:focus-within {
+  border-color: var(--teal-ink);
+  box-shadow: 0 0 0 3px rgba(23, 126, 122, .18);
+}
+/* enhanceFields() оборачивает input[type=email] в .field-wrap ради галочки
+   валидации, поэтому flex-элементом формы становится обёртка, а не поле. */
+.newsletter-form .field-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: block;
 }
 .newsletter-form .field {
+  width: 100%;
   border: 0;
+  background: none;
   box-shadow: none;
   height: 42px;
+  padding-left: 16px;
+}
+.newsletter-form .field:focus { box-shadow: none; }
+.newsletter-form .btn {
+  flex: 0 0 auto;
+  height: 42px;
+}
+@media (max-width: 519px) {
+  .newsletter-form {
+    flex-wrap: wrap;
+    border-radius: var(--radius-l);
+  }
+  .newsletter-form .field-wrap { flex: 1 1 100%; }
+  .newsletter-form .btn { flex: 1 1 100%; }
 }
 
 /* Footer */
@@ -891,6 +1111,12 @@ h1, h2, h3, h4, p { margin: 0; }
   display: grid;
   gap: 28px;
   grid-template-columns: 1fr 1fr;
+}
+/* колонка 1fr не уже своего содержимого — без этого длинные ссылки
+   распирают сетку и подвал вылезает за экран на узких телефонах */
+.footer-grid > * { min-width: 0; }
+@media (max-width: 359px) {
+  .footer-grid { grid-template-columns: 1fr; gap: 22px; }
 }
 @media (min-width: 900px) {
   .footer-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr 1.2fr; }
@@ -920,7 +1146,7 @@ h1, h2, h3, h4, p { margin: 0; }
   font-size: 13px;
   color: var(--grey);
 }
-.socials { display: flex; gap: 8px; margin-top: 14px; }
+.socials { display: flex; gap: 10px; margin-top: 16px; }
 
 /* Page hero */
 .page-hero {
@@ -961,6 +1187,7 @@ h1, h2, h3, h4, p { margin: 0; }
     top: var(--header-h);
     max-height: calc(100vh - var(--header-h));
     overflow-y: auto;
+    overflow-x: hidden;
     border-right: 1px solid var(--line);
   }
 }
@@ -1009,8 +1236,8 @@ h1, h2, h3, h4, p { margin: 0; }
   cursor: pointer;
   font-size: 14px;
 }
-.facet input { accent-color: var(--teal-ink); flex-shrink: 0; margin: 0; }
-.facet__label { flex: 1; }
+.facet input { flex-shrink: 0; }
+.facet__label { flex: 1; min-width: 0; overflow-wrap: break-word; }
 .facet__count { color: var(--grey); font-size: 13px; font-variant-numeric: tabular-nums; }
 .facet__icon { color: var(--clay); flex-shrink: 0; display: inline-flex; }
 .facet:has(input:checked) .facet__label { font-weight: 600; }
@@ -1078,9 +1305,11 @@ h1, h2, h3, h4, p { margin: 0; }
 }
 
 /* способ приготовления — в две колонки с иллюстрациями */
-.method-grid { grid-template-columns: 1fr 1fr; gap: 6px 16px; }
-.method-grid .facet { font-size: 13px; }
-.method-grid img { width: 26px; height: 26px; flex-shrink: 0; }
+/* колонки подстраиваются: две, когда помещаются, иначе одна */
+.method-grid { grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 6px 12px; }
+.method-grid .facet { min-width: 0; }
+.method-grid .facet { font-size: 13px; gap: 8px; }
+.method-grid img { width: 22px; height: 22px; flex-shrink: 0; }
 
 @media (max-width: 979px) {
   .filters { display: none; }
@@ -1143,6 +1372,11 @@ h1, h2, h3, h4, p { margin: 0; }
   margin-bottom: 12px;
 }
 .toolbar-row .field { max-width: 340px; }
+@media (max-width: 559px) {
+  .toolbar-row { flex-wrap: wrap; }
+  .toolbar-row .field { max-width: none; flex: 1 1 100%; }
+  .toolbar-row .filters-toggle { flex: 1 1 100%; }
+}
 .filters-toggle { display: none; }
 @media (max-width: 979px) { .filters-toggle { display: inline-flex; } }
 
@@ -1261,19 +1495,24 @@ h1, h2, h3, h4, p { margin: 0; }
   padding: 0;
   margin-bottom: 8px;
 }
+/* колонки считаются от ширины контейнера, а не экрана: плитки лежат
+   в правой колонке страницы товара, и она узкая на средних ширинах */
 .grind-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(126px, 1fr));
   gap: 10px;
 }
-@media (min-width: 560px) {
-  .grind-grid { grid-template-columns: repeat(4, 1fr); }
+/* На средних ширинах правая колонка товара узкая: auto-fit дал бы три
+   колонки и одинокую четвёртую плитку — ровнее показать 2+2. */
+@media (min-width: 900px) and (max-width: 1239px) {
+  .grind-grid { grid-template-columns: repeat(2, 1fr); }
 }
 .grind-tile {
   position: relative;
-  display: grid;
-  align-content: start;
-  justify-items: center;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 6px;
   padding: 12px 8px 10px;
   border: 1.5px solid var(--line);
@@ -1299,14 +1538,15 @@ h1, h2, h3, h4, p { margin: 0; }
   font-weight: 500;
   line-height: 1.3;
   color: var(--petrol);
-  min-height: 5.2em;
   display: flex;
   align-items: center;
+  flex: 1 1 auto;
 }
 .grind-tile__note {
   font-size: 11.5px;
   color: var(--grey);
   line-height: 1.35;
+  margin-top: auto;
 }
 .grind-tile:has(input:checked) {
   border-color: var(--teal-ink);
