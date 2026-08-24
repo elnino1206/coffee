@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "v2-anim",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "5555", "--directory", "versions/v2-anim"],
+      "port": 5555
+    },
+    {
+      "name": "v1-static",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "5556", "--directory", "versions/v1-static"],
+      "port": 5556
+    }
+  ]
+}

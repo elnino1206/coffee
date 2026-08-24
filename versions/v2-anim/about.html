@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>О бренде — Al Jar Coffee</title>
+  <link rel="icon" href="img/favicon-16.png" sizes="16x16" type="image/png">
+  <link rel="icon" href="img/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="icon" href="img/favicon-48.png" sizes="48x48" type="image/png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=f6b64890">
+</head>
+<body data-page="about">
+  <div data-header></div>
+  <main id="main">
+    <section class="hero">
+      <div class="container hero__grid">
+        <div class="hero__copy">
+          <p class="eyebrow">О бренде</p>
+          <h1 class="display">История семьи и ритуала</h1>
+          <p class="lead">С XVI века кофе в Ливане — часть культуры, знак уважения и живая традиция. Al Jar продолжает её в современном формате: семейный бренд, опыт, внимание к деталям.</p>
+        </div>
+        <div class="hero__visual">
+          <span class="blob blob--sand"></span>
+          <img src="img/dallah.webp" width="1152" height="864" fetchpriority="high" decoding="async" alt="Ливанская далла — символ гостеприимства">
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container heritage">
+        <div class="stack" data-reveal>
+          <p class="eyebrow">Производство</p>
+          <h2 class="h2">Полный цикл в России</h2>
+          <p class="lead">Закупка сырого зерна, обжарка до 20 тонн в месяц, фасовка. Не прячем цех — дата обжарки на каждой пачке, потому что свежесть нельзя имитировать.</p>
+          <p class="muted">Специализация: эспрессо и ливанский кофе. Также — гейзер, френч-пресс, фильтр, турка (арабская и турецкая). На российский рынок бренд пришёл с многолетним опытом работы на Ближнем Востоке.</p>
+        </div>
+        <div class="torn" data-reveal>
+          <img src="img/roaster.webp" width="1152" height="864" loading="lazy" decoding="async" alt="Обжарочный барабан" style="height:380px;width:100%;object-fit:cover">
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--sand">
+      <div class="container">
+        <p class="eyebrow">Ценности</p>
+        <h2 class="h2" style="margin-bottom:24px">Как мы работаем</h2>
+        <div class="steps">
+          <article class="step">
+            <h3 class="h3">Честность</h3>
+            <p class="muted">Дата обжарки, происхождение партии, вкусовой профиль — на виду, не в подвале карточки.</p>
+          </article>
+          <article class="step">
+            <h3 class="h3">Ритуал</h3>
+            <p class="muted">Кофе — способ собраться вместе. Мы уважаем гостя так же, как хороший хозяин.</p>
+          </article>
+          <article class="step">
+            <h3 class="h3">Ремесло</h3>
+            <p class="muted">Небольшие партии, стабильный профиль, никакой агрессии в продаже.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Сценарий «От зерна к чашке». Без JS и при reduce-motion читается
+         как обычный список из пяти блоков «кадр + подпись». -->
+    <section class="section journey" data-journey aria-label="От зерна к чашке">
+      <div class="container journey__track">
+        <div class="journey__stage">
+          <ol class="journey__progress" data-journey-progress aria-hidden="true"></ol>
+
+          <article class="journey__slide" data-slide>
+            <figure class="journey__media torn">
+              <img src="img/plantation.webp" width="1280" height="720" loading="lazy" decoding="async" alt="Кофейные деревья на плантации">
+            </figure>
+            <div class="journey__copy">
+              <p class="eyebrow journey__step">Шаг 1 из 5</p>
+              <h2 class="h2">Всё начинается с земли</h2>
+              <p class="lead">Бразилия, Колумбия, Эфиопия. Высота, тень и ручной сбор решают, каким зерно приедет в цех.</p>
+              <p class="journey__metric"><span data-count-to="1800">1800</span><small>метров над уровнем моря</small></p>
+            </div>
+          </article>
+
+          <article class="journey__slide" data-slide data-optional>
+            <figure class="journey__media torn">
+              <img src="img/beans.webp" width="1152" height="864" loading="lazy" decoding="async" alt="Зелёное кофейное зерно до обжарки">
+            </figure>
+            <div class="journey__copy">
+              <p class="eyebrow journey__step">Шаг 2 из 5</p>
+              <h2 class="h2">Отбор партии</h2>
+              <p class="lead">Скрин 16/18 — размер зерна, при котором обжарка идёт ровно. Дефекты выбираем вручную.</p>
+              <p class="journey__metric">16/18<small>размер скрина</small></p>
+            </div>
+          </article>
+
+          <article class="journey__slide" data-slide>
+            <figure class="journey__media torn">
+              <img src="img/roaster.webp" width="1152" height="864" loading="lazy" decoding="async" alt="Барабан обжарочной машины">
+            </figure>
+            <div class="journey__copy">
+              <p class="eyebrow journey__step">Шаг 3 из 5</p>
+              <h2 class="h2">14 минут в барабане</h2>
+              <p class="lead">Свой профиль под каждый способ заваривания: эспрессо, фильтр, турка. Небольшие партии, стабильный результат.</p>
+              <p class="journey__metric"><span data-count-to="205" data-count-from="20">205</span> °C<small>на выгрузке</small></p>
+            </div>
+          </article>
+
+          <article class="journey__slide" data-slide data-optional>
+            <figure class="journey__media torn">
+              <img src="img/bag-kraft.webp" width="864" height="1152" loading="lazy" decoding="async" alt="Пачка кофе Al Jar с датой обжарки">
+            </figure>
+            <div class="journey__copy">
+              <p class="eyebrow journey__step">Шаг 4 из 5</p>
+              <h2 class="h2">Дата обжарки — на пачке</h2>
+              <p class="lead">Фасуем в день обжарки. Дату видно до покупки, а не после вскрытия — свежесть нельзя имитировать.</p>
+              <p><span class="badge badge--roast journey__stamp">Обжарено сегодня</span></p>
+            </div>
+          </article>
+
+          <article class="journey__slide" data-slide>
+            <figure class="journey__media torn">
+              <img src="img/hero.webp" width="1280" height="720" loading="lazy" decoding="async" alt="Чашка свежесваренного кофе на каменной плите">
+            </figure>
+            <div class="journey__copy">
+              <p class="eyebrow journey__step">Шаг 5 из 5</p>
+              <h2 class="h2">Ваш ритуал</h2>
+              <p class="lead">С XVI века кофе в Ливане — знак уважения и повод собраться. Дальше история продолжается у вас дома.</p>
+              <p><a class="btn btn--primary" href="catalog.html">Смотреть кофе →</a></p>
+            </div>
+          </article>
+        </div>
+        <div class="journey__sentinels" data-journey-sentinels aria-hidden="true"></div>
+      </div>
+    </section>
+  </main>
+  <div data-footer></div>
+  <script src="js/data.js?v=428019e9"></script>
+  <script src="js/main.js?v=f76410b1"></script>
+</body>
+</html>

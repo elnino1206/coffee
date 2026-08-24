@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Заказы — Al Jar Coffee</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="../img/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css?v=f6b64890">
+  <link rel="stylesheet" href="css/admin.css?v=30aa12fc">
+</head>
+<body class="admin" data-admin-page="orders">
+  <aside class="admin-nav" data-admin-nav></aside>
+
+  <div class="admin-main">
+    <header class="admin-topbar" data-admin-topbar
+            data-title="Заказы"
+            data-note="Розничные заказы с витрины"></header>
+
+    <div class="admin-content">
+      <section class="admin-panel">
+        <div class="admin-panel__head">
+          <h2>Все заказы</h2>
+          <div class="admin-filters admin-panel__aside">
+            <input class="field" type="search" placeholder="Номер, имя или телефон">
+            <select class="select">
+              <option>Все статусы</option>
+              <option>Новые</option>
+              <option>В работе</option>
+              <option>Выполненные</option>
+              <option>Отменённые</option>
+            </select>
+          </div>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Номер</th><th>Дата</th><th>Покупатель</th>
+                <th>Состав</th><th>Доставка</th>
+                <th class="num">Сумма</th><th>Статус</th><th></th>
+              </tr>
+            </thead>
+            <tbody data-orders></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="../js/data.js?v=428019e9"></script>
+  <script src="js/demo.js?v=f466f16c"></script>
+  <script src="js/admin.js?v=80b80cc8"></script>
+</body>
+</html>

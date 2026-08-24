@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Вход в панель — Al Jar Coffee</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="../img/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css?v=f6b64890">
+  <link rel="stylesheet" href="css/admin.css?v=30aa12fc">
+</head>
+<body data-admin-page="login">
+  <main class="admin-login">
+    <!-- Прототип интерфейса: форма никуда не отправляется и ничего не
+         проверяет, кнопка просто ведёт на дашборд. Настоящая авторизация
+         появится вместе с бэкендом. -->
+    <form class="admin-login__card" data-demo-form="index.html">
+      <div class="admin-login__brand">
+        <img src="../img/logo.webp" alt="Al Jar Coffee" width="187" height="138">
+        <div>
+          <h1 class="h3">Панель управления</h1>
+          <p class="tiny">Доступ только для сотрудников</p>
+        </div>
+      </div>
+
+      <label class="label">Логин
+        <input class="field" name="login" autocomplete="username" placeholder="admin@aljar.ru" required>
+      </label>
+      <label class="label">Пароль
+        <input class="field" type="password" name="password" autocomplete="current-password" placeholder="••••••••" required>
+      </label>
+
+      <label class="checkbox">
+        <input type="checkbox" checked>
+        <span>Запомнить на этом устройстве</span>
+      </label>
+
+      <button class="btn btn--petrol btn--block" type="submit">Войти</button>
+      <p class="tiny" style="text-align:center">Забыли пароль — обратитесь к администратору сайта.</p>
+    </form>
+  </main>
+
+  <script src="js/admin.js?v=80b80cc8"></script>
+</body>
+</html>
