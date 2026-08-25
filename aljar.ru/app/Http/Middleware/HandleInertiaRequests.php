@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Actions\Cart\ResolveCart;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -41,6 +42,11 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
                 'admin' => $request->user('admin'),
+            ],
+            // Счётчик в шапке: сумма количеств, а не число строк —
+            // две пачки одного сорта это две пачки.
+            'cart' => fn (): array => [
+                'count' => (int) (app(ResolveCart::class)($request, create: false)?->items()->sum('qty') ?? 0),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];

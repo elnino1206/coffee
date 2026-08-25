@@ -64,13 +64,13 @@ defineProps<{ page?: string }>();
                         <path d="M4 17c1.2-3 3.2-4.5 6-4.5S14.8 14 16 17" />
                     </svg>
                 </a>
-                <a class="icon-btn" href="#" aria-label="Корзина">
+                <Link class="icon-btn" href="/cart" aria-label="Корзина">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
                         <path d="M5 7h10l-1 11H6L5 7z" />
                         <path d="M8 7V5.5A2 2 0 0 1 10 3.5 2 2 0 0 1 12 5.5V7" />
                     </svg>
-                    <span class="cart-count">0</span>
-                </a>
+                    <span class="cart-count">{{ $page.props.cart.count }}</span>
+                </Link>
             </div>
         </div>
     </header>

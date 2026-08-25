@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import { formatPrice } from '@/lib/money';
 
@@ -55,6 +55,24 @@ const grind = ref('whole');
 
 const variant = computed(() => props.coffee.variants.find((item) => item.id === variantId.value));
 const price = computed(() => variant.value?.price ?? props.coffee.price_from);
+const adding = ref(false);
+
+/** Помол уходит вместе с вариантом: за покупателя его выбирать нельзя. */
+function addToCart() {
+    if (variantId.value === null) {
+        return;
+    }
+
+    router.post(
+        '/cart',
+        { product_variant_id: variantId.value, grind: grind.value, qty: 1 },
+        {
+            preserveScroll: true,
+            onStart: () => (adding.value = true),
+            onFinish: () => (adding.value = false),
+        },
+    );
+}
 </script>
 
 <template>
@@ -149,13 +167,15 @@ const price = computed(() => variant.value?.price ?? props.coffee.price_from);
                     </div>
                 </fieldset>
 
-                <button class="btn btn--petrol btn--block" type="button" disabled>
-                    Добавить в корзину
+                <button
+                    class="btn btn--petrol btn--block"
+                    type="button"
+                    :disabled="adding || !variant?.in_stock"
+                    @click="addToCart"
+                >
+                    {{ variant?.in_stock ? 'Добавить в корзину' : 'Нет в наличии' }}
                 </button>
-                <p class="tiny">
-                    Корзина подключается следующим шагом — сейчас страница показывает
-                    товар, но ничего не запоминает.
-                </p>
+                <p class="tiny">Доставка по всей России · Свежий обжар ежедневно</p>
             </div>
         </div>
 

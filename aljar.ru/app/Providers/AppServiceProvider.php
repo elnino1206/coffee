@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Actions\Cart\MergeGuestCart;
 use App\Models\Passkey;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +34,10 @@ class AppServiceProvider extends ServiceProvider
         Passkeys::usePasskeyModel(Passkey::class);
 
         $this->teachSqliteToLowercaseCyrillic();
+
+        // Набранное до входа не должно исчезать ровно в тот момент,
+        // когда человек решил довести покупку до конца.
+        Event::listen(Login::class, [MergeGuestCart::class, 'handle']);
     }
 
     /**
