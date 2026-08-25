@@ -32,6 +32,10 @@ export default defineConfig({
         }),
     ],
     server: {
+        // Адрес прибит к 127.0.0.1: без него часть зависимостей
+        // запрашивается по localhost, браузер резолвит его в ::1, а сервер
+        // слушает только IPv4 — в консоли сыплется ERR_CONNECTION_REFUSED.
+        host: '127.0.0.1',
         watch: {
             ignored: [
                 '**/.agents/**',

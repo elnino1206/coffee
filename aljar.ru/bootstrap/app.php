@@ -22,6 +22,17 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+
+        // Два контура авторизации — два адреса входа. Без этого гость в
+        // админке уезжал бы на витринную форму входа, а войдя, попадал бы
+        // в личный кабинет покупателя.
+        $middleware->redirectGuestsTo(
+            fn (Request $request) => $request->is('admin', 'admin/*') ? route('admin.login') : route('login'),
+        );
+
+        $middleware->redirectUsersTo(
+            fn (Request $request) => $request->is('admin', 'admin/*') ? route('admin.dashboard') : route('dashboard'),
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

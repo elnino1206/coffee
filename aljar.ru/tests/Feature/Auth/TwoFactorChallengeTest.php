@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\User;
+use App\Models\Customer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Fortify\Features;
@@ -33,7 +33,7 @@ class TwoFactorChallengeTest extends TestCase
             'confirmPassword' => true,
         ]);
 
-        $user = User::factory()->withTwoFactor()->create();
+        $user = Customer::factory()->withTwoFactor()->create();
 
         $this->post(route('login'), [
             'email' => $user->email,

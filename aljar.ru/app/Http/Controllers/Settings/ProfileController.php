@@ -30,13 +30,15 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $customer = $this->customer($request);
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $customer->fill($request->validated());
+
+        if ($customer->isDirty('email')) {
+            $customer->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $customer->save();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
 
@@ -48,11 +50,11 @@ class ProfileController extends Controller
      */
     public function destroy(ProfileDeleteRequest $request): RedirectResponse
     {
-        $user = $request->user();
+        $customer = $this->customer($request);
 
         Auth::logout();
 
-        $user->delete();
+        $customer->delete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
