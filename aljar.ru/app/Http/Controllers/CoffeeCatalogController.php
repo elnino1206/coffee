@@ -1,0 +1,232 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Enums\BrewMethod;
+use App\Enums\Roast;
+use App\Models\Coffee;
+use App\Models\CoffeeDetail;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Inertia\Response;
+
+/**
+ * Раздел каталога «Кофе».
+ *
+ * Фильтрация идёт на сервере: по ТЗ 5.1 фильтры работают одновременно и
+ * показывают количество найденного, а считать его честно может только та
+ * сторона, которая владеет всем каталогом.
+ */
+class CoffeeCatalogController extends Controller
+{
+    public function index(Request $request): Response
+    {
+        $filters = $this->filters($request);
+
+        $products = $this->query($filters)->get()->map(fn (Coffee $coffee) => $this->card($coffee));
+
+        return Inertia::render('catalog/Coffee', [
+            'products' => $products,
+            'filters' => $filters,
+            'facets' => $this->facets(),
+            'total' => $products->count(),
+        ]);
+    }
+
+    public function show(Coffee $coffee): Response
+    {
+        abort_if($coffee->is_hidden, 404);
+
+        $coffee->load(['detail', 'variants', 'related.variants']);
+
+        return Inertia::render('catalog/CoffeeProduct', [
+            'coffee' => [
+                ...$this->card($coffee),
+                'full_name' => $coffee->full_name,
+                'origin' => $coffee->detail?->origin,
+                'region' => $coffee->detail?->region,
+                'process' => $coffee->detail?->process,
+                'method' => $coffee->detail?->brew_method->label(),
+                'profile' => [
+                    'fruity' => $coffee->detail?->profile_fruity,
+                    'chocolate' => $coffee->detail?->profile_chocolate,
+                    'spice' => $coffee->detail?->profile_spice,
+                    'body' => $coffee->detail?->profile_body,
+                    'acidity' => $coffee->detail?->profile_acidity,
+                ],
+                'variants' => $coffee->variants
+                    ->where('is_active', true)
+                    ->values()
+                    ->map(fn ($variant) => [
+                        'id' => $variant->id,
+                        'title' => $variant->title,
+                        'price' => $variant->price,
+                        'weight_g' => $variant->weight_g,
+                        'in_stock' => $variant->inStock(),
+                    ]),
+            ],
+            'related' => $coffee->related->map(fn ($product) => [
+                'slug' => $product->slug,
+                'name' => $product->name,
+                'image' => $product->image_path,
+                'price_from' => $product->variants->min('price'),
+            ]),
+        ]);
+    }
+
+    /**
+     * Разобрать фильтры из адреса.
+     *
+     * @return array<string, mixed>
+     */
+    protected function filters(Request $request): array
+    {
+        $validated = $request->validate([
+            'roast' => ['array'],
+            'roast.*' => ['string', 'in:'.implode(',', array_column(Roast::cases(), 'value'))],
+            'method' => ['array'],
+            'method.*' => ['string', 'in:'.implode(',', array_column(BrewMethod::cases(), 'value'))],
+            'origin' => ['array'],
+            'origin.*' => ['string'],
+            'price_min' => ['nullable', 'integer', 'min:0'],
+            'price_max' => ['nullable', 'integer', 'min:0'],
+            'q' => ['nullable', 'string', 'max:100'],
+            'sort' => ['nullable', 'string', 'in:fresh,rating,price-asc,price-desc'],
+        ]);
+
+        return [
+            'roast' => $validated['roast'] ?? [],
+            'method' => $validated['method'] ?? [],
+            'origin' => $validated['origin'] ?? [],
+            'price_min' => $validated['price_min'] ?? null,
+            'price_max' => $validated['price_max'] ?? null,
+            'q' => $validated['q'] ?? null,
+            'sort' => $validated['sort'] ?? 'fresh',
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $filters
+     * @return Builder<Coffee>
+     */
+    protected function query(array $filters): Builder
+    {
+        $query = Coffee::query()
+            ->visible()
+            ->with('detail')
+            // Цена «от» — минимальная среди вариантов: по ней же идёт и
+            // сортировка, поэтому считается запросом, а не в PHP.
+            ->withMin('variants as price_from', 'price');
+
+        $query->when($filters['roast'], fn (Builder $q, array $roast) => $q->whereHas(
+            'detail', fn (Builder $detail) => $detail->whereIn('roast', $roast),
+        ));
+
+        $query->when($filters['method'], fn (Builder $q, array $method) => $q->whereHas(
+            'detail', fn (Builder $detail) => $detail->whereIn('brew_method', $method),
+        ));
+
+        $query->when($filters['origin'], fn (Builder $q, array $origin) => $q->whereHas(
+            'detail', fn (Builder $detail) => $detail->whereIn('origin', $origin),
+        ));
+
+        // Цена в фильтре — рубли, в базе — копейки.
+        $query->when($filters['price_min'], fn (Builder $q, int $min) => $q->whereHas(
+            'variants', fn (Builder $v) => $v->where('price', '>=', $min * 100),
+        ));
+
+        $query->when($filters['price_max'], fn (Builder $q, int $max) => $q->whereHas(
+            'variants', fn (Builder $v) => $v->where('price', '<=', $max * 100),
+        ));
+
+        // Регистр приводится с обеих сторон: покупатель ищет «жасмин», а в
+        // базе «Жасмин».
+        $query->when($filters['q'], function (Builder $q, string $term): void {
+            $needle = '%'.mb_strtolower($term).'%';
+
+            $q->where(fn (Builder $where) => $where
+                ->whereRaw('lower(products.name) like ?', [$needle])
+                ->orWhereHas('detail', fn (Builder $detail) => $detail
+                    ->whereRaw('lower(notes) like ?', [$needle])
+                    ->orWhereRaw('lower(origin) like ?', [$needle])
+                    ->orWhereRaw('lower(region) like ?', [$needle])));
+        });
+
+        return match ($filters['sort']) {
+            'rating' => $query->orderByDesc('rating_avg'),
+            'price-asc' => $query->orderBy('price_from'),
+            'price-desc' => $query->orderByDesc('price_from'),
+            default => $query->orderByDesc(
+                CoffeeDetail::query()
+                    ->select('roast_date')
+                    ->whereColumn('coffee_details.product_id', 'products.id'),
+            ),
+        };
+    }
+
+    /**
+     * Наборы значений для панели фильтров.
+     *
+     * @return array<string, mixed>
+     */
+    protected function facets(): array
+    {
+        $visible = Coffee::query()->visible();
+
+        return [
+            'roasts' => collect(Roast::cases())->map(fn (Roast $roast) => [
+                'value' => $roast->value,
+                'label' => $roast->label(),
+                'count' => (clone $visible)->whereHas('detail', fn (Builder $d) => $d->where('roast', $roast))->count(),
+            ]),
+            'methods' => collect(BrewMethod::cases())->map(fn (BrewMethod $method) => [
+                'value' => $method->value,
+                'label' => $method->label(),
+                'count' => (clone $visible)->whereHas('detail', fn (Builder $d) => $d->where('brew_method', $method))->count(),
+            ]),
+            // Агрегат берётся конструктором запросов, а не моделью:
+            // count(*) — не свойство характеристик кофе.
+            'origins' => DB::table('coffee_details')
+                ->select('origin', DB::raw('count(*) as count'))
+                ->whereIn('product_id', (clone $visible)->select('products.id')->toBase())
+                ->groupBy('origin')
+                ->orderBy('origin')
+                ->get()
+                ->map(fn (object $row) => ['value' => $row->origin, 'label' => $row->origin, 'count' => (int) $row->count]),
+            'price' => [
+                'min' => (int) floor(((clone $visible)->join('product_variants', 'product_variants.product_id', '=', 'products.id')->min('price') ?? 0) / 100),
+                'max' => (int) ceil(((clone $visible)->join('product_variants', 'product_variants.product_id', '=', 'products.id')->max('price') ?? 0) / 100),
+            ],
+        ];
+    }
+
+    /**
+     * Карточка товара для витрины.
+     *
+     * @return array<string, mixed>
+     */
+    protected function card(Coffee $coffee): array
+    {
+        $freshness = $coffee->freshness();
+
+        return [
+            'slug' => $coffee->slug,
+            'name' => $coffee->name,
+            'notes' => $coffee->detail?->notes,
+            'image' => $coffee->image_path,
+            'species' => $coffee->detail?->species,
+            'roast' => $coffee->detail?->roast->label(),
+            'rating' => (float) $coffee->rating_avg,
+            'reviews' => $coffee->reviews_count,
+            'price_from' => (int) ($coffee->price_from ?? $coffee->variants->min('price') ?? 0),
+            'freshness' => $freshness === null ? null : [
+                'index' => $freshness->index(),
+                'label' => $freshness->label(),
+                'note' => $freshness->note(),
+                'roasted_at' => $coffee->detail?->roastedAtLabel(),
+            ],
+        ];
+    }
+}

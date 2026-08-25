@@ -23,6 +23,21 @@ enum Freshness: string
         };
     }
 
+    /**
+     * Порядковый номер ступени. Витрина красит бейдж классом
+     * badge--fresh-{index} — нумерация пришла из прототипа и должна
+     * совпадать с ним, иначе свежая партия окажется красной.
+     */
+    public function index(): int
+    {
+        return match ($this) {
+            self::Today => 0,
+            self::Peak => 1,
+            self::Fresh => 2,
+            self::Ageing => 3,
+        };
+    }
+
     public function label(): string
     {
         return match ($this) {

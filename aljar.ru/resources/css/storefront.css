@@ -1,0 +1,3062 @@
+:root {
+  /* Палитра из UI Kit (basic.jpg). Значения — по подписям свотчей;
+     --teal-ink/--teal-deep сняты с реальных элементов кита ради AA-контраста. */
+  --paper: #fdf9f0;          /* фон страницы, тёплый крем */
+  --surface: #fffcf7;        /* карточки, поля ввода */
+  --sand: #e9dfd1;           /* приподнятые секции */
+  --clay: #c49a6e;           /* декор, подложки — не для текста (2.4:1) */
+  --clay-light: #ead8c4;     /* подложка под фото товара */
+  --terracotta: #b56a4a;     /* акцент */
+  --olive: #5a6456;          /* акцент, проходит AA для текста (5.9:1) */
+
+  --teal: #0abab5;           /* бренд-акцент: обводки, иконки, заливки с тёмным текстом */
+  --teal-ink: #177e7a;       /* заливка кнопок с белым текстом — 4.88:1, AA */
+  --teal-deep: #0e706c;      /* hover — 5.91:1 */
+  --teal-wash: #d4efea;
+  --mint-wash: #ecf3eb;      /* заливка бейджа обжарки (макет 01.jpg) */      /* бледная заливка hover вторичной кнопки */
+
+  --petrol: #14343c;         /* основной текст — 12.6:1 */
+  --petrol-deep: #0e262c;
+  --grey: #5f7378;           /* второстепенный текст — 4.75:1, AA */
+  --line: #e5ded2;           /* тёплые границы */
+  --white: #ffffff;
+
+  --success: #2f7d5f;
+  --success-bg: #e6f2ec;
+  --error: #b5462f;
+  --error-bg: #fbeae6;
+  --warning: #b5822a;
+  --warning-bg: #f8efdc;
+
+  --shadow: 0 12px 40px rgba(20, 52, 60, 0.08);
+  --shadow-soft: 0 6px 24px rgba(20, 52, 60, 0.06);
+  --radius-s: 10px;
+  --radius-m: 14px;
+  --radius-l: 20px;
+  --radius-pill: 999px;
+  --container: 1220px;
+  --header-h: 76px;
+  --font: "Inter", "Segoe UI", sans-serif;
+  --font-head: "Playfair Display", Georgia, serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Волна перехода между секциями — кривая снята с макета 02.jpg */
+  --wave: url("data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201440%20120'%20preserveAspectRatio='none'><path%20d='M0,0%20C30,7%20121,34%20180,42%20C239,50%20295,51%20353,50%20C411,49%20470,40%20529,35%20C588,30%20652,24%20710,23%20C768,22%20822,24%20880,29%20C938,34%20998,44%201058,55%20C1118,66%201176,84%201240,95%20C1304,106%201407,116%201440,120%20L1440,0%20L0,0%20Z'%20fill='%23000'/></svg>");
+  --wave-h: clamp(32px, 5.5vw, 92px);
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: clamp(15px, 1.1vw, 17px);
+  line-height: 1.55;
+  color: var(--petrol);
+  background: var(--paper);
+  min-height: 100vh;
+}
+
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; border: 0; background: none; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+h1, h2, h3, h4, p { margin: 0; }
+
+:focus-visible {
+  outline: 2px solid var(--teal-ink);
+  outline-offset: 3px;
+}
+
+/* Общий рубильник движения. Не «спрятать анимированное», а закончить любую
+   анимацию мгновенно: страница остаётся в финальном — то есть видимом —
+   состоянии. То же самое делает JS, не выдавая класс is-enhanced. */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 8px;
+  background: var(--petrol);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  z-index: 100;
+}
+.skip-link:focus { left: 8px; }
+
+.container {
+  width: min(var(--container), calc(100% - 40px));
+  margin-inline: auto;
+}
+
+.section {
+  padding: 56px 0;
+  position: relative;
+}
+@media (min-width: 768px) {
+  .section { padding: 80px 0; }
+}
+
+
+/* ── Волнообразные переходы между секциями ─────────────────────────
+   Псевдоэлемент заливается цветом СОСЕДНЕЙ секции и обрезается маской,
+   поэтому цвет берётся из токена, а не запекается в SVG. */
+.section--sand,
+.section--ice,
+.section--petrol {
+  position: relative;
+  isolation: isolate;
+  padding-top: calc(56px + var(--wave-h));
+  padding-bottom: calc(56px + var(--wave-h));
+}
+@media (min-width: 768px) {
+  .section--sand,
+  .section--ice,
+  .section--petrol {
+    padding-top: calc(80px + var(--wave-h));
+    padding-bottom: calc(80px + var(--wave-h));
+  }
+}
+.section--sand::before,
+.section--sand::after,
+.section--ice::before,
+.section--ice::after,
+.section--petrol::before,
+.section--petrol::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: calc(var(--wave-h) + 1px);
+  background: var(--wave-into, var(--paper));
+  pointer-events: none;
+  z-index: 1;
+  -webkit-mask: var(--wave) no-repeat center / 100% 100%;
+  mask: var(--wave) no-repeat center / 100% 100%;
+}
+.section--sand::before,
+.section--ice::before,
+.section--petrol::before { top: -1px; }
+
+/* нижняя волна — та же кривая, отражённая по обеим осям,
+   чтобы переходы не выглядели повтором друг друга */
+.section--sand::after,
+.section--ice::after,
+.section--petrol::after {
+  bottom: -1px;
+  transform: scale(-1, -1);
+}
+
+/* содержимое поверх волн */
+.section--sand > .container,
+.section--ice > .container,
+.section--petrol > .container { position: relative; z-index: 2; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .section--sand::before,
+  .section--sand::after,
+  .section--ice::before,
+  .section--ice::after,
+  .section--petrol::before,
+  .section--petrol::after { transition: background .2s; }
+}
+
+.section--sand { background: var(--sand); }
+.section--ice { background: var(--sand); }
+.section--petrol { background: var(--petrol); color: #fff; }
+.section--petrol .muted { color: rgba(255,255,255,.7); }
+
+.eyebrow {
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--teal-ink);
+  font-weight: 600;
+}
+
+.display {
+  font-family: var(--font-head);
+  font-size: clamp(44px, 7.2vw, 104px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.04;
+  color: var(--petrol);
+}
+
+.h2 {
+  font-family: var(--font-head);
+  font-size: clamp(30px, 3.4vw, 54px);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.12;
+}
+
+.h3 {
+  font-family: var(--font-head);
+  font-size: clamp(20px, 2vw, 28px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.lead {
+  font-size: clamp(16px, 1.3vw, 19px);
+  color: var(--grey);
+  max-width: 38em;
+}
+
+.muted { color: var(--grey); }
+.tiny { font-size: 13px; color: var(--grey); }
+
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.stack { display: grid; gap: 16px; }
+.stack-s { display: grid; gap: 8px; }
+.stack-l { display: grid; gap: 28px; }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 50px;
+  padding: 0 22px;
+  border-radius: var(--radius-pill);
+  font-weight: 500;
+  font-size: 15px;
+  transition: background .2s, color .2s, border-color .2s, opacity .2s;
+  white-space: nowrap;
+}
+.btn:active { opacity: .9; }
+.btn:disabled,
+.btn.is-disabled { opacity: .4; pointer-events: none; }
+
+/* Primary (teal) — три состояния кита: filled / hover / outline */
+.btn--primary { background: var(--teal-ink); color: #fff; }
+.btn--primary:hover { background: var(--teal-deep); }
+.btn--primary-outline {
+  background: var(--surface);
+  color: var(--teal-ink);
+  border: 1.5px solid var(--teal-ink);
+}
+.btn--primary-outline:hover { background: var(--teal-wash); }
+
+/* Secondary (petrol) — filled / бледная заливка hover / outline */
+.btn--petrol { background: var(--petrol); color: #fff; }
+.btn--petrol:hover { background: var(--teal-wash); color: var(--petrol); }
+.btn--ghost {
+  background: var(--surface);
+  color: var(--petrol);
+  border: 1.5px solid var(--line);
+}
+.btn--ghost:hover { border-color: var(--petrol); background: var(--sand); }
+.btn--text {
+  height: auto;
+  padding: 0;
+  border-radius: 0;
+  color: var(--petrol);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.btn--m { height: 42px; padding: 0 16px; font-size: 14px; }
+.btn--s { height: 32px; padding: 0 12px; font-size: 13px; }
+/* на сенсорных ширинах мелкая кнопка подрастает до комфортной цели нажатия */
+@media (max-width: 559px) {
+  .btn--s { height: 40px; padding: 0 16px; }
+}
+.btn--block { width: 100%; }
+.btn--danger { background: var(--error-bg); color: var(--error); }
+.btn--icon {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--petrol);
+  transition: border-color .2s, color .2s, background .2s;
+}
+.btn--icon:hover {
+  border-color: var(--teal-ink);
+  color: var(--teal-ink);
+}
+
+/* Forms */
+.label {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+/* подпись и звёздочка — одна ячейка сетки, иначе grid разносит их по строкам */
+.label__text {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.label .req {
+  color: var(--error);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.field,
+.select,
+.textarea {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  transition: border-color .2s, box-shadow .2s;
+}
+/* Селект с собственным шевроном (кит, блок 2) */
+.select {
+  appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2314343c' stroke-width='1.8'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+.textarea { height: auto; min-height: 110px; padding: 12px 14px; resize: vertical; }
+.field:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--teal-ink);
+  box-shadow: 0 0 0 3px rgba(23, 126, 122, .18);
+}
+.field.is-error,
+.textarea.is-error { border-color: var(--error); }
+.field.is-error:focus { box-shadow: 0 0 0 3px rgba(181, 70, 47, .16); }
+
+/* Состояние валидности с галочкой (кит, поле Email) */
+.field-wrap { position: relative; }
+.field-wrap .field { padding-right: 42px; }
+.field-wrap::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%) scale(.6);
+  opacity: 0;
+  transition: opacity .2s, transform .2s var(--ease);
+  background: no-repeat center / contain
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%232f7d5f' stroke-width='1.8'%3E%3Ccircle cx='10' cy='10' r='8'/%3E%3Cpath d='M6.5 10.2l2.4 2.4 4.6-4.8'/%3E%3C/svg%3E");
+}
+.field-wrap.is-valid::after { opacity: 1; transform: translateY(-50%) scale(1); }
+.field-wrap.is-valid .field { border-color: var(--success); }
+
+/* Счётчик символов у textarea (кит, блок 2) */
+.textarea-wrap { position: relative; }
+.textarea-wrap .textarea { padding-bottom: 28px; }
+.char-count {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  font-size: 12px;
+  color: var(--grey);
+  pointer-events: none;
+}
+.char-count.is-over { color: var(--error); }
+
+
+/* ── Поле выбора файла ─────────────────────────────────────────
+   Нативную кнопку браузера оформляем через ::file-selector-button:
+   поведение и доступность остаются штатными, вид — наш. */
+.field--file {
+  display: flex;
+  align-items: center;
+  padding: 0 14px 0 6px;
+  font-size: 13.5px;
+  color: var(--grey);
+  cursor: pointer;
+}
+.field--file::file-selector-button,
+.field--file::-webkit-file-upload-button {
+  height: 34px;
+  margin-right: 12px;
+  padding: 0 14px 0 34px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%2314343c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13.5 6.2 7.8 11.9a2.2 2.2 0 0 0 3.1 3.1l5.7-5.7a4 4 0 0 0-5.6-5.6L5.3 9.4a5.8 5.8 0 0 0 8.2 8.2l4.3-4.3'/%3E%3C/svg%3E") no-repeat 12px center;
+  background-size: 15px 15px;
+  color: var(--petrol);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .2s, background-color .2s, color .2s;
+}
+.field--file:hover::file-selector-button,
+.field--file:hover::-webkit-file-upload-button {
+  border-color: var(--teal-ink);
+  background-color: var(--teal-wash);
+}
+.field--file:focus-within {
+  border-color: var(--teal-ink);
+  box-shadow: 0 0 0 3px rgba(23, 126, 122, .18);
+}
+
+.help { font-size: 13px; color: var(--grey); }
+.help--error { color: var(--error); }
+
+
+/* ── Чекбоксы: круг с галочкой (UI Kit, блок 2) ──────────────
+   Форма повторяет индикатор подтверждённого e-mail из кита. */
+input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 50%;
+  background-color: var(--surface);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 12px 12px;
+  cursor: pointer;
+  transition: border-color .2s, background-color .2s;
+}
+input[type="checkbox"]:hover { border-color: var(--grey); }
+input[type="checkbox"]:checked {
+  border-color: var(--teal-ink);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14' fill='none' stroke='%23177e7a' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.6 7.3l2.9 2.9 6-6.4'/%3E%3C/svg%3E");
+}
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--teal-ink);
+  outline-offset: 2px;
+}
+input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
+
+/* тоггл подписки прячет свой чекбокс — общий стиль ему не нужен */
+.switch input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  appearance: none;
+}
+
+.checkbox {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  color: var(--grey);
+}
+.checkbox input { margin-top: 1px; }
+
+
+/* ── Нижняя панель вкладок (мобильные макеты) ──────────────────
+   Основная навигация вынесена из гамбургера вниз, под большой палец.
+   На десктопе скрыта — там работает горизонтальное меню. */
+.tabbar { display: none; }
+@media (max-width: 767px) {
+  .tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    background: rgba(255, 252, 247, .94);
+    backdrop-filter: blur(14px);
+    border-top: 1px solid var(--line);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .tabbar__item {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 3px;
+    padding: 8px 2px 9px;
+    color: var(--grey);
+    min-height: 56px;
+    transition: color .2s;
+  }
+  .tabbar__icon { position: relative; display: inline-flex; }
+  .tabbar__label {
+    font-size: 10.5px;
+    line-height: 1.1;
+    letter-spacing: .01em;
+  }
+  .tabbar__item.is-active { color: var(--teal-ink); }
+  .tabbar__item.is-active .tabbar__label { font-weight: 600; }
+  .tabbar__icon .cart-count {
+    position: absolute;
+    top: -5px;
+    right: -7px;
+  }
+
+  /* контент не должен уходить под панель; на чекауте панели нет — отступ не нужен */
+  body:has(.tabbar) { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
+
+  /* корзина и кабинет теперь в нижней панели — в шапке дублировать незачем */
+  .header-actions .icon-btn[href="cart.html"],
+  .header-actions .icon-btn[href="account.html"] { display: none; }
+}
+
+/* Header */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-h);
+  background: rgba(252, 250, 247, .88);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid transparent;
+  transition: height .25s, border-color .25s, background .25s;
+}
+.site-header.is-scrolled {
+  height: 64px;
+  border-bottom-color: var(--line);
+}
+.site-header__inner {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+/* логотип-локап уже содержит название бренда, подпись рядом не нужна */
+.logo img {
+  height: 52px;
+  width: auto;
+  display: block;
+}
+.logo--lg img { height: 58px; }
+@media (max-width: 599px) {
+  .logo img { height: 38px; }
+  .logo--lg img { height: 48px; }
+}
+
+.nav-desktop {
+  display: none;
+  gap: 28px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+.nav-desktop a { color: var(--grey); transition: color .2s; }
+.nav-desktop a:hover,
+.nav-desktop a.is-active { color: var(--petrol); }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--petrol);
+  position: relative;
+}
+.icon-btn:hover { background: rgba(20, 52, 60, .05); }
+.cart-count {
+  position: absolute;
+  top: 6px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 99px;
+  background: var(--teal-ink);
+  color: #fff;
+  font-size: 10px;
+  display: grid;
+  place-items: center;
+}
+.cart-count:empty,
+.cart-count[data-count="0"] { display: none; }
+
+.burger { display: grid; }
+@media (min-width: 980px) {
+  .nav-desktop { display: flex; }
+  .burger { display: none; }
+}
+
+.mobile-nav {
+  position: fixed;
+  inset: 0;
+  background: var(--paper);
+  z-index: 60;
+  padding: 24px;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+}
+.mobile-nav.is-open { display: flex; }
+.mobile-nav a {
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  padding: 8px 0;
+}
+.mobile-nav__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+/* Organic blobs */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 28px 0 48px;
+}
+@media (min-width: 900px) {
+  .hero { padding: 48px 0 72px; }
+}
+.hero__grid {
+  display: grid;
+  gap: 32px;
+  align-items: center;
+}
+@media (min-width: 900px) {
+  .hero__grid { grid-template-columns: 1fr 1.05fr; gap: 48px; }
+}
+.hero__copy { position: relative; z-index: 1; display: grid; gap: 22px; }
+.hero__visual {
+  position: relative;
+  min-height: 280px;
+}
+.hero__visual img {
+  width: 100%;
+  height: min(520px, 62vw);
+  object-fit: cover;
+  border-radius: 40% 28% 46% 32% / 32% 44% 28% 48%;
+  position: relative;
+  z-index: 1;
+}
+.blob {
+  position: absolute;
+  border-radius: 60% 40% 55% 45% / 45% 55% 40% 60%;
+  pointer-events: none;
+}
+.blob--baby {
+  background: var(--clay-light);
+  opacity: .55;
+  width: 70%;
+  height: 80%;
+  right: -8%;
+  top: -6%;
+}
+.blob--sand {
+  background: var(--sand);
+  width: 46%;
+  height: 50%;
+  left: -10%;
+  bottom: -8%;
+}
+.leaf-deco {
+  position: absolute;
+  opacity: .28;
+  color: var(--grey);
+  pointer-events: none;
+}
+.trust-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 28px;
+  padding-top: 8px;
+}
+.trust-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--grey);
+}
+.trust-item svg { color: var(--teal-ink); flex-shrink: 0; }
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+/* Product card */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+@media (min-width: 700px) {
+  .product-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+}
+@media (min-width: 1100px) {
+  .product-grid { grid-template-columns: repeat(4, 1fr); }
+}
+.product-grid--3 { }
+@media (min-width: 900px) {
+  .product-grid--3 { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Допродажа в корзине живёт в узкой колонке рядом со сводкой заказа, и
+   счёт колонок по ширине экрана ей не подходит: на десктопе сетка
+   раскладывалась на четыре колонки при двух карточках, каждая выходила
+   по 164px, и строка «Средняя обжарка · 100% арабика» упиралась в край.
+   Здесь колонки считаются от ширины самого блока, а не окна. */
+/* Допродажа: две колонки на телефоне (базовое правило .product-grid уже
+   это делает) и три со средних ширин. Число колонок фиксировано, поэтому
+   карточек может быть сколько угодно — лишние переносятся на новые ряды,
+   а не сжимают соседей. */
+@media (min-width: 700px) {
+  .product-grid--upsell { grid-template-columns: repeat(3, 1fr); }
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  display: grid;
+  /* Карточка объявляет себя контейнером: её внутренняя раскладка должна
+     зависеть от собственной ширины, а не от ширины окна. Одна и та же
+     карточка стоит и на главной во всю колонку, и в допродаже втрое уже —
+     медиазапросом эти случаи не различить, а число колонок в блоке ещё
+     и меняется от количества товаров. */
+  container-type: inline-size;
+  container-name: card;
+}
+
+/* Строка «Средняя обжарка · 100% арабика» занимает 216px плюс 32px
+   внутренних отступов. Не помещается в одну строку — раскладываем в две
+   ровные, вместо того чтобы рвать вразнобой по словам. */
+@container card (max-width: 250px) {
+  .card__meta {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 3px;
+    font-size: 11px;
+  }
+}
+
+.card__media {
+  position: relative;
+  aspect-ratio: 1 / 0.94;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+}
+.card__media a {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+.card__media img {
+  width: 74%;
+  aspect-ratio: 1;
+  height: auto;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.card__body {
+  padding: 0 16px 16px;
+  display: grid;
+  gap: 8px;
+}
+.card__title {
+  font-family: var(--font-head);
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.card__notes {
+  font-size: 13px;
+  color: var(--grey);
+  min-height: 2.6em;
+  line-height: 1.45;
+}
+.card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--grey);
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.card__meta span { display: inline-flex; align-items: center; gap: 6px; }
+.card__meta svg { color: var(--clay); flex-shrink: 0; }
+.card__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.price { font-weight: 600; font-size: 18px; color: var(--petrol); }
+.price--old {
+  font-weight: 400;
+  color: var(--grey);
+  text-decoration: line-through;
+  font-size: 14px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  letter-spacing: .04em;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.badge--roast {
+  background: var(--mint-wash);
+  border-color: transparent;
+  color: var(--petrol);
+}
+.catalog-card__body .badge--roast {
+  align-self: start;
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+@media (max-width: 599px) {
+  .catalog-card__body .badge--roast {
+    font-size: 10px;
+    height: 24px;
+    padding: 0 8px;
+    gap: 4px;
+    letter-spacing: 0;
+  }
+}
+.card__media .badge--roast {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+}
+.badge svg { flex-shrink: 0; opacity: .75; }
+
+/* 4 ступени свежести (кит, блок 6) */
+.badge--fresh-3 {
+  background: var(--sand);
+  color: var(--grey);
+}
+.badge--fresh-3 svg { opacity: .5; }
+
+/* Витрина ступеней (страница товара / кит) */
+.freshness-scale {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.freshness-step {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+  background: var(--surface);
+}
+.freshness-step.is-current { border-color: var(--teal-ink); box-shadow: 0 0 0 2px rgba(23,126,122,.14); }
+.freshness-step__label { font-size: 12px; color: var(--grey); }
+.badge--tiffany {
+  background: var(--teal-ink);
+  color: #fff;
+  border-color: transparent;
+}
+.badge--ice { background: var(--sand); border-color: transparent; }
+.fav {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: none;
+  color: var(--grey);
+  font-size: 19px;
+  line-height: 1;
+  z-index: 1;
+}
+.fav.is-active { color: var(--terracotta); }
+
+.add-quick {
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--teal-ink);
+  color: #fff;
+  flex-shrink: 0;
+  transition: background .2s;
+}
+.add-quick:hover { background: var(--teal-deep); }
+/* вариант с подписью — карточка каталога */
+.add-quick--wide {
+  width: auto;
+  height: 36px;
+  padding: 0 14px;
+  gap: 7px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 500;
+}
+.add-quick--wide svg { flex-shrink: 0; }
+
+/* ── Мобильные уточнения компонентов (UI Kit) ──────────────────
+   На узкой карточке мета из двух значений рвётся вразнобой —
+   раскладываем её в две ровные строки вместо space-between. */
+@media (max-width: 559px) {
+  /* на узкой карточке бейдж должен оставаться в одну строку */
+  .card__media .badge--roast {
+    white-space: nowrap;
+    font-size: 10px;
+    height: 24px;
+    padding: 0 8px;
+    gap: 4px;
+    letter-spacing: 0;
+  }
+  /* бейдж и цель нажатия «избранного» не помещаются в один ряд
+     на узкой карточке — уводим сердце в нижний угол изображения */
+  .fav {
+    top: auto;
+    bottom: 2px;
+    right: 2px;
+  }
+  /* мета переехала в контейнерный запрос выше: она зависит от ширины
+     карточки, а не экрана */
+  .card__title {
+    font-size: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.5em;
+  }
+  .card__notes {
+    font-size: 12px;
+    min-height: 3.4em;
+  }
+  .card__row { flex-wrap: wrap; row-gap: 10px; }
+}
+
+/* Subscribe band */
+.subscribe-band {
+  background: var(--sand);
+  border-radius: var(--radius-l);
+  padding: 28px 24px;
+  display: grid;
+  gap: 20px;
+  align-items: center;
+}
+@media (min-width: 800px) {
+  .subscribe-band {
+    grid-template-columns: 1.2fr 2fr auto;
+    padding: 32px 36px;
+  }
+}
+.perk-list {
+  display: grid;
+  gap: 10px;
+}
+@media (min-width: 700px) {
+  .perk-list { grid-template-columns: repeat(3, 1fr); }
+}
+.perk {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+}
+.perk svg { color: var(--teal-ink); margin-top: 2px; flex-shrink: 0; }
+
+/* Heritage */
+.heritage {
+  display: grid;
+  gap: 32px;
+  align-items: center;
+}
+@media (min-width: 900px) {
+  .heritage { grid-template-columns: 1fr 1fr; gap: 56px; }
+}
+.heritage__photo {
+  position: relative;
+}
+.heritage__photo img {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+}
+/* ── Рваный край фотографии ────────────────────────────────────────
+   Контур тот же, что был у каймы, но теперь он вырезает саму
+   фотографию: белого поля и скругления нет, снимок доходит до самого
+   разрыва.
+
+   Рвётся не снимок, а белый прямоугольник внутри SVG-маски — фильтр
+   смещения двигает все пиксели подряд, и наложенный прямо на фото он
+   повёл бы волнами и даллу. Маска же меняет только прозрачность. */
+.torn {
+  position: relative;
+  /* Тень висит на обёртке, а не на снимке. Порядок отрисовки такой:
+     сначала фильтр, потом маска. Если повесить drop-shadow на сам
+     снимок, тень посчитается от прямоугольника и её же срежет маска.
+     На родителе фильтр видит уже вырезанную картинку и обводит
+     рваный контур. */
+  filter: drop-shadow(0 14px 26px rgba(20, 52, 60, .18));
+}
+/* Маска назначается из JS: у каждого снимка своя, под его размер.
+   Прописать её здесь нельзя — один общий идентификатор подошёл бы
+   только одной фотографии, а остальные либо остались бы прямоугольными,
+   либо исчезли. Без JS край просто ровный, снимок на месте. */
+.torn img { display: block; }
+
+/* Определения фильтра не должны занимать место в потоке */
+.svg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* ── Печать ────────────────────────────────────────────────────────
+   Выходит за угол фотографии — так она читается как оттиск поверх
+   снимка, а не как элемент внутри рамки. */
+.stamp {
+  position: absolute;
+  right: -14px;
+  bottom: -16px;
+  width: clamp(104px, 22%, 132px);
+  height: auto;
+  overflow: visible;
+}
+.stamp__disc { fill: var(--paper); }
+.stamp__ring {
+  fill: none;
+  stroke: var(--teal-ink);
+  stroke-width: 1.4;
+}
+.stamp__ring--thin { stroke-width: .7; opacity: .6; }
+.stamp__dot { fill: var(--teal-ink); }
+
+/* Кегль и трекинг подобраны так, чтобы длинная нижняя надпись
+   укладывалась в свою дугу: при 10.5px и .16em «сделано с любовью»
+   занимало 154 единицы пути против 138 доступных и вылезало за круг. */
+.stamp__arc {
+  font-family: var(--font);
+  font-size: 9.2px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  fill: var(--petrol);
+}
+.stamp__year {
+  font-family: var(--font-head);
+  font-size: 17px;
+  fill: var(--petrol);
+  letter-spacing: .02em;
+}
+.stamp__leaf { fill: var(--teal); }
+.stamp__stem { stroke: var(--teal); stroke-width: 1; fill: none; }
+
+/* На узком экране печать почти касалась края экрана, а надписи на дугах
+   мельчали до 7px. Уменьшаем вынос за угол и поднимаем минимальный
+   размер: свободного места у контейнера всего 16px. */
+@media (max-width: 699px) {
+  .stamp {
+    right: -6px;
+    bottom: -10px;
+    width: 116px;
+  }
+}
+
+/* Reviews */
+.reviews {
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 800px) {
+  .reviews { grid-template-columns: repeat(3, 1fr); }
+}
+.review {
+  /* Плотная кремовая карточка, а не полупрозрачная плашка: на тёмной
+     секции просвечивающий фон снижал контраст текста. */
+  background: var(--paper);
+  padding: 32px 24px 28px;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+
+  /* Рваный край сверху и снизу, бока прямые. Скруглением этого не
+     сделать — даже разные радиусы у углов дают ровную дугу. Режем
+     маской по кривой: та же техника, что у волн между секциями.
+
+     preserveAspectRatio='none' растягивает контур под размер карточки,
+     поэтому глубина волны остаётся соразмерной её высоте. Вертикальные
+     отступы увеличены — волна заходит внутрь примерно на 14px. */
+  --tear: url("data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20400%20260'%20preserveAspectRatio='none'><path%20d='M0,8%20C50,2%2090,14%20140,8%20C190,2%20230,14%20280,8%20C330,2%20370,13%20400,7%20L400,253%20C370,258%20330,247%20280,252%20C230,258%20190,246%20140,252%20C90,258%2050,247%200,253%20Z'%20fill='%23000'/></svg>");
+  -webkit-mask: var(--tear) no-repeat center / 100% 100%;
+  mask: var(--tear) no-repeat center / 100% 100%;
+}
+
+/* Три контура по кругу: соседние карточки не должны выглядеть одним и
+   тем же куском бумаги, но заводить форму под каждую отдельно незачем. */
+.review:nth-child(3n + 2) { --tear: url("data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20400%20260'%20preserveAspectRatio='none'><path%20d='M0,7%20C45,14%2085,2%20130,9%20C180,15%20220,3%20270,9%20C320,14%20365,3%20400,8%20L400,253%20C355,246%20315,258%20270,251%20C220,245%20180,257%20130,251%20C85,246%2045,257%200,252%20Z'%20fill='%23000'/></svg>"); }
+.review:nth-child(3n)     { --tear: url("data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20400%20260'%20preserveAspectRatio='none'><path%20d='M0,9%20C40,3%2070,14%20110,8%20C150,2%20180,13%20220,8%20C260,3%20290,14%20330,8%20C365,3%20385,12%20400,8%20L400,253%20C365,257%20340,246%20300,252%20C260,258%20230,247%20190,252%20C150,258%20120,247%2080,252%20C45,257%2020,248%200,252%20Z'%20fill='%23000'/></svg>"); }
+
+/* Крупная кавычка вместо аватарки: она задаёт жанр блока сразу, а
+   инициалы в кружке ничего о самом отзыве не сообщали. */
+.review::before {
+  content: "“";
+  font-family: var(--font-head);
+  font-size: 64px;
+  line-height: .7;
+  color: var(--clay);
+  margin-bottom: -14px;
+}
+.stars { color: var(--warning); letter-spacing: 3px; font-size: 15px; }
+.review__text {
+  font-style: italic;
+  color: var(--petrol);
+  line-height: 1.5;
+}
+.review__author {
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+  margin-top: 2px;
+}
+.review__name { font-weight: 500; color: var(--petrol); }
+/* Линия отделяет город от подписи — иначе они читаются одной строкой */
+.review__city {
+  font-size: 13px;
+  color: var(--grey);
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+/* Newsletter */
+.newsletter {
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 800px) {
+  .newsletter {
+    grid-template-columns: 1.3fr 1fr;
+    align-items: center;
+  }
+}
+.newsletter-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  padding: 6px;
+  border-radius: var(--radius-pill);
+  border: 1.5px solid var(--line);
+  transition: border-color .2s, box-shadow .2s;
+}
+.newsletter-form:focus-within {
+  border-color: var(--teal-ink);
+  box-shadow: 0 0 0 3px rgba(23, 126, 122, .18);
+}
+/* enhanceFields() оборачивает input[type=email] в .field-wrap ради галочки
+   валидации, поэтому flex-элементом формы становится обёртка, а не поле. */
+.newsletter-form .field-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: block;
+}
+.newsletter-form .field {
+  width: 100%;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  height: 42px;
+  padding-left: 16px;
+}
+.newsletter-form .field:focus { box-shadow: none; }
+.newsletter-form .btn {
+  flex: 0 0 auto;
+  height: 42px;
+}
+@media (max-width: 519px) {
+  .newsletter-form {
+    flex-wrap: wrap;
+    border-radius: var(--radius-l);
+  }
+  .newsletter-form .field-wrap { flex: 1 1 100%; }
+  .newsletter-form .btn { flex: 1 1 100%; }
+}
+
+/* Footer */
+.site-footer {
+  padding: 48px 0 24px;
+  background: var(--paper);
+}
+.footer-grid {
+  display: grid;
+  gap: 28px;
+  grid-template-columns: 1fr 1fr;
+}
+/* колонка 1fr не уже своего содержимого — без этого длинные ссылки
+   распирают сетку и подвал вылезает за экран на узких телефонах */
+.footer-grid > * { min-width: 0; }
+@media (max-width: 359px) {
+  .footer-grid { grid-template-columns: 1fr; gap: 22px; }
+}
+@media (min-width: 900px) {
+  .footer-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr 1.2fr; }
+}
+.footer-brand p { margin-top: 10px; max-width: 26em; }
+.footer-col h4 {
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  color: var(--grey);
+}
+.footer-col a {
+  display: block;
+  padding: 4px 0;
+  color: var(--petrol);
+  font-size: 14px;
+}
+.footer-col a:hover { color: var(--teal); }
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 36px;
+  padding-top: 18px;
+  font-size: 13px;
+  color: var(--grey);
+}
+.socials { display: flex; gap: 10px; margin-top: 16px; }
+
+/* Page hero */
+.page-hero {
+  padding: 36px 0 12px;
+}
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--grey);
+  margin-bottom: 16px;
+}
+.breadcrumbs a:hover { color: var(--teal-ink); }
+
+/* Catalog */
+/* ── Каталог (макет 09.jpg) ───────────────────────────────── */
+.catalog-page { padding-bottom: 64px; }
+.catalog-shell {
+  display: grid;
+  gap: 0;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 980px) {
+  .catalog-shell { grid-template-columns: 296px 1fr; align-items: start; }
+}
+
+.filters {
+  background: var(--surface);
+  padding: 28px 24px 24px;
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+@media (min-width: 980px) {
+  .filters {
+    position: sticky;
+    top: var(--header-h);
+    max-height: calc(100vh - var(--header-h));
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right: 1px solid var(--line);
+  }
+}
+.filters__head { display: grid; gap: 10px; padding-bottom: 22px; }
+.filters__title {
+  font-size: clamp(28px, 2.6vw, 38px);
+  position: relative;
+  padding-bottom: 12px;
+}
+.filters__title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 56px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--teal-ink);
+}
+
+.filter-group { border-top: 1px solid var(--line); }
+.filter-group__head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 18px 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--petrol);
+}
+.filter-group__head .chev { transition: transform .25s var(--ease); color: var(--grey); }
+.filter-group__head[aria-expanded="false"] .chev { transform: rotate(180deg); }
+.filter-group__body { display: grid; gap: 2px; padding-bottom: 18px; }
+.filter-group__head[aria-expanded="false"] + .filter-group__body { display: none; }
+
+/* строка фильтра: подпись слева, индикатор/счётчик справа */
+.facet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  cursor: pointer;
+  font-size: 14px;
+}
+.facet input { flex-shrink: 0; }
+.facet__label { flex: 1; min-width: 0; overflow-wrap: break-word; }
+.facet__count { color: var(--grey); font-size: 13px; font-variant-numeric: tabular-nums; }
+.facet__icon { color: var(--clay); flex-shrink: 0; display: inline-flex; }
+.facet:has(input:checked) .facet__label { font-weight: 600; }
+
+/* шкала интенсивности обжарки точками */
+.roast-scale { display: inline-flex; gap: 5px; flex-shrink: 0; }
+.roast-scale i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--line);
+}
+.roast-scale i.on { background: var(--teal-ink); }
+
+/* ползунок цены с двумя ручками */
+.price-range { position: relative; height: 26px; margin-top: 4px; }
+.price-range__track {
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 4px;
+  margin-top: -2px;
+  border-radius: 99px;
+  background: var(--line);
+}
+.price-range__fill {
+  position: absolute;
+  top: 0; bottom: 0;
+  border-radius: 99px;
+  background: var(--teal-ink);
+}
+.price-range input[type=range] {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  top: 0;
+  height: 26px;
+  margin: 0;
+  appearance: none;
+  background: none;
+  pointer-events: none;
+}
+.price-range input[type=range]::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--teal-ink);
+  cursor: pointer;
+  pointer-events: auto;
+}
+.price-range input[type=range]::-moz-range-thumb {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--teal-ink);
+  cursor: pointer;
+  pointer-events: auto;
+}
+.price-range__labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--grey);
+  margin-top: 6px;
+}
+
+/* способ приготовления — в две колонки с иллюстрациями */
+/* колонки подстраиваются: две, когда помещаются, иначе одна */
+.method-grid { grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)); gap: 6px 12px; }
+.method-grid .facet { min-width: 0; }
+.method-grid .facet { font-size: 13px; gap: 8px; }
+.method-grid img { width: 22px; height: 22px; flex-shrink: 0; }
+
+@media (max-width: 979px) {
+  .filters { display: none; }
+  .filters.is-open { display: grid; }
+}
+.filters__actions {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* ── правая колонка ── */
+.catalog-main { padding: 28px 20px 0; min-width: 0; }
+@media (min-width: 980px) { .catalog-main { padding: 28px 32px 0; } }
+
+.results-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.results-head .h2 { font-size: clamp(26px, 2.6vw, 38px); }
+.results-tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.sort-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--grey);
+  white-space: nowrap;
+}
+.sort-label .select { width: auto; height: 38px; font-size: 13px; }
+
+.view-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.view-toggle button {
+  width: 34px; height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--grey);
+  transition: background .2s, color .2s;
+}
+.view-toggle button.is-active { background: var(--teal-ink); color: #fff; }
+
+.toolbar-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.toolbar-row .field { max-width: 340px; }
+@media (max-width: 559px) {
+  .toolbar-row { flex-wrap: wrap; }
+  .toolbar-row .field { max-width: none; flex: 1 1 100%; }
+  .toolbar-row .filters-toggle { flex: 1 1 100%; }
+}
+.filters-toggle { display: none; }
+@media (max-width: 979px) { .filters-toggle { display: inline-flex; } }
+
+/* ── карточка каталога ── */
+.catalog-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+.catalog-card__media {
+  background: var(--paper);
+  aspect-ratio: 1 / 0.92;
+  display: grid;
+  place-items: center;
+  padding: 14px;
+}
+/* Ссылка-обёртка растягивается на всю ячейку, а картинка центруется
+   уже внутри неё. Без этого ссылка занимает всю ширину, а картинка
+   внутри — блочная с заданной шириной, то есть прижата к левому краю.
+   На карточке главной эта обёртка уже сделана гридом, здесь её забыли. */
+.catalog-card__media a {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+.catalog-card__media img {
+  width: 78%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.catalog-card__body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.catalog-card__title { font-family: var(--font-head); font-size: 17px; font-weight: 500; line-height: 1.25; }
+.catalog-card__origin { font-size: 13px; color: var(--grey); }
+.catalog-card__notes { font-size: 12.5px; color: var(--grey); min-height: 2.5em; }
+.catalog-card__price {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+  font-size: 15px;
+  margin-top: 2px;
+}
+.catalog-card__price svg { color: var(--grey); flex-shrink: 0; }
+.catalog-card__price small { font-weight: 400; color: var(--grey); font-size: 12.5px; }
+.catalog-card__cta { display: flex; justify-content: flex-end; margin-top: auto; padding-top: 8px; }
+
+/* режим списка */
+.product-grid.is-list { grid-template-columns: 1fr; }
+.product-grid.is-list .catalog-card {
+  grid-template-rows: none;
+  grid-template-columns: 128px 1fr auto;
+  align-items: center;
+}
+.product-grid.is-list .catalog-card__media { aspect-ratio: 1; padding: 10px; }
+.product-grid.is-list .catalog-card__notes { min-height: 0; }
+.product-grid.is-list .catalog-card__cta { margin-top: 0; padding-top: 0; padding-right: 16px; }
+@media (max-width: 599px) {
+  .product-grid.is-list .catalog-card { grid-template-columns: 92px 1fr; }
+  .product-grid.is-list .catalog-card__cta { grid-column: 1 / -1; padding: 0 14px 14px; }
+}
+
+.pdp {
+  display: grid;
+  gap: 32px;
+  padding: 12px 0 64px;
+}
+@media (min-width: 900px) {
+  .pdp { grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: start; }
+}
+.pdp__photo {
+  background: var(--sand);
+  border-radius: 28px;
+  overflow: hidden;
+  aspect-ratio: 1;
+}
+.pdp__photo img { width: 100%; height: 100%; object-fit: cover; }
+.taste {
+  display: grid;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 18px;
+}
+.bar {
+  display: grid;
+  grid-template-columns: 96px 1fr 40px;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+}
+.bar__track {
+  height: 8px;
+  background: var(--sand);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.bar__fill {
+  height: 100%;
+  background: var(--teal-ink);
+  border-radius: 99px;
+  /* заполнение и переход — в слое анимаций, на scaleX вместо width */
+}
+.bar__value { color: var(--grey); text-align: right; font-variant-numeric: tabular-nums; }
+.taste-profile { display: grid; gap: 10px; }
+.taste-profile__head { font-size: 13px; color: var(--grey); margin-bottom: 2px; }
+
+/* Выбор помола плитками с иллюстрациями */
+.grind-picker {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.grind-picker legend {
+  padding: 0;
+  margin-bottom: 8px;
+}
+/* колонки считаются от ширины контейнера, а не экрана: плитки лежат
+   в правой колонке страницы товара, и она узкая на средних ширинах */
+.grind-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(126px, 1fr));
+  gap: 10px;
+}
+/* На средних ширинах правая колонка товара узкая: auto-fit дал бы три
+   колонки и одинокую четвёртую плитку — ровнее показать 2+2. */
+@media (min-width: 900px) and (max-width: 1239px) {
+  .grind-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.grind-tile {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px 10px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+.grind-tile input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.grind-tile img {
+  width: 56px;
+  height: 56px;
+}
+.grind-tile__title {
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--petrol);
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+}
+.grind-tile__note {
+  font-size: 11.5px;
+  color: var(--grey);
+  line-height: 1.35;
+  margin-top: auto;
+}
+.grind-tile:has(input:checked) {
+  /* обводку выбранной плитки рисует кольцо ::after в слое анимаций —
+     здесь границу не трогаем, иначе рамка удвоится */
+  background: var(--teal-wash);
+}
+.grind-tile:has(input:focus-visible) {
+  outline: 2px solid var(--teal-ink);
+  outline-offset: 2px;
+}
+
+/* Тоггл подписки (кит, блок 5) */
+.sub-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  background: var(--surface);
+  transition: border-color .2s, background .2s;
+}
+.sub-toggle.is-on { border-color: var(--teal-ink); background: var(--teal-wash); }
+.sub-toggle__copy { display: grid; gap: 4px; }
+.sub-toggle__title { font-weight: 600; font-size: 15px; }
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 56px;
+  height: 32px;
+  border-radius: 99px;
+  background: var(--line);
+  transition: background .25s var(--ease);
+}
+.switch input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.switch__knob {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(20, 52, 60, .25);
+  transition: transform .25s var(--ease);
+  pointer-events: none;
+}
+.switch:has(input:checked) { background: var(--teal-ink); }
+.switch:has(input:checked) .switch__knob { transform: translateX(24px); }
+.switch:has(input:focus-visible) { outline: 2px solid var(--teal-ink); outline-offset: 3px; }
+
+.selectors { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--sand);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+  position: relative;
+}
+.dual button {
+  height: 42px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 500;
+}
+.dual button.is-active {
+  background: var(--petrol);
+  color: #fff;
+}
+.save-pill {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  background: var(--teal-ink);
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+.accordion details {
+  border-top: 1px solid var(--line);
+  padding: 14px 0;
+}
+.accordion summary {
+  cursor: pointer;
+  font-weight: 500;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+}
+.accordion summary::-webkit-details-marker { display: none; }
+.accordion summary::after { content: "+"; color: var(--grey); font-weight: 400; }
+.accordion details[open] summary::after { content: "–"; }
+.accordion details p { margin-top: 8px; color: var(--grey); }
+
+/* Subscription landing */
+.steps {
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 800px) {
+  .steps { grid-template-columns: repeat(3, 1fr); }
+}
+.step {
+  background: #fff;
+  border-radius: var(--radius-l);
+  padding: 22px;
+  border: 1px solid var(--line);
+  display: grid;
+  gap: 10px;
+}
+.step__n {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--sand);
+  color: var(--teal-ink);
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+}
+.compare {
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 800px) {
+  .compare { grid-template-columns: 1fr auto 1fr; align-items: stretch; }
+}
+.compare-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 24px;
+  display: grid;
+  gap: 10px;
+}
+.compare-card--best {
+  background: var(--petrol);
+  color: #fff;
+  border-color: transparent;
+}
+.compare-card--best .muted { color: rgba(255,255,255,.7); }
+.compare-mid {
+  display: grid;
+  place-items: center;
+  font-weight: 600;
+  color: var(--teal-ink);
+}
+.constructor {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+.constructor-grid {
+  display: grid;
+  gap: 12px;
+}
+@media (min-width: 700px) {
+  .constructor-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.constructor-grid .full { grid-column: 1 / -1; }
+
+/* Account */
+.account {
+  display: grid;
+  gap: 24px;
+  padding-bottom: 64px;
+}
+@media (min-width: 980px) {
+  .account { grid-template-columns: 240px 1fr; }
+}
+.account-nav {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 12px;
+  height: max-content;
+}
+.account-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+.account-nav a.is-active {
+  background: var(--petrol);
+  color: #fff;
+}
+.panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 22px;
+}
+.order-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  align-items: center;
+}
+.sub-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--success);
+  font-size: 13px;
+}
+
+/* Checkout / cart */
+.checkout {
+  display: grid;
+  gap: 24px;
+  padding-bottom: 72px;
+}
+@media (min-width: 980px) {
+  .checkout { grid-template-columns: 1.2fr .8fr; align-items: start; }
+}
+.progress {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--grey);
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.progress .is-done,
+.progress .is-current { color: var(--petrol); font-weight: 500; }
+.dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+}
+.dot.is-current,
+.dot.is-done { background: var(--teal-ink); color: #fff; border-color: var(--teal-ink); }
+.summary {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 22px;
+  position: sticky;
+  top: 88px;
+}
+.line-item {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  align-items: center;
+}
+.line-item img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: var(--sand);
+}
+.qty {
+  display: inline-flex;
+  border: 1.5px solid var(--line);
+  border-radius: 99px;
+  overflow: hidden;
+  height: 34px;
+}
+.qty button { width: 34px; }
+.qty span { min-width: 24px; text-align: center; line-height: 34px; font-size: 14px; }
+.totals { display: grid; gap: 8px; padding-top: 12px; font-size: 14px; }
+.totals div { display: flex; justify-content: space-between; }
+.totals .grand { font-size: 18px; font-weight: 600; padding-top: 8px; }
+
+.pay-options { display: grid; gap: 10px; }
+.pay-option {
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.pay-option.is-selected {
+  border-color: var(--teal-ink);
+  background: var(--sand);
+}
+
+/* Blog */
+.blog-grid {
+  display: grid;
+  gap: 20px;
+  padding-bottom: 64px;
+}
+@media (min-width: 800px) {
+  .blog-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.article-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 18px 18px 0 0;
+}
+.article-card .card__body { padding: 18px; }
+.prose {
+  max-width: 720px;
+  margin: 0 auto 72px;
+  display: grid;
+  gap: 16px;
+}
+.prose p { color: var(--grey); }
+.cover {
+  width: 100%;
+  height: min(420px, 50vw);
+  object-fit: cover;
+}
+/* Отступы переехали на обёртку: у самого снимка теперь рваный край */
+.torn--cover { margin: 20px 0 28px; }
+
+/* Wholesale */
+.form-grid {
+  display: grid;
+  gap: 14px;
+}
+@media (min-width: 700px) {
+  .form-grid { grid-template-columns: 1fr 1fr; }
+}
+.form-grid .full { grid-column: 1 / -1; }
+.success-box {
+  display: none;
+  background: var(--success-bg);
+  color: var(--petrol);
+  border-radius: var(--radius-l);
+  padding: 22px;
+}
+.success-box.is-visible { display: grid; gap: 8px; }
+
+.empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--grey);
+}
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--petrol);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 99px;
+  opacity: 0;
+  pointer-events: none;
+  transition: .3s var(--ease);
+  z-index: 80;
+  font-size: 14px;
+}
+.toast.is-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Панель поиска ─────────────────────────────────────────────────
+   Разворачивается вниз из-под шапки, а не перекрывает экран. Лежит
+   внутри <header>, поэтому привязана к его нижней границе и не
+   разъезжается, когда шапка сжимается при прокрутке. */
+.search-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  /* 0fr → 1fr разворачивает блок на его собственную высоту, без
+     магических чисел и без замеров в JS */
+  display: grid;
+  grid-template-rows: 0fr;
+}
+.search-panel__inner {
+  overflow: hidden;
+  min-height: 0;
+}
+.search-panel__body {
+  padding: 18px 0 22px;
+  display: grid;
+  gap: 14px;
+  /* Строка во всю ширину контейнера читается как поле формы. Колонка
+     под поиск уже — и поле, и выдача выстраиваются по одной оси. */
+  max-width: 720px;
+  margin-inline: auto;
+}
+.search-panel__field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+  padding: 0 8px 0 16px;
+  color: var(--grey);
+  transition: border-color .18s var(--ease), box-shadow .18s var(--ease);
+}
+.search-panel__field:hover { border-color: var(--clay-light); }
+/* Состояние фокуса принадлежит всей строке поиска, а не полю внутри неё:
+   мягкое кольцо по контуру пилюли вместо жёсткой обводки. */
+.search-panel__field:focus-within {
+  border-color: var(--teal-ink);
+  box-shadow: 0 0 0 3px rgba(23, 126, 122, .15);
+}
+/* лупа подсвечивается вместе со строкой; крестик — своя кнопка, его не трогаем */
+.search-panel__field > svg {
+  flex-shrink: 0;
+  transition: color .18s var(--ease);
+}
+.search-panel__field:focus-within > svg { color: var(--teal-ink); }
+
+/* Поле внутри обёртки не рисует ни рамку, ни фон, ни собственный фокус.
+   Базовый .field:focus вешает своё кольцо через box-shadow — без сброса
+   получалось кольцо внутри кольца, и строка читалась как поле формы. */
+.search-panel__field .field,
+.search-panel__field .field:focus,
+.search-panel__field .field:focus-visible {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  outline: none;
+  height: 50px;
+  padding: 0;
+  font-size: 16px;
+  color: var(--petrol);
+}
+/* нативный крестик очистки в Chrome дублирует нашу кнопку закрытия */
+.search-panel__field .field::-webkit-search-cancel-button { display: none; }
+
+.search-results {
+  display: grid;
+  gap: 8px;
+  /* длинная выдача не должна вытеснять страницу за экран */
+  max-height: min(46vh, 380px);
+  overflow-y: auto;
+}
+.search-results:empty { display: none; }
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(20,52,60,.4);
+  z-index: 80;
+  display: none;
+  place-items: center;
+  padding: 20px;
+}
+.modal.is-open { display: grid; }
+.modal__box {
+  background: var(--paper);
+  border-radius: 20px;
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  display: grid;
+  gap: 14px;
+}
+
+.legal { max-width: 760px; margin: 0 auto 72px; display: grid; gap: 16px; color: var(--grey); }
+.legal h2 { color: var(--petrol); margin-top: 12px; }
+
+@media (max-width: 699px) {
+  .container { width: min(var(--container), calc(100% - 32px)); }
+  .card__notes { display: none; }
+  .hero__visual img { height: 300px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Слой анимаций — P0 (каркас)
+   План: docs/animation-plan.md
+
+   Договор: базовое состояние вёрстки = финальное. Всё, что прячется
+   ради появления, прячется ТОЛЬКО под .is-enhanced на <html>. Класс
+   выдаёт JS и только если движение разрешено. Нет JS, старый браузер,
+   prefers-reduced-motion, режим экономии трафика — страница просто
+   статична и полностью видима.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Сентинел шапки ────────────────────────────────────────────────
+   Заменяет слушатель scroll: 8px-метка у верха страницы, шапка
+   реагирует на её уход из вьюпорта. Из потока вынут, высоту не ест. */
+.header-sentinel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 8px;
+  pointer-events: none;
+}
+
+/* ── Появление при скролле ─────────────────────────────────────────
+   Ступенька задаётся через --reveal-i и ограничена шестью шагами:
+   на длинном каталоге накопленная задержка читается как тормоза.
+
+   :where() обнуляет вклад селектора в специфичность — иначе правило
+   появления (три класса) перебивало бы .card:hover (два) и карточки
+   перестали бы подниматься под курсором после того, как проявились. */
+.is-enhanced :where([data-reveal]) {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity .5s var(--ease),
+    transform .5s var(--ease);
+  transition-delay: calc(var(--reveal-i, 0) * 60ms);
+}
+.is-enhanced :where([data-reveal].is-in) {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Карточки товара ───────────────────────────────────────────────
+   Ховер только там, где есть настоящий курсор: на тач-экранах
+   :hover залипает после тапа, и карточка осталась бы подсвеченной. */
+@media (hover: hover) and (pointer: fine) {
+  /* Сама карточка на месте: ни подъёма, ни масштаба. Отзыв даёт тень
+     и наезд на фото — карточка не должна прыгать под курсором. */
+  .card,
+  .catalog-card {
+    transition: box-shadow .28s var(--ease);
+  }
+  .card:hover,
+  .catalog-card:hover {
+    box-shadow: var(--shadow);
+  }
+  .card__media img,
+  .catalog-card__media img {
+    transition: transform .4s var(--ease);
+  }
+  .card:hover .card__media img,
+  .catalog-card:hover .catalog-card__media img {
+    transform: scale(1.04);
+  }
+}
+
+/* На сенсорных — отклик на нажатие вместо ховера */
+@media (hover: none) {
+  .card,
+  .catalog-card {
+    transition: transform .16s var(--ease);
+  }
+  .card:active,
+  .catalog-card:active { transform: scale(.985); }
+}
+
+/* ── Шкалы вкусового профиля ───────────────────────────────────────
+   scaleX вместо width: ширина — это перерасчёт раскладки на каждом
+   кадре, трансформация уходит на композитор. Ступенька 80 мс по пяти
+   шкалам, чтобы профиль «набирался», а не появлялся плитой. */
+.bar__fill {
+  width: 100%;
+  transform: scaleX(var(--v, 1));
+  transform-origin: left center;
+  transition: transform .7s var(--ease);
+}
+.is-enhanced .taste-profile[data-reveal] .bar__fill { transform: scaleX(0); }
+.is-enhanced .taste-profile[data-reveal].is-in .bar__fill {
+  transform: scaleX(var(--v, 1));
+  transition-delay: calc(var(--i, 0) * 80ms);
+}
+
+/* ── Тоггл подписки: строка выгоды ─────────────────────────────────
+   Текст под заголовком меняется при переключении; без движения
+   подмена читается как глитч, а не как ответ на действие. */
+@keyframes save-swap {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+.is-enhanced [data-save].is-swap {
+  animation: save-swap .32s var(--ease) both;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Сценарий «От зерна к чашке» — P1
+   План: docs/animation-plan.md, раздел 1
+
+   База (этот блок) — обычный вертикальный список «кадр + подпись».
+   Ровно то, что видит пользователь без JS, при reduce-motion, в режиме
+   экономии трафика и на слишком низком экране. Запиненная сцена
+   включается классом .is-pinned, который JS вешает только когда всё
+   готово: кадры прогружены, высоты хватает, наблюдатель работает.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.journey__slide {
+  display: grid;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 56px;
+}
+.journey__slide:last-child { margin-bottom: 0; }
+
+@media (min-width: 900px) {
+  .journey__slide { grid-template-columns: 1fr 1.05fr; gap: 56px; }
+  /* Чётные кадры зеркалим — иначе список читается как таблица.
+     nth-of-type, а не nth-child: первым ребёнком сцены идёт <ol>
+     прогресса, и нумерация сдвинулась бы на единицу. */
+  .journey__slide:nth-of-type(even) .journey__media { order: -1; }
+}
+
+.journey__media {
+  position: relative;
+  margin: 0;
+}
+.journey__media img {
+  width: 100%;
+  height: clamp(240px, 40vh, 440px);
+  object-fit: cover;
+}
+
+.journey__copy { display: grid; gap: 12px; align-content: center; }
+.journey__step { font-variant-numeric: tabular-nums; }
+
+.journey__metric {
+  font-family: var(--font-head);
+  font-size: clamp(34px, 5vw, 64px);
+  line-height: 1;
+  color: var(--teal-ink);
+  font-variant-numeric: tabular-nums;
+  margin-top: 4px;
+}
+.journey__metric small {
+  display: block;
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--grey);
+  letter-spacing: .02em;
+  margin-top: 6px;
+}
+
+/* Полосы прогресса и метки прокрутки нужны только запиненной сцене */
+.journey__progress,
+.journey__sentinels { display: none; }
+
+/* ── Запиненный режим ──────────────────────────────────────────────
+   Требует и .is-enhanced (общий рубильник, его снимает страховка),
+   и .is-pinned (сцена собрана). Отвалилось любое — вернулся список. */
+
+.is-enhanced .journey.is-pinned .journey__track {
+  position: relative;
+  /* dvh, а не vh: на iOS адресная строка меняет высоту и сцена прыгает */
+  height: calc(var(--frames, 5) * 100dvh);
+}
+
+.is-enhanced .journey.is-pinned .journey__stage {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  display: grid;
+  align-items: center;
+  overflow: hidden;
+}
+
+.is-enhanced .journey.is-pinned .journey__slide {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: calc(var(--header-h) + 16px) 0 48px;
+  align-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity .4s var(--ease),
+    visibility 0s linear .4s;
+}
+.is-enhanced .journey.is-pinned .journey__slide.is-active {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity .5s var(--ease),
+    visibility 0s;
+}
+
+/* В запиненной сцене зеркалить нельзя: кадры лежат друг на друге, и
+   картинка перепрыгивала бы со стороны на сторону прямо в кросс-фейде.
+   Зеркалирование остаётся приёмом статичного списка. */
+.is-enhanced .journey.is-pinned .journey__slide .journey__media { order: 0; }
+
+/* Лёгкий наезд камеры: кадр «дышит», а не подкладывается картинкой */
+.is-enhanced .journey.is-pinned .journey__media img {
+  height: min(52vh, 460px);
+  transform: scale(1.04);
+  transition: transform .9s var(--ease);
+}
+.is-enhanced .journey.is-pinned .journey__slide.is-active .journey__media img {
+  transform: scale(1);
+}
+
+/* Текст приходит следом за картинкой — причина и следствие */
+.is-enhanced .journey.is-pinned .journey__copy {
+  transform: translateY(12px);
+  transition: transform .5s var(--ease) .08s;
+}
+.is-enhanced .journey.is-pinned .journey__slide.is-active .journey__copy {
+  transform: none;
+}
+
+/* Метки прокрутки: по одной на кадр, вне потока — высоту не задают,
+   её держит .journey__track. */
+.is-enhanced .journey.is-pinned .journey__sentinels {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.is-enhanced .journey.is-pinned .journey__sentinel { flex: 1; }
+
+.is-enhanced .journey.is-pinned .journey__progress {
+  display: flex;
+  position: absolute;
+  z-index: 2;
+  gap: 8px;
+  margin: 0;
+}
+.journey__progress li {
+  background: var(--line);
+  border-radius: 99px;
+  transition: background .35s var(--ease), transform .35s var(--ease);
+}
+.journey__progress li.is-active { background: var(--teal-ink); }
+
+/* мобильные — полоса сверху, десктоп — линейка слева */
+.is-enhanced .journey.is-pinned .journey__progress {
+  top: calc(var(--header-h) + 12px);
+  left: 20px;
+  right: 20px;
+}
+.journey__progress li { height: 3px; flex: 1; }
+.journey__progress li.is-active { transform: scaleY(1.8); }
+
+@media (min-width: 900px) {
+  .is-enhanced .journey.is-pinned .journey__progress {
+    flex-direction: column;
+    top: 50%;
+    translate: 0 -50%;
+    left: max(20px, calc((100vw - var(--container)) / 2 - 28px));
+    right: auto;
+    gap: 10px;
+  }
+  .journey__progress li { width: 3px; height: 26px; flex: 0 0 auto; }
+  .journey__progress li.is-active { transform: scaleX(2); }
+}
+
+/* Бейдж даты обжарки в четвёртом кадре — ставится штампом */
+@keyframes journey-stamp {
+  from { opacity: 0; transform: scale(1.18); }
+  60%  { opacity: 1; }
+  to   { opacity: 1; transform: scale(1); }
+}
+.is-enhanced .journey.is-pinned .journey__slide.is-active .journey__stamp {
+  animation: journey-stamp .5s var(--ease) .25s both;
+}
+
+/* Блок «Наше наследие» оставлен статичным по решению заказчика:
+   ни смены кадра, ни появления при скролле. */
+
+/* Кадр выпал из короткого мобильного прогона */
+.is-enhanced .journey.is-pinned .journey__slide[data-skip] { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Полировка — P2
+   План: docs/animation-plan.md, раздел 3
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Подтверждение добавления в корзину ────────────────────────────
+   Кнопка отвечает сама: иконка уезжает, на её место встаёт галочка.
+   Тост может оказаться вне поля зрения, кнопка под пальцем — всегда. */
+.add-quick { position: relative; }
+.add-quick > svg { transition: opacity .2s var(--ease), transform .2s var(--ease); }
+.add-quick::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  line-height: 1;
+  opacity: 0;
+  transform: scale(.5);
+  transition: opacity .2s var(--ease), transform .25s var(--ease);
+}
+.add-quick.is-done > svg { opacity: 0; transform: scale(.5); }
+.add-quick.is-done::after { content: "✓"; opacity: 1; transform: scale(1); }
+/* у кнопки с подписью галочка встаёт на место иконки, а не поверх текста */
+.add-quick--wide { position: relative; }
+.add-quick--wide::after { right: auto; width: 15px; left: 14px; }
+
+/* Импульс счётчика в шапке — связывает нажатие и результат */
+@keyframes cart-bump {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
+.is-enhanced .cart-count.is-bump { animation: cart-bump .42s var(--ease); }
+
+/* ── Смена выдачи каталога ─────────────────────────────────────────
+   Старый набор гасится до подмены, новый проявляется через
+   [data-reveal]. Без этого карточки меняются рывком под курсором. */
+.product-grid { transition: opacity .13s linear; }
+.product-grid.is-swapping { opacity: 0; }
+
+/* Чипы активных фильтров */
+@keyframes chip-in {
+  from { opacity: 0; transform: scale(.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.is-enhanced .chip { animation: chip-in .22s var(--ease) both; }
+
+/* ── Бейдж даты обжарки ────────────────────────────────────────────
+   Ставится штампом, когда карточка проявилась. Дата обжарки — главный
+   аргумент доверия по ТЗ, ей положено привлекать взгляд. */
+@keyframes stamp-in {
+  from { opacity: 0; transform: scale(1.18); }
+  60%  { opacity: 1; }
+  to   { opacity: 1; transform: scale(1); }
+}
+.is-enhanced :where([data-reveal].is-in) .badge--roast {
+  animation: stamp-in .45s var(--ease) .18s both;
+}
+
+/* ── Волны между секциями ──────────────────────────────────────────
+   Псевдоэлемент шире секции и сдвигается по мере прохода блока через
+   экран: кривая «течёт», а не стоит. Двигаем transform — композитор,
+   без перерисовки. overflow-x: clip держит запас внутри секции;
+   именно clip, а не hidden: hidden создал бы контейнер прокрутки и
+   сломал position: sticky у сцены сценария. */
+.section--sand,
+.section--ice,
+.section--petrol { overflow-x: clip; }
+
+.section--sand::before,
+.section--sand::after,
+.section--ice::before,
+.section--ice::after,
+.section--petrol::before,
+.section--petrol::after {
+  left: -5%;
+  right: -5%;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .is-enhanced .section--sand::before,
+    .is-enhanced .section--ice::before,
+    .is-enhanced .section--petrol::before {
+      animation: wave-drift linear both;
+      animation-timeline: view();
+    }
+    /* нижняя волна уже перевёрнута по обеим осям — сдвиг обязан
+       собираться в ту же строку transform, иначе отражение слетит */
+    .is-enhanced .section--sand::after,
+    .is-enhanced .section--ice::after,
+    .is-enhanced .section--petrol::after {
+      animation: wave-drift-flip linear both;
+      animation-timeline: view();
+    }
+  }
+}
+@keyframes wave-drift {
+  from { transform: translateX(-2.5%); }
+  to   { transform: translateX(2.5%); }
+}
+@keyframes wave-drift-flip {
+  from { transform: scale(-1, -1) translateX(-2.5%); }
+  to   { transform: scale(-1, -1) translateX(2.5%); }
+}
+
+/* ── Органические пятна в героях ───────────────────────────────────
+   Дрейф привязан к прокрутке, а не к таймеру: бесконечная анимация
+   крутилась бы и на невидимой странице, съедая батарею впустую. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .is-enhanced .blob {
+      animation: blob-drift linear both;
+      animation-timeline: view();
+    }
+    .is-enhanced .blob--sand { animation-name: blob-drift-alt; }
+  }
+}
+@keyframes blob-drift {
+  from { transform: translate3d(-2%, 3%, 0) rotate(-4deg); }
+  to   { transform: translate3d(3%, -4%, 0) rotate(5deg); }
+}
+@keyframes blob-drift-alt {
+  from { transform: translate3d(3%, -2%, 0) rotate(4deg); }
+  to   { transform: translate3d(-3%, 4%, 0) rotate(-6deg); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Микровзаимодействия — P3
+   План: docs/animation-plan.md, раздел 3
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Мобильное меню ────────────────────────────────────────────────
+   Было display:none → display:flex, а это не анимируется вовсе.
+   Панель всегда в разметке, уведена за правый край. visibility
+   выключает её из фокуса и скринридера, пока она закрыта, и
+   переключается без задержки на открытии, с задержкой на закрытии —
+   иначе панель пропала бы до конца выезда. */
+.mobile-nav {
+  display: flex;
+  visibility: hidden;
+  transform: translateX(100%);
+  transition:
+    transform .28s var(--ease),
+    visibility 0s linear .28s;
+}
+.mobile-nav.is-open {
+  visibility: visible;
+  transform: none;
+  transition:
+    transform .28s var(--ease),
+    visibility 0s;
+}
+
+/* ── Панель поиска ─────────────────────────────────────────────────
+   Разворот вниз через grid-template-rows: 0fr → 1fr. Высота считается
+   браузером, замеров в JS не нужно. visibility убирает свёрнутую
+   панель из фокуса и скринридера и снимает её тень с границы шапки. */
+.search-panel {
+  visibility: hidden;
+  transition:
+    grid-template-rows .28s var(--ease),
+    visibility 0s linear .28s;
+}
+.search-panel.is-open {
+  visibility: visible;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows .28s var(--ease),
+    visibility 0s;
+}
+/* содержимое подтягивается следом, чтобы панель не «выплёвывала» его */
+.search-panel__body {
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity .2s var(--ease), transform .28s var(--ease);
+}
+.search-panel.is-open .search-panel__body {
+  opacity: 1;
+  transform: none;
+  transition-delay: .06s;
+}
+
+/* ── Аккордеон FAQ ─────────────────────────────────────────────────
+   ::details-content появился недавно и есть не везде, поэтому под
+   @supports. Без него аккордеон открывается мгновенно — ровно как
+   сейчас, ничего не ломается. interpolate-size нужен, чтобы высота
+   умела ехать до auto. */
+@supports selector(details::details-content) {
+  @supports (interpolate-size: allow-keywords) {
+    .accordion { interpolate-size: allow-keywords; }
+    .accordion details::details-content {
+      block-size: 0;
+      overflow: hidden;
+      transition:
+        block-size .26s var(--ease),
+        content-visibility .26s allow-discrete;
+    }
+    .accordion details[open]::details-content { block-size: auto; }
+  }
+}
+.accordion summary::after { transition: transform .2s var(--ease); }
+
+/* ── Удаление строки корзины ───────────────────────────────────────
+   Единственное место, где анимирую высоту: элемент маленький, а
+   схлопывание объясняет, что строка ушла, а не пропала. Высоту JS
+   фиксирует замером перед стартом — auto не анимируется. */
+.line-item {
+  overflow: hidden;
+  transition:
+    height .24s var(--ease),
+    opacity .18s linear,
+    transform .24s var(--ease),
+    padding .24s var(--ease),
+    margin .24s var(--ease);
+}
+.line-item.is-removing {
+  height: 0 !important;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  transform: translateX(-16px);
+  border-bottom-color: transparent;
+}
+
+/* ── Прогресс оформления заказа ────────────────────────────────────
+   Точки появляются по очереди — шаги читаются как последовательность,
+   а не как готовая строка. */
+.dot { transition: background .3s var(--ease), border-color .3s var(--ease), color .3s var(--ease); }
+@keyframes step-in {
+  from { opacity: 0; transform: scale(.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+/* Порядковый номер берём из --i в разметке: nth-of-type здесь считает
+   все <span> строки, включая подписи шагов, и попадает не по тем. */
+.is-enhanced .progress .dot {
+  animation: step-in .34s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+/* ── Ошибка в поле ─────────────────────────────────────────────────
+   translate, а не transform: поле может уже иметь свой transform,
+   и шаг анимации не должен его затирать.
+   При reduce-motion общий рубильник сводит анимацию к мгновенной —
+   остаются только цвет рамки и текст ошибки, то есть вся информация. */
+@keyframes field-shake {
+  10%, 90% { translate: -2px 0; }
+  30%, 70% { translate: 3px 0; }
+  50%      { translate: -4px 0; }
+  to       { translate: 0 0; }
+}
+.is-enhanced .field.is-error { animation: field-shake .34s var(--ease); }
+
+/* ── Галочка валидности ────────────────────────────────────────────
+   Раньше это была фоновая картинка: её можно было только проявить.
+   enhanceFields кладёт в поле настоящий SVG, и галочка рисуется
+   штрихом — видно, что поле проверено, а не просто подсвечено. */
+.field-wrap:has(.field-check)::after { display: none; }
+.field-check {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  translate: 0 -50%;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .2s var(--ease);
+}
+.field-check path,
+.field-check circle {
+  stroke: var(--success);
+  stroke-width: 1.8;
+  fill: none;
+}
+.field-check path {
+  stroke-dasharray: 12;
+  stroke-dashoffset: 12;
+  transition: stroke-dashoffset .3s var(--ease) .06s;
+}
+.field-wrap.is-valid .field-check { opacity: 1; }
+.field-wrap.is-valid .field-check path { stroke-dashoffset: 0; }
+
+/* ── Ползунок цены ─────────────────────────────────────────────────
+   Заливка тянется за ручкой только когда значение меняет не человек:
+   на перетаскивании переход превратился бы в отставание от пальца. */
+.price-range__fill.is-animating {
+  transition: left .3s var(--ease), right .3s var(--ease);
+}
+
+/* ── Выбор помола ──────────────────────────────────────────────────
+   Обводка растёт из центра плитки. Кольцо отдельным слоем, а не
+   border: границу нельзя проявить масштабом, не сдвинув содержимое. */
+.grind-tile::after {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border: 1.5px solid var(--teal-ink);
+  border-radius: var(--radius-m);
+  opacity: 0;
+  transform: scale(.93);
+  transition: opacity .18s var(--ease), transform .26s var(--ease);
+  pointer-events: none;
+}
+.grind-tile:has(input:checked)::after { opacity: 1; transform: scale(1); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Герой «Остров» — прототип
+   План: docs/animation-plan.md
+
+   Плита с чашкой оторвана от фона и парит; тень живёт отдельным слоем
+   и ходит в противофазе — синхронная тень читается как наклейка.
+
+   Параллакс идёт от прокрутки. Прогресс считает одна анимация на всей
+   сцене — она гонит --p от 0 до 1 за первый экран прокрутки. Слои не
+   анимируются по отдельности, каждый просто читает общий прогресс и
+   умножает его на свою глубину. Отсюда два следствия: слои не могут
+   разъехаться по фазе, и у каждого остаётся свободным собственный
+   animation — под покачивание и орбиты.
+
+   Правило разделения трансформаций, иначе слои дерутся за одно
+   свойство: параллакс всегда идёт через translate, собственная
+   анимация слоя — всегда через transform. Свойства применяются
+   последовательно и не затирают друг друга.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Незарегистрированную переменную нельзя анимировать — браузер считает
+   её строкой и переключит скачком. Регистрация делает --p числом.
+   initial-value: 0 — это и есть поведение без поддержки: сцена стоит. */
+@property --p {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+
+.hero__visual[data-island] {
+  /* глубина слоя по умолчанию — ноль, то есть слой стоит на месте */
+  --depth: 0px;
+
+  /* Ход блока с кофе вниз относительно страницы. Место под этот ход
+     зарезервировано тут же отступом: остров отстаёт от текста, но
+     упирается в собственный запас, а не в секцию снизу. Запас между
+     фото и низом героя разный на разных экранах — 66px на десктопе,
+     42px на мобильном, — поэтому его нельзя подгонять числом, его
+     нужно закладывать. Обрезка у .hero остаётся страховкой. */
+  --island-lag: 64px;
+  padding-bottom: var(--island-lag);
+}
+
+/* ── Сам остров ────────────────────────────────────────────────────*/
+.hero__visual[data-island] .island__rock {
+  position: relative;
+  z-index: 2;
+  transform-origin: 50% 65%;
+}
+
+/* ── Тень ──────────────────────────────────────────────────────────*/
+.island__shadow {
+  position: absolute;
+  z-index: 1;
+  left: 18%;
+  right: 18%;
+  /* отсчитывается от низа зарезервированного хода, а не от края блока,
+     иначе тень отвалилась бы от плиты на всю величину запаса */
+  bottom: calc(var(--island-lag, 0px) - 6px);
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(20, 52, 60, .2);
+  filter: blur(16px);
+  pointer-events: none;
+}
+
+/* ── Зёрна ─────────────────────────────────────────────────────────*/
+.island__beans {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.bean {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 19px;
+  height: 19px;
+  opacity: .7;
+  scale: var(--s, 1);
+  background: no-repeat center / contain
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cellipse cx='10' cy='10' rx='5.6' ry='7.6' transform='rotate(-35 10 10)' fill='%23b56a4a'/%3E%3Cpath d='M6.6 13.8c1.6-2.7 4.2-4.8 6.4-5.9' stroke='%23fdf9f0' stroke-width='1.1' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+.bean--far { opacity: .45; }
+/* на узком экране два дальних зерна лишние: мелочь на мелком экране
+   превращается в мусор, а не в глубину */
+@media (max-width: 699px) {
+  .bean--far { display: none; }
+}
+
+/* ═══ Движение ═════════════════════════════════════════════════════
+   Всё под .is-enhanced и .is-live: is-live вешает наблюдатель, когда
+   герой в кадре. Бесконечная анимация не имеет права крутиться, когда
+   её никто не видит. */
+
+@keyframes island-float {
+  0%, 100% { transform: translateY(0) rotate(-.5deg); }
+  50%      { transform: translateY(-11px) rotate(.45deg); }
+}
+/* Тень в противофазе: остров вверх — пятно меньше и бледнее */
+@keyframes island-shadow {
+  0%, 100% { transform: scaleX(1) scaleY(1); opacity: 1; }
+  50%      { transform: scaleX(.9) scaleY(.82); opacity: .62; }
+}
+@keyframes bean-orbit {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(9px, -13px) rotate(24deg); }
+  50%  { transform: translate(2px, -20px) rotate(6deg); }
+  75%  { transform: translate(-8px, -11px) rotate(-18deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.is-enhanced .hero__visual[data-island].is-live .island__rock {
+  animation: island-float 7s ease-in-out infinite;
+}
+.is-enhanced .hero__visual[data-island].is-live .island__shadow {
+  animation: island-shadow 7s ease-in-out infinite;
+}
+.is-enhanced .hero__visual[data-island].is-live .bean {
+  animation: bean-orbit var(--dur, 11s) ease-in-out infinite;
+  animation-delay: var(--lag, 0s);
+}
+
+/* ── Параллакс на прокрутку ────────────────────────────────────────
+   Отстают все слои — блок с кофе целиком уходит медленнее текста.
+   Глубина задаёт, насколько именно: ближние слои отстают меньше,
+   дальние больше. Смещение считается как прогресс × глубина, поэтому
+   слои идут строго синхронно и расходятся только по амплитуде.
+
+   Плита с тенью идут ровно на величину зарезервированного хода —
+   это и есть потолок, ниже них не опускается никто из видимого.
+   Блобы уходят дальше, но они лежат за плитой и частично за краем
+   блока, их обрез не виден. */
+.hero__visual[data-island] .blob--baby     { --depth: 84px; }
+.hero__visual[data-island] .blob--sand     { --depth: 76px; }
+.hero__visual[data-island] .island__shadow { --depth: var(--island-lag); }
+.hero__visual[data-island] .island__rock   { --depth: var(--island-lag); }
+.hero__visual[data-island] .bean           { --depth: 40px; }
+.hero__visual[data-island] .bean--far      { --depth: 50px; }
+
+.hero__visual[data-island] .blob,
+.hero__visual[data-island] .island__shadow,
+.hero__visual[data-island] .island__rock,
+.hero__visual[data-island] .bean {
+  translate: 0 calc(var(--p) * var(--depth));
+}
+
+@supports (animation-timeline: scroll(root block)) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Прогресс гонится один раз на всю сцену. scroll(), а не view():
+       герой стоит в самом верху страницы, и view() отдал бы его уже
+       в середине своего диапазона — слои оказались бы смещены ещё
+       до того, как пользователь тронул колесо. */
+    .is-enhanced .hero__visual[data-island] {
+      animation: island-progress linear both;
+      animation-timeline: scroll(root block);
+      /* Диапазон подобран под высоту сцены: параллакс должен доиграть
+         ровно к тому моменту, когда герой уходит за верхний край.
+         На 100vh хвост движения пришёлся бы уже на пустой экран. */
+      animation-range: 0 80vh;
+    }
+    /* Внутри острова блобы живут общим параллаксом сцены — свой
+       дрейф здесь только замутил бы картину. */
+    .is-enhanced .hero__visual[data-island] .blob { animation: none; }
+  }
+}
+@keyframes island-progress {
+  from { --p: 0; }
+  to   { --p: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Окно выбора варианта перед добавлением в корзину
+
+   Быстрая кнопка на карточке раньше клала товар с параметрами по
+   умолчанию — 250 г, в зёрнах. Покупатель узнавал об этом уже в
+   корзине. Теперь она открывает выбор веса, обжарки и помола.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.modal__box--add {
+  max-width: 480px;
+  max-height: min(88vh, 720px);
+  overflow-y: auto;
+  gap: 18px;
+}
+
+.add-modal__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+.add-modal__head img {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--sand);
+  flex-shrink: 0;
+}
+.add-modal__head h3 { line-height: 1.15; }
+
+/* ── Группа вариантов ──────────────────────────────────────────────
+   Плоский ряд «пилюль» вместо крупных плиток с картинками: в окне
+   три группы подряд, и плитки увели бы кнопку добавления за экран. */
+.opt-group { display: grid; gap: 8px; }
+.opt-group__label {
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.opt-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.opt {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 15px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: border-color .18s, background .18s, color .18s;
+}
+.opt input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+.opt:hover { border-color: var(--clay-light); }
+.opt:has(input:checked) {
+  border-color: var(--teal-ink);
+  background: var(--teal-wash);
+  color: var(--teal-deep);
+  font-weight: 500;
+}
+.opt:has(input:focus-visible) {
+  outline: 2px solid var(--teal-ink);
+  outline-offset: 2px;
+}
+
+/* ── Подвал окна ───────────────────────────────────────────────────*/
+.add-modal__foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
+}
+.add-modal__price {
+  display: grid;
+  gap: 2px;
+  margin-top: 12px;
+}
+.add-modal__price .price { font-size: 24px; }
+.add-modal__foot .btn { margin-left: auto; margin-top: 12px; }
+
+@media (max-width: 479px) {
+  .add-modal__foot .btn { margin-left: 0; width: 100%; }
+}
