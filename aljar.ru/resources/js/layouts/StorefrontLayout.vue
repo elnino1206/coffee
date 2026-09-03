@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { guardReveals, initIsland, observeReveals, replayAnimation, watchHeaderOffset } from '@/lib/motion';
+import { setupTornEdges, sizeTornMasks } from '@/lib/torn';
 import '../../css/storefront.css';
 
 /**
@@ -14,25 +17,64 @@ import '../../css/storefront.css';
 const nav = [
     { label: 'Кофе', href: '/catalog/coffee', page: 'catalog' },
     { label: 'Подписка', href: '#', page: 'subscription' },
-    { label: 'О нас', href: '#', page: 'about' },
+    { label: 'О нас', href: '/about', page: 'about' },
     { label: 'Для бизнеса', href: '#', page: 'wholesale' },
     { label: 'Журнал', href: '#', page: 'blog' },
 ];
 
 defineProps<{ page?: string }>();
+
+const inertia = usePage();
+
+/** Бейдж корзины — чтобы подскочить при пополнении. */
+const cartBadge = ref<HTMLElement | null>(null);
+
+const cartCount = computed(() => Number((inertia.props as { cart?: { count?: number } }).cart?.count ?? 0));
+
+/* Подскок только на пополнении: удаление позиции подпрыгивать не должно,
+   и на первой отрисовке страницы — тоже. */
+watch(cartCount, (next, prev) => {
+    if (next > prev && next > 0) replayAnimation(cartBadge.value, 'is-bump');
+});
+
+/* Решение о движении принимает app.ts, до монтирования. Здесь остаются
+   наблюдатели за появлением — их нужно переустанавливать на каждую
+   страницу: Inertia меняет разметку без перезагрузки, и новые блоки
+   иначе остались бы ненаблюдаемыми. */
+onMounted(() => {
+    /* Шапка живёт вместе с раскладкой, поэтому метка ставится один раз. */
+    watchHeaderOffset();
+    initIsland();
+    observeReveals();
+    guardReveals();
+    setupTornEdges();
+
+    /* Маски рваного края зависят от фактических размеров снимков,
+       а те меняются вместе с шириной окна. */
+    window.addEventListener('resize', sizeTornMasks);
+});
+
+onBeforeUnmount(() => window.removeEventListener('resize', sizeTornMasks));
+
+/* Набор снимков меняется вместе со страницей, а маски нумеруются по
+   порядку — после перехода их нужно пересобрать, иначе на новой странице
+   останутся ссылки на маски прежней. */
+router.on('navigate', () =>
+    nextTick(() => {
+        observeReveals();
+        setupTornEdges();
+        initIsland();
+    }),
+);
 </script>
 
 <template>
-    <Head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap"
-            rel="stylesheet"
-        />
-    </Head>
-
     <a class="skip-link" href="#main">К содержанию</a>
+
+    <!-- Сюда собираются маски рваного края: по одной на снимок. Общей
+         маской не обойтись — размер её прямоугольника задаётся в пикселях
+         под конкретную фотографию. -->
+    <svg class="svg-defs" data-torn-defs aria-hidden="true" focusable="false"></svg>
 
     <header class="site-header" id="header">
         <div class="container site-header__inner">
@@ -69,7 +111,7 @@ defineProps<{ page?: string }>();
                         <path d="M5 7h10l-1 11H6L5 7z" />
                         <path d="M8 7V5.5A2 2 0 0 1 10 3.5 2 2 0 0 1 12 5.5V7" />
                     </svg>
-                    <span class="cart-count">{{ $page.props.cart.count }}</span>
+                    <span ref="cartBadge" class="cart-count">{{ $page.props.cart.count }}</span>
                 </Link>
             </div>
         </div>

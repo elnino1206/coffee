@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { GRINDS } from '@/lib/grinds';
 import { formatPrice } from '@/lib/money';
+import { animateNumber } from '@/lib/motion';
 
 type Variant = {
     id: number;
@@ -27,7 +29,6 @@ const props = defineProps<{
         rating: number;
         reviews: number;
         price_from: number;
-        freshness: { index: number; label: string; note: string; roasted_at: string | null } | null;
         profile: Record<string, number>;
         variants: Variant[];
     };
@@ -43,12 +44,7 @@ const profileLabels: Record<string, string> = {
     acidity: 'Кислотность',
 };
 
-const grinds = [
-    { id: 'whole', tile: 'В зёрнах, без помола', note: 'Смелете сами перед завариванием', image: '/img/method-beans.svg' },
-    { id: 'espresso', tile: 'Рекомендуется для эспрессо', note: 'Тонкий помол под рожок', image: '/img/method-espresso.svg' },
-    { id: 'filter', tile: 'Рекомендуется для фильтр-кофе', note: 'Средний помол под воронку и кемекс', image: '/img/method-filter.svg' },
-    { id: 'cezve', tile: 'Рекомендуется для турки', note: 'Самый мелкий помол, почти пудра', image: '/img/method-cezve.svg' },
-];
+const grinds = GRINDS;
 
 const variantId = ref(props.coffee.variants[0]?.id ?? null);
 const grind = ref('whole');
@@ -56,6 +52,26 @@ const grind = ref('whole');
 const variant = computed(() => props.coffee.variants.find((item) => item.id === variantId.value));
 const price = computed(() => variant.value?.price ?? props.coffee.price_from);
 const adding = ref(false);
+
+/**
+ * Цена не подменяется при смене веса, а прокручивается: глаз успевает
+ * заметить, что значение изменилось, и в какую сторону.
+ */
+const priceEl = ref<HTMLElement | null>(null);
+
+/** Показанная сумма — чтобы катить от неё, а не от нуля. */
+let shownPrice = 0;
+
+onMounted(() => {
+    /* Первая отрисовка идёт напрямую: значение ещё не менялось. */
+    if (priceEl.value) priceEl.value.textContent = formatPrice(price.value);
+    shownPrice = price.value;
+});
+
+watch(price, (next) => {
+    animateNumber(priceEl.value, shownPrice, next, formatPrice, 500);
+    shownPrice = next;
+});
 
 /** Помол уходит вместе с вариантом: за покупателя его выбирать нельзя. */
 function addToCart() {
@@ -100,16 +116,6 @@ function addToCart() {
             </div>
 
             <div class="stack">
-                <span v-if="coffee.freshness">
-                    <span
-                        class="badge badge--roast"
-                        :class="`badge--fresh-${coffee.freshness.index}`"
-                        :title="coffee.freshness.note"
-                    >
-                        Обжарено: {{ coffee.freshness.roasted_at }}
-                    </span>
-                </span>
-
                 <h1 class="h2">{{ coffee.name }}</h1>
                 <p class="muted">{{ coffee.full_name }}</p>
                 <p class="tiny">{{ coffee.region }}, {{ coffee.origin }}</p>
@@ -118,7 +124,7 @@ function addToCart() {
                     Рекомендуем: <strong>{{ coffee.method }}</strong> · {{ coffee.roast }}
                 </p>
 
-                <div class="price">{{ formatPrice(price) }}</div>
+                <div ref="priceEl" class="price"></div>
 
                 <div class="taste">
                     <strong>Профиль вкуса</strong>

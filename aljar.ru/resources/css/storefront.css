@@ -1,3 +1,87 @@
+/* ── Шрифты проекта ─────────────────────────────────────────────
+   ABC Diatype и Neue Montreal не содержат кириллицы (проверено по
+   таблицам cmap: 0 из 66 букв), поэтому цепочка фолбэков тут не
+   работает — русский текст просто провалился бы мимо них.
+   Вместо этого раскладываем по unicode-range: латиница берётся из
+   Diatype/Montreal, кириллица из Golos Text. Браузер подставляет
+   нужный файл посимвольно, семейство для CSS остаётся одно.
+
+   Отдельные исключения:
+   - ₽ (U+20BD) и № (U+2116) есть в Diatype и Golos, но НЕ в Montreal,
+     поэтому в заголовочном семействе они отданы Golos;
+   - ♡ ♥ (U+2661, U+2665) есть только в Diatype — для кнопки избранного;
+   - ★ (U+2605) нет ни в одном из трёх, звёзды рейтинга берутся из
+     системного шрифта в конце цепочки.
+   Golos Text — переменный, один файл закрывает веса 400–900. */
+
+/* Текст — ABC Diatype (латиница) */
+@font-face {
+  font-family: "AlJar Text";
+  src: url("/fonts/ABCDiatype-Regular.woff2") format("woff2"),
+       url("/fonts/ABCDiatype-Regular.woff") format("woff");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+                 U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+20BD,
+                 U+2116, U+2122, U+2190-21FF, U+2212, U+2215, U+2661,
+                 U+2665, U+FEFF, U+FFFD;
+}
+
+/* Заголовки — Neue Montreal (латиница) */
+@font-face {
+  font-family: "AlJar Display";
+  src: url("/fonts/NeueMontreal-Regular.woff2") format("woff2"),
+       url("/fonts/NeueMontreal-Regular.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+                 U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122,
+                 U+2190-21FF, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "AlJar Display";
+  src: url("/fonts/NeueMontreal-Medium.woff2") format("woff2"),
+       url("/fonts/NeueMontreal-Medium.woff") format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+                 U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122,
+                 U+2190-21FF, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "AlJar Display";
+  src: url("/fonts/NeueMontreal-Bold.woff2") format("woff2"),
+       url("/fonts/NeueMontreal-Bold.woff") format("woff");
+  font-weight: 600 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+                 U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122,
+                 U+2190-21FF, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Кириллица обоих семейств — Golos Text (переменный, 400–900) */
+@font-face {
+  font-family: "AlJar Text";
+  src: url("/fonts/GolosText-VF.ttf") format("truetype");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1;
+}
+@font-face {
+  font-family: "AlJar Display";
+  src: url("/fonts/GolosText-VF.ttf") format("truetype");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1,
+                 U+20BD, U+2116;
+}
+
 :root {
   /* Палитра из UI Kit (basic.jpg). Значения — по подписям свотчей;
      --teal-ink/--teal-deep сняты с реальных элементов кита ради AA-контраста. */
@@ -36,8 +120,8 @@
   --radius-pill: 999px;
   --container: 1220px;
   --header-h: 76px;
-  --font: "Inter", "Segoe UI", sans-serif;
-  --font-head: "Playfair Display", Georgia, serif;
+  --font: "AlJar Text", "Segoe UI", system-ui, sans-serif;
+  --font-head: "AlJar Display", "Segoe UI", system-ui, sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   /* Волна перехода между секциями — кривая снята с макета 02.jpg */
   --wave: url("data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%201440%20120'%20preserveAspectRatio='none'><path%20d='M0,0%20C30,7%20121,34%20180,42%20C239,50%20295,51%20353,50%20C411,49%20470,40%20529,35%20C588,30%20652,24%20710,23%20C768,22%20822,24%20880,29%20C938,34%20998,44%201058,55%20C1118,66%201176,84%201240,95%20C1304,106%201407,116%201440,120%20L1440,0%20L0,0%20Z'%20fill='%23000'/></svg>");
@@ -48,7 +132,14 @@
 *::before,
 *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  /* Закрытая панель меню — position: fixed, сдвинутая за правый край;
+     она попадает в область прокрутки и даёт горизонтальную полосу на
+     всех страницах. clip, а не hidden: hidden создал бы контекст
+     прокрутки и сломал position: sticky у шапки и сайдбара каталога. */
+  overflow-x: clip;
+}
 
 body {
   margin: 0;
@@ -857,56 +948,9 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   background: #fff;
   border: 1px solid var(--line);
 }
-.badge--roast {
-  background: var(--mint-wash);
-  border-color: transparent;
-  color: var(--petrol);
-}
-.catalog-card__body .badge--roast {
-  align-self: start;
-  margin-bottom: 2px;
-  white-space: nowrap;
-}
-@media (max-width: 599px) {
-  .catalog-card__body .badge--roast {
-    font-size: 10px;
-    height: 24px;
-    padding: 0 8px;
-    gap: 4px;
-    letter-spacing: 0;
-  }
-}
-.card__media .badge--roast {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 1;
-}
 .badge svg { flex-shrink: 0; opacity: .75; }
 
-/* 4 ступени свежести (кит, блок 6) */
-.badge--fresh-3 {
-  background: var(--sand);
-  color: var(--grey);
-}
-.badge--fresh-3 svg { opacity: .5; }
 
-/* Витрина ступеней (страница товара / кит) */
-.freshness-scale {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-}
-.freshness-step {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-m);
-  padding: 12px;
-  display: grid;
-  gap: 8px;
-  background: var(--surface);
-}
-.freshness-step.is-current { border-color: var(--teal-ink); box-shadow: 0 0 0 2px rgba(23,126,122,.14); }
-.freshness-step__label { font-size: 12px; color: var(--grey); }
 .badge--tiffany {
   background: var(--teal-ink);
   color: #fff;
@@ -960,15 +1004,7 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
    раскладываем её в две ровные строки вместо space-between. */
 @media (max-width: 559px) {
   /* на узкой карточке бейдж должен оставаться в одну строку */
-  .card__media .badge--roast {
-    white-space: nowrap;
-    font-size: 10px;
-    height: 24px;
-    padding: 0 8px;
-    gap: 4px;
-    letter-spacing: 0;
-  }
-  /* бейдж и цель нажатия «избранного» не помещаются в один ряд
+  .card__media   /* бейдж и цель нажатия «избранного» не помещаются в один ряд
      на узкой карточке — уводим сердце в нижний угол изображения */
   .fav {
     top: auto;
@@ -2314,8 +2350,10 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   .journey__slide { grid-template-columns: 1fr 1.05fr; gap: 56px; }
   /* Чётные кадры зеркалим — иначе список читается как таблица.
      nth-of-type, а не nth-child: первым ребёнком сцены идёт <ol>
-     прогресса, и нумерация сдвинулась бы на единицу. */
-  .journey__slide:nth-of-type(even) .journey__media { order: -1; }
+     прогресса, и нумерация сдвинулась бы на единицу.
+     Порядок задаём тексту, а не медиа: фигура и так идёт первой
+     в разметке, и order: -1 на ней ничего не менял. */
+  .journey__slide:nth-of-type(even) .journey__copy { order: -1; }
 }
 
 .journey__media {
@@ -2329,7 +2367,6 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
 }
 
 .journey__copy { display: grid; gap: 12px; align-content: center; }
-.journey__step { font-variant-numeric: tabular-nums; }
 
 .journey__metric {
   font-family: var(--font-head);
@@ -2434,32 +2471,58 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   margin: 0;
 }
 .journey__progress li {
-  background: var(--line);
+  /* Полупрозрачный петроль, а не --line: тот почти совпадает с песочным
+     фоном секции (контраст 1.01) и точки пропадали. Прозрачность вместо
+     фиксированного цвета — чтобы точки читались и на другом фоне. */
+  background: rgba(20, 52, 60, .45);
   border-radius: 99px;
   transition: background .35s var(--ease), transform .35s var(--ease);
 }
 .journey__progress li.is-active { background: var(--teal-ink); }
 
-/* мобильные — полоса сверху, десктоп — линейка слева */
+/* Точки: подпись «шаг N из N» здесь лишняя — это не оформление заказа,
+   а рассказ, и положение в нём достаточно показать точками.
+   Мобильные — ряд по центру сверху, десктоп — столбик слева. */
 .is-enhanced .journey.is-pinned .journey__progress {
   top: calc(var(--header-h) + 12px);
   left: 20px;
   right: 20px;
+  justify-content: center;
 }
-.journey__progress li { height: 3px; flex: 1; }
-.journey__progress li.is-active { transform: scaleY(1.8); }
+.journey__progress li {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+}
+.journey__progress li.is-active { transform: scale(1.5); }
 
-@media (min-width: 900px) {
+/* Вертикальная линейка живёт во внешнем поле, слева от контейнера, и
+   включается только когда это поле реально есть. Порог считается из
+   вёрстки: 1220px контейнера + по 28px зазора и 20px отступа с каждой
+   стороны = 1316px. Ниже поля не хватает, прежний max(20px, …) прижимал
+   линейку к краю контейнера — она ложилась на фотографию кадра.
+   На узких ширинах остаётся горизонтальная полоса сверху. */
+@media (min-width: 1320px) {
   .is-enhanced .journey.is-pinned .journey__progress {
     flex-direction: column;
     top: 50%;
     translate: 0 -50%;
-    left: max(20px, calc((100vw - var(--container)) / 2 - 28px));
+    /* Точки живут ВНУТРИ сцены: у неё overflow: hidden, и всё, что за её
+       границами, обрезается — вынос в поле страницы (left: -28px) делал
+       их невидимыми. Полоса под них резервируется отступами кадра, по
+       44px с обеих сторон, чтобы содержимое осталось по центру.
+       Отступ 5px, а не 0: активная точка увеличивается в 1.55 раза и
+       краем вылезала бы за сцену — а та обрезает. */
+    left: 5px;
     right: auto;
     gap: 10px;
   }
-  .journey__progress li { width: 3px; height: 26px; flex: 0 0 auto; }
-  .journey__progress li.is-active { transform: scaleX(2); }
+  .is-enhanced .journey.is-pinned .journey__slide {
+    padding-left: 44px;
+    padding-right: 44px;
+  }
+  .journey__progress li { width: 9px; height: 9px; }
+  .journey__progress li.is-active { transform: scale(1.55); }
 }
 
 /* Бейдж даты обжарки в четвёртом кадре — ставится штампом */
@@ -2535,10 +2598,7 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   60%  { opacity: 1; }
   to   { opacity: 1; transform: scale(1); }
 }
-.is-enhanced :where([data-reveal].is-in) .badge--roast {
-  animation: stamp-in .45s var(--ease) .18s both;
-}
-
+.is-enhanced :where([data-reveal].is-in) 
 /* ── Волны между секциями ──────────────────────────────────────────
    Псевдоэлемент шире секции и сдвигается по мере прохода блока через
    экран: кривая «течёт», а не стоит. Двигаем transform — композитор,
@@ -2992,12 +3052,24 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
 /* ── Группа вариантов ──────────────────────────────────────────────
    Плоский ряд «пилюль» вместо крупных плиток с картинками: в окне
    три группы подряд, и плитки увели бы кнопку добавления за экран. */
-.opt-group { display: grid; gap: 8px; }
+/* Рамка и отступы группы — это оформление <fieldset> и <legend>, которое
+   браузер рисует сам. В прототипе на нём и держится вид; в Laravel сброс
+   Tailwind его снимает, и группы теряют обводку. Поэтому прописано явно:
+   значения сняты с отрисовки эталона, чтобы обе витрины совпали. */
+.opt-group {
+  display: grid;
+  gap: 8px;
+  border: 2px groove #efefef;
+  padding: 5.25px 11.25px 9.375px;
+  margin-inline: 2px;
+}
 .opt-group__label {
   font-size: 11px;
   letter-spacing: .12em;
   text-transform: uppercase;
   color: var(--grey);
+  /* Подпись сидит в разрыве рамки — боковые отступы отбивают её от линии */
+  padding-inline: 2px;
 }
 .opt-row {
   display: flex;

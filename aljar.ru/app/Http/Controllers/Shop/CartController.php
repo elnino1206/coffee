@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Shop;
 
 use App\Actions\Cart\ResolveCart;
+use App\Enums\ShipMethod;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Shop\AddToCartRequest;
 use App\Models\CartItem;
+use App\Models\Coffee;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -20,6 +22,8 @@ class CartController extends Controller
         $cart = ($this->resolveCart)($request, create: false);
         $cart?->load('items.variant.product');
 
+        $goodsTotal = $cart?->goodsTotal() ?? 0;
+
         return Inertia::render('shop/Cart', [
             'items' => $cart?->items->map(fn (CartItem $item) => [
                 'id' => $item->id,
@@ -28,25 +32,79 @@ class CartController extends Controller
                 'image' => $item->variant->product->image_path,
                 'variant' => $item->variant->title,
                 'grind' => $item->grind?->label(),
+                'roast' => $item->roast?->label(),
+                'subscribe' => $item->subscribe,
                 'qty' => $item->qty,
-                'unit_price' => $item->variant->price,
+                // Цена со скидкой подписки — та же, по которой считается
+                // итог. Каталожная здесь разошлась бы с суммой строки.
+                'unit_price' => $item->unitPrice(),
+                'base_price' => $item->variant->price,
                 'total' => $item->total(),
             ])->values() ?? collect(),
-            'goods_total' => $cart?->goodsTotal() ?? 0,
+            'goods_total' => $goodsTotal,
+            // Доставка курьером считается здесь же: в шаблоне итог корзины
+            // её уже включает, а не откладывает до оформления.
+            'delivery' => ShipMethod::Courier->price($goodsTotal),
             'free_delivery_from' => (int) config('checkout.free_delivery_from'),
+            'upsell' => $this->upsell($cart?->items->pluck('variant.product.id')->all() ?? []),
         ]);
+    }
+
+    /**
+     * «Добавить к заказу»: три позиции, которых в корзине ещё нет.
+     *
+     * Три — ровно под три колонки на широком экране; сетка выдержит и
+     * больше, но блок перестанет читаться как короткая подсказка.
+     *
+     * @param  list<int>  $exclude
+     * @return list<array<string, mixed>>
+     */
+    protected function upsell(array $exclude): array
+    {
+        return Coffee::query()
+            ->visible()
+            ->with(['detail', 'variants'])
+            ->whereNotIn('products.id', $exclude)
+            ->orderByDesc('rating_avg')
+            ->limit(3)
+            ->get()
+            ->map(fn (Coffee $coffee): array => [
+                'slug' => $coffee->slug,
+                'name' => $coffee->name,
+                'notes' => $coffee->detail?->notes,
+                'image' => $coffee->image_path,
+                'species' => $coffee->detail?->species,
+                'roast' => $coffee->detail?->roast->label(),
+                'roast_value' => $coffee->detail?->roast->value,
+                'price_from' => (int) ($coffee->variants->min('price') ?? 0),
+                'variants' => $coffee->variants
+                    ->map(fn ($variant): array => [
+                        'id' => $variant->id,
+                        'title' => $variant->title,
+                        'price' => $variant->price,
+                        'in_stock' => $variant->inStock(),
+                    ])
+                    ->values()
+                    ->all(),
+            ])
+            ->all();
     }
 
     public function store(AddToCartRequest $request): RedirectResponse
     {
         $cart = ($this->resolveCart)($request);
         $grind = $request->input('grind');
+        $roast = $request->input('roast');
+        $subscribe = $request->boolean('subscribe');
 
-        // Одна и та же позиция в том же помоле складывается, а не
-        // дублируется строкой.
+        // Одна и та же позиция складывается, а не дублируется строкой.
+        // В ключ входят все три выбора: разная обжарка или разовая
+        // покупка против подписки — это разные позиции и разная цена.
         $existing = $cart->items()
             ->where('product_variant_id', $request->integer('product_variant_id'))
             ->where('grind', $grind)
+            ->where('roast', $roast)
+            ->where('subscribe', $subscribe)
             ->first();
 
         if ($existing instanceof CartItem) {
@@ -55,6 +113,8 @@ class CartController extends Controller
             $cart->items()->create([
                 'product_variant_id' => $request->integer('product_variant_id'),
                 'grind' => $grind,
+                'roast' => $roast,
+                'subscribe' => $subscribe,
                 'qty' => $request->integer('qty'),
             ]);
         }

@@ -1,8 +1,13 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'Welcome')->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
+
+// Справочные страницы: только вёрстка, данных с сервера не требуют.
+Route::inertia('delivery', 'info/Delivery')->name('info.delivery');
+Route::inertia('about', 'info/About')->name('info.about');
 
 Route::middleware(['auth:web', 'verified'])->group(function () {
     Route::inertia('dashboard', 'Dashboard')->name('dashboard');

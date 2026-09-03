@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\BrewMethod;
 use App\Enums\Roast;
 use App\Models\Coffee;
-use App\Models\CoffeeDetail;
+use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -93,7 +93,7 @@ class CoffeeCatalogController extends Controller
             'price_min' => ['nullable', 'integer', 'min:0'],
             'price_max' => ['nullable', 'integer', 'min:0'],
             'q' => ['nullable', 'string', 'max:100'],
-            'sort' => ['nullable', 'string', 'in:fresh,rating,price-asc,price-desc'],
+            'sort' => ['nullable', 'string', 'in:rating,price-asc,price-desc'],
         ]);
 
         return [
@@ -103,7 +103,10 @@ class CoffeeCatalogController extends Controller
             'price_min' => $validated['price_min'] ?? null,
             'price_max' => $validated['price_max'] ?? null,
             'q' => $validated['q'] ?? null,
-            'sort' => $validated['sort'] ?? 'fresh',
+            // 'fresh' осталось от сортировки по дате обжарки, которую
+            // убрали: значения нет ни в валидации, ни в match, а select на
+            // витрине не находил такой option и рисовался пустым.
+            'sort' => $validated['sort'] ?? 'rating',
         ];
     }
 
@@ -115,7 +118,10 @@ class CoffeeCatalogController extends Controller
     {
         $query = Coffee::query()
             ->visible()
-            ->with('detail')
+            // Варианты грузятся вместе с товарами: карточка отдаёт их
+            // окну быстрого добавления, и без жадной загрузки каталог
+            // делал бы отдельный запрос на каждую позицию.
+            ->with(['detail', 'variants'])
             // Цена «от» — минимальная среди вариантов: по ней же идёт и
             // сортировка, поэтому считается запросом, а не в PHP.
             ->withMin('variants as price_from', 'price');
@@ -155,14 +161,9 @@ class CoffeeCatalogController extends Controller
         });
 
         return match ($filters['sort']) {
-            'rating' => $query->orderByDesc('rating_avg'),
             'price-asc' => $query->orderBy('price_from'),
             'price-desc' => $query->orderByDesc('price_from'),
-            default => $query->orderByDesc(
-                CoffeeDetail::query()
-                    ->select('roast_date')
-                    ->whereColumn('coffee_details.product_id', 'products.id'),
-            ),
+            default => $query->orderByDesc('rating_avg'),
         };
     }
 
@@ -209,24 +210,36 @@ class CoffeeCatalogController extends Controller
      */
     protected function card(Coffee $coffee): array
     {
-        $freshness = $coffee->freshness();
-
         return [
             'slug' => $coffee->slug,
             'name' => $coffee->name,
             'notes' => $coffee->detail?->notes,
             'image' => $coffee->image_path,
             'species' => $coffee->detail?->species,
+            // Происхождение и регион — подзаголовок карточки каталога.
+            'origin' => $coffee->detail?->origin,
+            'region' => $coffee->detail?->region,
             'roast' => $coffee->detail?->roast->label(),
+            // Значение, а не подпись: окно выбора предвыбирает по нему.
+            'roast_value' => $coffee->detail?->roast->value,
             'rating' => (float) $coffee->rating_avg,
             'reviews' => $coffee->reviews_count,
             'price_from' => (int) ($coffee->price_from ?? $coffee->variants->min('price') ?? 0),
-            'freshness' => $freshness === null ? null : [
-                'index' => $freshness->index(),
-                'label' => $freshness->label(),
-                'note' => $freshness->note(),
-                'roasted_at' => $coffee->detail?->roastedAtLabel(),
-            ],
+            // Вес, к которому относится цена «от». В прототипе он был
+            // зашит как «250 г»; здесь берётся у самого дешёвого варианта,
+            // иначе подпись разойдётся с ценой.
+            'price_from_title' => $coffee->variants->sortBy('price')->first()?->title,
+            // Варианты нужны окну быстрого добавления: без них кнопка на
+            // карточке выбирала бы вес за покупателя.
+            'variants' => $coffee->variants
+                ->map(fn (ProductVariant $variant): array => [
+                    'id' => $variant->id,
+                    'title' => $variant->title,
+                    'price' => $variant->price,
+                    'in_stock' => $variant->inStock(),
+                ])
+                ->values()
+                ->all(),
         ];
     }
 }

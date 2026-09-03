@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Shop;
 
 use App\Enums\Grind;
+use App\Enums\Roast;
 use App\Models\ProductVariant;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -22,6 +23,8 @@ class AddToCartRequest extends FormRequest
         return [
             'product_variant_id' => ['required', 'integer', 'exists:product_variants,id'],
             'grind' => ['nullable', 'string', 'in:'.implode(',', array_column(Grind::cases(), 'value'))],
+            'roast' => ['nullable', 'string', 'in:'.implode(',', array_column(Roast::cases(), 'value'))],
+            'subscribe' => ['boolean'],
             'qty' => ['required', 'integer', 'min:1', 'max:99'],
         ];
     }

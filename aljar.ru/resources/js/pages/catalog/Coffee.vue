@@ -1,9 +1,22 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import AddToCartModal from '@/components/AddToCartModal.vue';
 import { formatPrice } from '@/lib/money';
+import { animateNumber, motionOn, observeReveals } from '@/lib/motion';
+
+/**
+ * Каталог кофе. Разметка и классы перенесены из прототипа
+ * versions/v2-anim/catalog.html без изменений: дизайн утверждён,
+ * переписывать его на другие классы значит расходиться с эталоном.
+ *
+ * Отличие от прототипа: фильтрация уезжает на сервер — он владеет
+ * каталогом и только он может честно сказать, сколько позиций нашлось.
+ */
 
 type Facet = { value: string; label: string; count: number };
+
+type Variant = { id: number; title: string; price: number; in_stock: boolean };
 
 type Card = {
     slug: string;
@@ -11,15 +24,14 @@ type Card = {
     notes: string | null;
     image: string | null;
     species: string | null;
+    origin: string | null;
+    region: string | null;
     roast: string | null;
+    roast_value: string | null;
     rating: number;
     price_from: number;
-    freshness: {
-        index: number;
-        label: string;
-        note: string;
-        roasted_at: string | null;
-    } | null;
+    price_from_title: string | null;
+    variants: Variant[];
 };
 
 const props = defineProps<{
@@ -48,9 +60,74 @@ const methodIcons: Record<string, string> = {
     cezve: '/img/method-cezve.svg',
 };
 
+/**
+ * Шкала обжарки: пять делений, из них закрашено столько, на сколько
+ * тянет степень. В боковой панели степень показывает шкала, а не число
+ * позиций, — как в прототипе.
+ */
+const ROAST_SCALE = 5;
+
+const roastLevels: Record<string, number> = { light: 1, medium: 3, dark: 5 };
+
+/** В панели фильтров подписи короткие: «Светлая», а не «Светлая обжарка». */
+const roastShort: Record<string, string> = {
+    light: 'Светлая',
+    medium: 'Средняя',
+    dark: 'Тёмная',
+};
+
 const form = ref({ ...props.filters });
 const search = ref(props.filters.q ?? '');
 const view = ref<'grid' | 'list'>('grid');
+
+/**
+ * Счётчик результатов. Число не подменяется, а прокручивается: глаз
+ * успевает заметить, что оно изменилось, и в какую сторону.
+ */
+const resultsEl = ref<HTMLElement | null>(null);
+
+/** Показанное значение — чтобы прокрутить от него, а не от нуля. */
+let shownCount = 0;
+
+/**
+ * Слово склоняется на каждом кадре прокрутки — иначе на «3» стояло бы
+ * «позиций», пока число уже подъехало к десяти.
+ */
+function resultsLabel(value: number): string {
+    const k = Math.round(value);
+
+    const word =
+        k % 10 === 1 && k % 100 !== 11
+            ? 'позиция'
+            : [2, 3, 4].includes(k % 10) && ![12, 13, 14].includes(k % 100)
+              ? 'позиции'
+              : 'позиций';
+
+    return `${k} ${word}`;
+}
+
+onMounted(() => {
+    /* Первая отрисовка идёт без прокрутки: катить число от нуля при
+       заходе на страницу нечего — оно ещё не менялось. */
+    if (resultsEl.value) resultsEl.value.textContent = resultsLabel(props.total);
+    shownCount = props.total;
+});
+
+watch(
+    () => props.total,
+    (next) => {
+        animateNumber(resultsEl.value, shownCount, next, resultsLabel, 450);
+        shownCount = next;
+    },
+);
+
+/** Сетка выдачи — её гасим на время подмены набора. */
+const grid = ref<HTMLElement | null>(null);
+const swapping = ref(false);
+
+/** Свёрнутые группы фильтров и открытая панель на узком экране. */
+const collapsed = ref<Record<string, boolean>>({});
+const filtersOpen = ref(false);
 
 const priceLo = computed(() => form.value.price_min ?? props.facets.price.min);
 const priceHi = computed(() => form.value.price_max ?? props.facets.price.max);
@@ -65,16 +142,21 @@ const fill = computed(() => {
 });
 
 /**
- * Фильтры уезжают на сервер: он владеет каталогом и только он может
- * честно сказать, сколько позиций нашлось. Перезагружается при этом
- * не вся страница, а выдача.
+ * Фильтры уезжают на сервер. Перезагружается при этом не вся страница,
+ * а выдача.
  */
 function apply() {
+    /* Старый набор гасим до подмены: иначе карточки меняются рывком
+       прямо под курсором. Новые проявляются сами, через [data-reveal].
+       Первая отрисовка и режим без движения идут напрямую. */
+    if (motionOn() && props.products.length) swapping.value = true;
+
     router.get('/catalog/coffee', { ...form.value, q: search.value || undefined }, {
         preserveState: true,
         preserveScroll: true,
         replace: true,
         only: ['products', 'total', 'filters'],
+        onFinish: () => (swapping.value = false),
     });
 }
 
@@ -96,14 +178,14 @@ function reset() {
         price_min: null,
         price_max: null,
         q: null,
-        sort: 'fresh',
+        sort: 'rating',
     };
     search.value = '';
     apply();
 }
 
 const activeChips = computed(() => [
-    ...form.value.roast.map((value) => ({ list: 'roast' as const, value, label: props.facets.roasts.find((f) => f.value === value)?.label ?? value })),
+    ...form.value.roast.map((value) => ({ list: 'roast' as const, value, label: roastShort[value] ?? value })),
     ...form.value.method.map((value) => ({ list: 'method' as const, value, label: props.facets.methods.find((f) => f.value === value)?.label ?? value })),
     ...form.value.origin.map((value) => ({ list: 'origin' as const, value, label: value })),
 ]);
@@ -113,6 +195,19 @@ watch(search, () => {
     clearTimeout(typing);
     typing = setTimeout(apply, 300);
 });
+
+/**
+ * Выдача перерисовывается без перезагрузки страницы, поэтому новые
+ * карточки нужно отдать наблюдателю появления заново — иначе они
+ * останутся спрятанными ради анимации, которая для них не запустится.
+ */
+watch(
+    () => props.products,
+    () => nextTick(() => observeReveals(grid.value ?? document)),
+);
+
+/** Товар, для которого открыт выбор веса и помола. */
+const picked = ref<Card | null>(null);
 </script>
 
 <template>
@@ -120,7 +215,7 @@ watch(search, () => {
 
     <div class="catalog-page">
         <div class="catalog-shell">
-            <aside class="filters" id="filters-panel">
+            <aside id="filters-panel" class="filters" :class="{ 'is-open': filtersOpen }">
                 <div class="filters__head">
                     <nav class="breadcrumbs"><Link href="/">Главная</Link> · Каталог</nav>
                     <h1 class="h2 filters__title">Весь кофе</h1>
@@ -131,37 +226,73 @@ watch(search, () => {
                 </div>
 
                 <div class="filter-group">
-                    <div class="filter-group__head"><span>Обжарка</span></div>
+                    <button
+                        class="filter-group__head"
+                        type="button"
+                        :aria-expanded="!collapsed.roast"
+                        @click="collapsed.roast = !collapsed.roast"
+                    >
+                        <span>Обжарка</span>
+                        <svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M4 10l4-4 4 4" />
+                        </svg>
+                    </button>
                     <div class="filter-group__body">
-                        <label v-for="roast in facets.roasts" :key="roast.value" class="check">
+                        <label v-for="roast in facets.roasts" :key="roast.value" class="facet">
                             <input
                                 type="checkbox"
                                 :checked="form.roast.includes(roast.value)"
                                 @change="toggle('roast', roast.value)"
                             />
-                            <span>{{ roast.label }}</span>
-                            <span class="check__count">{{ roast.count }}</span>
+                            <span class="facet__label">{{ roastShort[roast.value] ?? roast.label }}</span>
+                            <span class="roast-scale" aria-hidden="true">
+                                <i
+                                    v-for="n in ROAST_SCALE"
+                                    :key="n"
+                                    :class="{ on: n <= (roastLevels[roast.value] ?? 0) }"
+                                ></i>
+                            </span>
                         </label>
                     </div>
                 </div>
 
                 <div class="filter-group">
-                    <div class="filter-group__head"><span>Происхождение</span></div>
+                    <button
+                        class="filter-group__head"
+                        type="button"
+                        :aria-expanded="!collapsed.origin"
+                        @click="collapsed.origin = !collapsed.origin"
+                    >
+                        <span>Происхождение</span>
+                        <svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M4 10l4-4 4 4" />
+                        </svg>
+                    </button>
                     <div class="filter-group__body">
-                        <label v-for="origin in facets.origins" :key="origin.value" class="check">
+                        <label v-for="origin in facets.origins" :key="origin.value" class="facet">
                             <input
                                 type="checkbox"
                                 :checked="form.origin.includes(origin.value)"
                                 @change="toggle('origin', origin.value)"
                             />
-                            <span>{{ origin.label }}</span>
-                            <span class="check__count">{{ origin.count }}</span>
+                            <span class="facet__label">{{ origin.label }}</span>
+                            <span class="facet__count">{{ origin.count }}</span>
                         </label>
                     </div>
                 </div>
 
                 <div class="filter-group">
-                    <div class="filter-group__head"><span>Цена</span></div>
+                    <button
+                        class="filter-group__head"
+                        type="button"
+                        :aria-expanded="!collapsed.price"
+                        @click="collapsed.price = !collapsed.price"
+                    >
+                        <span>Цена</span>
+                        <svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M4 10l4-4 4 4" />
+                        </svg>
+                    </button>
                     <div class="filter-group__body">
                         <div class="price-range">
                             <div class="price-range__track">
@@ -192,27 +323,35 @@ watch(search, () => {
                 </div>
 
                 <div class="filter-group">
-                    <div class="filter-group__head"><span>Способ приготовления</span></div>
+                    <button
+                        class="filter-group__head"
+                        type="button"
+                        :aria-expanded="!collapsed.method"
+                        @click="collapsed.method = !collapsed.method"
+                    >
+                        <span>Способ приготовления</span>
+                        <svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M4 10l4-4 4 4" />
+                        </svg>
+                    </button>
                     <div class="filter-group__body method-grid">
-                        <button
-                            v-for="method in facets.methods"
-                            :key="method.value"
-                            type="button"
-                            class="method-tile"
-                            :class="{ 'is-active': form.method.includes(method.value) }"
-                            :aria-pressed="form.method.includes(method.value)"
-                            @click="toggle('method', method.value)"
-                        >
-                            <img :src="methodIcons[method.value]" :alt="''" width="28" height="28" />
-                            <span>{{ method.label }}</span>
-                        </button>
+                        <label v-for="method in facets.methods" :key="method.value" class="facet">
+                            <input
+                                type="checkbox"
+                                :checked="form.method.includes(method.value)"
+                                @change="toggle('method', method.value)"
+                            />
+                            <img :src="methodIcons[method.value]" alt="" loading="lazy" decoding="async" />
+                            <span class="facet__label">{{ method.label }}</span>
+                        </label>
                     </div>
                 </div>
 
                 <div class="filters__actions">
-                    <button class="btn btn--ghost btn--m" type="button" @click="reset">
-                        Сбросить
+                    <button class="btn btn--petrol btn--m" type="button" @click="filtersOpen = false">
+                        Показать
                     </button>
+                    <button class="btn btn--ghost btn--m" type="button" @click="reset">Сбросить</button>
                 </div>
             </aside>
 
@@ -220,14 +359,13 @@ watch(search, () => {
                 <header class="results-head">
                     <div>
                         <p class="eyebrow">Результаты</p>
-                        <h2 class="h2">{{ total }} — кофе</h2>
+                        <h2 ref="resultsEl" class="h2"></h2>
                     </div>
                     <div class="results-tools">
                         <label class="sort-label">
                             Сортировка
-                            <select class="select" v-model="form.sort" @change="apply">
-                                <option value="fresh">Сначала свежие</option>
-                                <option value="rating">По рейтингу</option>
+                            <select v-model="form.sort" class="select" @change="apply">
+                                <option value="rating">Сначала популярные</option>
                                 <option value="price-asc">Цена по возрастанию</option>
                                 <option value="price-desc">Цена по убыванию</option>
                             </select>
@@ -264,74 +402,82 @@ watch(search, () => {
 
                 <div class="toolbar-row">
                     <input
+                        v-model="search"
                         class="field"
                         type="search"
                         placeholder="Поиск по названию, региону, вкусу…"
-                        v-model="search"
                     />
-                </div>
-
-                <div class="chips" v-if="activeChips.length">
                     <button
-                        v-for="chip in activeChips"
-                        :key="`${chip.list}-${chip.value}`"
-                        class="chip"
+                        id="filters-toggle"
+                        class="btn btn--ghost btn--m filters-toggle"
                         type="button"
-                        @click="toggle(chip.list, chip.value)"
+                        @click="filtersOpen = !filtersOpen"
                     >
-                        {{ chip.label }} ×
+                        Фильтры
                     </button>
                 </div>
 
-                <div class="product-grid" :class="{ 'product-grid--list': view === 'list' }">
-                    <article v-for="product in products" :key="product.slug" class="card">
-                        <div class="card__media">
-                            <span
-                                v-if="product.freshness"
-                                class="badge badge--roast"
-                                :class="`badge--fresh-${product.freshness.index}`"
-                                :title="product.freshness.note"
-                            >
-                                <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
-                                    <rect x="3" y="4.5" width="14" height="13" rx="2.5" />
-                                    <path d="M3 8.5h14M7 2.5v3M13 2.5v3" />
-                                </svg>
-                                Обжарено: {{ product.freshness.roasted_at }}
-                            </span>
+                <div class="chips">
+                    <span v-for="chip in activeChips" :key="`${chip.list}-${chip.value}`" class="chip">
+                        {{ chip.label }}
+                        <button type="button" aria-label="Сбросить" @click="toggle(chip.list, chip.value)">×</button>
+                    </span>
+                </div>
+
+                <div
+                    ref="grid"
+                    class="product-grid"
+                    :class="{ 'is-list': view === 'list', 'is-swapping': swapping }"
+                >
+                    <article v-for="product in products" :key="product.slug" class="catalog-card" data-reveal>
+                        <div class="catalog-card__media">
                             <Link :href="`/catalog/coffee/${product.slug}`">
                                 <img :src="`/${product.image}`" :alt="product.name" loading="lazy" decoding="async" />
                             </Link>
                         </div>
-                        <div class="card__body">
-                            <Link class="card__title" :href="`/catalog/coffee/${product.slug}`">
+                        <div class="catalog-card__body">
+                            <Link class="catalog-card__title" :href="`/catalog/coffee/${product.slug}`">
                                 {{ product.name }}
                             </Link>
-                            <p class="card__notes">{{ product.notes }}</p>
-                            <div class="card__meta">
-                                <span>{{ product.roast }}</span>
-                                <span>{{ product.species }}</span>
-                            </div>
-                            <div class="card__row">
-                                <span class="price">{{ formatPrice(product.price_from) }}</span>
-                                <Link
-                                    class="add-quick"
-                                    :href="`/catalog/coffee/${product.slug}`"
+                            <p class="catalog-card__origin">
+                                {{ product.origin
+                                }}<template v-if="product.region && product.region !== product.origin">
+                                    · {{ product.region }}
+                                </template>
+                            </p>
+                            <p class="catalog-card__notes">{{ product.notes?.split(', ').join(' · ') }}</p>
+                            <p class="catalog-card__price">
+                                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+                                    <path d="M3 8.5V4a1 1 0 0 1 1-1h4.5L17 11.5 11.5 17 3 8.5z" />
+                                    <circle cx="6.6" cy="6.6" r="1.1" />
+                                </svg>
+                                {{ formatPrice(product.price_from) }}
+                                <small v-if="product.price_from_title">/ {{ product.price_from_title }}</small>
+                            </p>
+                            <div class="catalog-card__cta">
+                                <button
+                                    class="add-quick add-quick--wide"
+                                    type="button"
                                     :aria-label="`Выбрать вес и помол: ${product.name}`"
+                                    @click="picked = product"
                                 >
                                     <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
                                         <path d="M4.5 6.5h11l-1 10h-9l-1-10z" />
                                         <path d="M7.5 6.5V5a2.5 2.5 0 0 1 5 0v1.5" />
                                     </svg>
-                                </Link>
+                                    В корзину
+                                </button>
                             </div>
                         </div>
                     </article>
                 </div>
 
                 <p v-if="!products.length" class="muted">
-                    По этим фильтрам ничего не нашлось. Сбросьте часть условий.
+                    Ничего не нашлось. Попробуйте снять часть фильтров.
                 </p>
             </section>
         </div>
     </div>
+
+    <AddToCartModal :product="picked" @close="picked = null" />
 </template>

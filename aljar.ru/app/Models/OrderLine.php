@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use App\Enums\Grind;
+use App\Enums\Roast;
+use Database\Factories\OrderLineFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -19,14 +22,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $weight_g
  * @property int $unit_price
  * @property Grind|null $grind
+ * @property Roast|null $roast
+ * @property bool $subscribe
  * @property int $qty
  */
 #[Fillable([
     'product_variant_id', 'product_name', 'variant_title', 'weight_g',
-    'unit_price', 'grind', 'qty',
+    'unit_price', 'grind', 'roast', 'subscribe', 'qty',
 ])]
 class OrderLine extends Model
 {
+    /** @use HasFactory<OrderLineFactory> */
+    use HasFactory;
+
     /**
      * @return array<string, string>
      */
@@ -34,6 +42,8 @@ class OrderLine extends Model
     {
         return [
             'grind' => Grind::class,
+            'roast' => Roast::class,
+            'subscribe' => 'boolean',
             'unit_price' => 'integer',
             'weight_g' => 'integer',
             'qty' => 'integer',

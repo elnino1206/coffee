@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\Equipment;
-use App\Models\EquipmentDetail;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -36,8 +35,10 @@ class EquipmentFactory extends Factory
     public function configure(): static
     {
         return $this->afterCreating(function (Equipment $equipment): void {
-            EquipmentDetail::query()->create([
-                'product_id' => $equipment->id,
+            // Через связь, а не EquipmentDetail::create(): product_id —
+            // первичный ключ, в fillable его нет, при массовом присвоении
+            // он отбрасывался.
+            $equipment->detail()->create([
                 'brand' => fake()->company(),
                 'material' => fake()->randomElement(['Медь', 'Нержавеющая сталь', 'Алюминий']),
                 'country' => 'Россия',

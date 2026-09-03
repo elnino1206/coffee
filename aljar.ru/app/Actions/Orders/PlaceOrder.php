@@ -70,8 +70,12 @@ class PlaceOrder
             'product_name' => $variant->product->name,
             'variant_title' => $variant->title,
             'weight_g' => $variant->weight_g,
-            'unit_price' => $variant->price,
+            // Цена со скидкой подписки, а не каталожная: заказ обязан
+            // сойтись с тем, что покупатель видел в корзине.
+            'unit_price' => $item->unitPrice(),
             'grind' => $item->grind,
+            'roast' => $item->roast,
+            'subscribe' => $item->subscribe,
             'qty' => $item->qty,
         ]);
 

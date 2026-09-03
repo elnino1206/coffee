@@ -55,7 +55,7 @@ class CatalogSeeder extends Seeder
             'sort' => 1,
         ]);
 
-        foreach ($this->coffee() as $index => $row) {
+        foreach ($this->coffee() as $row) {
             // Тип не передаётся: его проставляет сама модель Coffee, и
             // назначить кофе тип оборудования нельзя даже по ошибке.
             $coffee = Coffee::query()->create([
@@ -75,8 +75,6 @@ class CatalogSeeder extends Seeder
             CoffeeDetail::query()->create([
                 'product_id' => $coffee->id,
                 ...$row['detail'],
-                // Свежие партии сверху списка, залежавшиеся — ниже.
-                'roast_date' => now()->subDays($index % 12),
             ]);
 
             $this->variants($coffee, $row['variants']);

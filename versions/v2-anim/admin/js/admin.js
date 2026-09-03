@@ -504,9 +504,7 @@
       { name: "name", label: "Название", value: p.name || "", required: true },
       { row: [
         { name: "price", label: "Цена за 250 г, ₽", type: "number", value: p.price ?? "", min: 0, step: "5", required: true },
-        { name: "roastDate", label: "Дата обжарки", type: "date", value: p.roastDate || new Date().toISOString().slice(0, 10), required: true },
       ]},
-      { type: "hint", label: "Дата обжарки управляет бейджем свежести на витрине и порядком в блоке «Свежесть склада»." },
       /* Помола здесь нет намеренно: его выбирает покупатель при
          заказе, и в карточке товара ему не место. */
       { type: "select", name: "roast", label: "Степень обжарки", value: p.roast || "medium", options: ROASTS },
@@ -715,27 +713,6 @@
         </div>`).join("");
     }
 
-    /* Свежесть склада — то, ради чего этот экран вообще открывают:
-       дата обжарки главный аргумент бренда, и просрочка на витрине
-       бьёт по доверию сильнее, чем отсутствие позиции. */
-    const roast = document.querySelector("[data-roast-watch]");
-    if (roast) {
-      const rows = products()
-        .map((p) => ({ p, days: daysFrom(p.roastDate) }))
-        .sort((a, b) => b.days - a.days)
-        .slice(0, 6);
-      roast.innerHTML = rows.map(({ p, days }) => {
-        const step = (A.freshness || []).find((s) => days <= s.maxDays) || {};
-        const key = days <= 3 ? "done" : days <= 7 ? "work" : "canceled";
-        return `<div class="roast-row">
-          <div class="roast-row__name">
-            <span>${p.name}</span>
-            <span class="tiny">${step.label || ""} · ${formatDate(p.roastDate)}</span>
-          </div>
-          ${statusPill(key, { done: "Свежий", work: "Проверить", canceled: `${days} дн.` })}
-        </div>`;
-      }).join("");
-    }
 
   }
 
@@ -867,8 +844,6 @@
     const body = document.querySelector("[data-products]");
     if (!body) return;
     body.innerHTML = products().map((p) => {
-      const days = daysFrom(p.roastDate);
-      const key = days <= 3 ? "done" : days <= 7 ? "work" : "canceled";
       return `
       <tr class="${p.hidden ? "is-hidden" : ""}">
         <td>
@@ -882,10 +857,6 @@
         </td>
         <td>${p.roastLabel}</td>
         <td>${p.methodLabel}</td>
-        <td>
-          ${formatDate(p.roastDate)}
-          ${statusPill(key, { done: "Свежий", work: "Проверить", canceled: `${days} дн.` })}
-        </td>
         <td class="num">${formatPrice(p.price)}</td>
         <td class="num">${p.rating} <span class="tiny">/ ${p.reviews}</span></td>
         <td>

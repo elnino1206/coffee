@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\Freshness;
 use App\Enums\ProductType;
 use Database\Factories\CoffeeFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -51,14 +50,6 @@ class Coffee extends Product
     public function detail(): HasOne
     {
         return $this->hasOne(CoffeeDetail::class, 'product_id');
-    }
-
-    /**
-     * Get how fresh the roast is right now.
-     */
-    public function freshness(): ?Freshness
-    {
-        return $this->detail?->freshness();
     }
 
     /**

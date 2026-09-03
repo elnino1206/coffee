@@ -3,6 +3,7 @@
 namespace Tests\Feature\Shop;
 
 use App\Enums\OrderStatus;
+use App\Enums\Roast;
 use App\Models\Cart;
 use App\Models\Coffee;
 use App\Models\Customer;
@@ -84,6 +85,29 @@ class CheckoutTest extends TestCase
         $this->assertSame('250 г', $line->variant_title);
         $this->assertSame(250, $line->weight_g);
         $this->assertSame(70_000, $line->unit_price);
+    }
+
+    public function test_subscription_choice_reaches_the_order_line_with_its_price()
+    {
+        $variant = $this->variant(70_000);
+
+        $this->post(route('cart.store'), [
+            'product_variant_id' => $variant->id,
+            'grind' => 'whole',
+            'roast' => 'dark',
+            'subscribe' => true,
+            'qty' => 2,
+        ]);
+        $this->withCart($this->cartToken())->post(route('checkout.store'), $this->form());
+
+        $line = Order::query()->firstOrFail()->lines()->firstOrFail();
+
+        $this->assertSame(Roast::Dark, $line->roast);
+        $this->assertTrue($line->subscribe);
+        // Скидка подписки уже в цене строки: иначе заказ разошёлся бы
+        // с тем, что покупатель видел в корзине.
+        $this->assertSame(63_000, $line->unit_price);
+        $this->assertSame(126_000, $line->total());
     }
 
     public function test_totals_are_derived_from_the_lines_and_delivery()

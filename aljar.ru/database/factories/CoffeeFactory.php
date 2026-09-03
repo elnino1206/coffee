@@ -5,7 +5,6 @@ namespace Database\Factories;
 use App\Enums\BrewMethod;
 use App\Enums\Roast;
 use App\Models\Coffee;
-use App\Models\CoffeeDetail;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -37,12 +36,16 @@ class CoffeeFactory extends Factory
 
     /**
      * Кофе без характеристик не бывает: деталь заводится вместе с товаром.
+     *
+     * Через связь, а не CoffeeDetail::create(): product_id — первичный ключ
+     * и в fillable его нет, поэтому при массовом присвоении он молча
+     * отбрасывался. Сидеры это не ловили — db:seed снимает защиту через
+     * Model::unguard(), а в тестах она включена.
      */
     public function configure(): static
     {
         return $this->afterCreating(function (Coffee $coffee): void {
-            CoffeeDetail::query()->create([
-                'product_id' => $coffee->id,
+            $coffee->detail()->create([
                 'species' => '100% арабика',
                 'origin' => fake()->randomElement(['Бразилия', 'Колумбия', 'Эфиопия']),
                 'region' => fake()->word(),
@@ -50,7 +53,6 @@ class CoffeeFactory extends Factory
                 'notes' => 'Шоколад, орех, карамель',
                 'roast' => fake()->randomElement(Roast::cases()),
                 'brew_method' => fake()->randomElement(BrewMethod::cases()),
-                'roast_date' => now()->subDays(fake()->numberBetween(0, 12)),
                 'profile_fruity' => fake()->numberBetween(0, 100),
                 'profile_chocolate' => fake()->numberBetween(0, 100),
                 'profile_spice' => fake()->numberBetween(0, 100),

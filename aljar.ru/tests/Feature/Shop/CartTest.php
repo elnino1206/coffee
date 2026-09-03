@@ -3,6 +3,7 @@
 namespace Tests\Feature\Shop;
 
 use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Coffee;
 use App\Models\Customer;
 use App\Models\Equipment;
@@ -114,6 +115,77 @@ class CartTest extends TestCase
         $this->withCart($this->cartToken())
             ->get(route('cart.show'))
             ->assertInertia(fn ($page) => $page->where('goods_total', 90_000));
+    }
+
+    public function test_roast_and_subscription_are_stored_with_the_row()
+    {
+        $variant = $this->variant();
+
+        $this->post(route('cart.store'), [
+            'product_variant_id' => $variant->id,
+            'grind' => 'whole',
+            'roast' => 'dark',
+            'subscribe' => true,
+            'qty' => 1,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('cart_items', [
+            'product_variant_id' => $variant->id,
+            'roast' => 'dark',
+            'subscribe' => true,
+        ]);
+    }
+
+    public function test_subscription_takes_ten_percent_off_the_row()
+    {
+        $variant = $this->variant(70_000);
+
+        $this->post(route('cart.store'), [
+            'product_variant_id' => $variant->id,
+            'grind' => 'whole',
+            'subscribe' => true,
+            'qty' => 2,
+        ]);
+
+        $item = CartItem::query()->latest('id')->firstOrFail();
+
+        $this->assertSame(63_000, $item->unitPrice());
+        $this->assertSame(126_000, $item->total());
+    }
+
+    public function test_a_one_off_and_a_subscription_are_two_rows()
+    {
+        $variant = $this->variant();
+
+        $this->post(route('cart.store'), [
+            'product_variant_id' => $variant->id,
+            'grind' => 'whole',
+            'subscribe' => false,
+            'qty' => 1,
+        ]);
+
+        $token = $this->cartToken();
+
+        $this->withCart($token)->post(route('cart.store'), [
+            'product_variant_id' => $variant->id,
+            'grind' => 'whole',
+            'subscribe' => true,
+            'qty' => 1,
+        ]);
+
+        $this->assertSame(2, CartItem::query()->count());
+    }
+
+    public function test_unknown_roast_is_rejected()
+    {
+        $variant = $this->variant();
+
+        $this->post(route('cart.store'), [
+            'product_variant_id' => $variant->id,
+            'grind' => 'whole',
+            'roast' => 'burnt',
+            'qty' => 1,
+        ])->assertSessionHasErrors('roast');
     }
 
     public function test_a_stranger_cannot_touch_someone_elses_cart_row()

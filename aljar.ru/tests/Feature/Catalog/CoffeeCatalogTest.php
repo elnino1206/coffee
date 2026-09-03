@@ -30,6 +30,34 @@ class CoffeeCatalogTest extends TestCase
             );
     }
 
+    public function test_default_sort_is_one_the_select_can_show()
+    {
+        // Значение по умолчанию должно совпадать с одним из вариантов
+        // сортировки: иначе select на витрине не находит option и
+        // рисуется пустым.
+        $this->get(route('catalog.coffee.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('filters.sort', 'rating'));
+    }
+
+    public function test_card_carries_origin_and_the_weight_of_the_price()
+    {
+        $coffee = Coffee::factory()->create(['name' => 'Pink Bourbon']);
+        $coffee->detail()->update(['origin' => 'Колумбия', 'region' => 'Уила']);
+        $coffee->variants()->create(['title' => '1 кг', 'price' => 252_000, 'weight_g' => 1000]);
+        $coffee->variants()->create(['title' => '250 г', 'price' => 70_000, 'weight_g' => 250]);
+
+        $this->get(route('catalog.coffee.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('products.0.origin', 'Колумбия')
+                ->where('products.0.region', 'Уила')
+                // Подпись к цене «от» берётся у самого дешёвого варианта.
+                ->where('products.0.price_from', 70_000)
+                ->where('products.0.price_from_title', '250 г')
+            );
+    }
+
     public function test_hidden_coffee_never_reaches_the_storefront()
     {
         Coffee::factory()->hidden()->create();

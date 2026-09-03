@@ -40,30 +40,7 @@
     const [y, m, d] = iso.split("-");
     return `${d}.${m}.${y}`;
   };
-  const formatBadgeDate = (iso) => {
-    const [, m, d] = iso.split("-");
-    return `${Number(d)} ${MONTHS[Number(m) - 1]}`;
-  };
 
-  const DAY = 86400000;
-  const daysSinceRoast = (iso) => {
-    const [y, m, d] = iso.split("-").map(Number);
-    const roast = Date.UTC(y, m - 1, d);
-    const today = new Date();
-    const now = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-    return Math.max(0, Math.round((now - roast) / DAY));
-  };
-  const freshness = (iso) => {
-    const days = daysSinceRoast(iso);
-    const steps = window.ALJAR.freshness;
-    const idx = steps.findIndex((s) => days <= s.maxDays);
-    const i = idx === -1 ? steps.length - 1 : idx;
-    return { ...steps[i], index: i, days };
-  };
-  const roastBadge = (iso) => {
-    const f = freshness(iso);
-    return `<span class="badge badge--roast badge--fresh-${f.index}" title="${f.note}">${ICONS.calendar}Обжарено: ${formatBadgeDate(iso)}</span>`;
-  };
 
   /* ── Слой анимаций (P0) ──────────────────────────────────────────
      План: docs/animation-plan.md
@@ -401,7 +378,6 @@
     return `
       <article class="card" data-reveal>
         <div class="card__media">
-          ${roastBadge(p.roastDate)}
           <button class="fav" type="button" aria-label="В избранное" data-fav="${p.id}">♡</button>
           <a href="product.html?id=${p.id}"><img src="${p.image}" alt="${p.name}" loading="lazy" decoding="async"></a>
         </div>
@@ -419,7 +395,6 @@
               name: p.name,
               price: p.price,
               image: p.image,
-              roastDate: p.roastDate,
               weight: "250",
               grind: "whole",
               subscribe: false,
@@ -431,8 +406,7 @@
 
   function catalogCard(p) {
     const payload = JSON.stringify({
-      id: p.id, name: p.name, price: p.price, image: p.image,
-      roastDate: p.roastDate, weight: "250", grind: "whole", subscribe: false,
+      id: p.id, name: p.name, price: p.price, image: p.image, weight: "250", grind: "whole", subscribe: false,
     });
     return `
       <article class="catalog-card" data-reveal>
@@ -440,7 +414,6 @@
           <a href="product.html?id=${p.id}"><img src="${p.image}" alt="${p.name}" loading="lazy" decoding="async"></a>
         </div>
         <div class="catalog-card__body">
-          ${roastBadge(p.roastDate)}
           <a class="catalog-card__title" href="product.html?id=${p.id}">${p.name}</a>
           <p class="catalog-card__origin">${p.origin}${p.region && p.region !== p.origin ? " · " + p.region : ""}</p>
           <p class="catalog-card__notes">${p.notes.split(", ").join(" · ")}</p>
@@ -655,7 +628,7 @@
       shown = price;
       noteEl.textContent = form.subscribe.checked
         ? `Вместо ${formatPrice(base)} — экономия ${formatPrice(base - price)}`
-        : `Обжарено ${formatDate(p.roastDate)}`;
+        : `${p.roastLabel} · ${p.species}`;
     };
     form.onchange = () => paint(true);
     paint(false);
@@ -667,7 +640,6 @@
         id: p.id,
         name: p.name,
         image: p.image,
-        roastDate: p.roastDate,
         weight,
         roast: form.roast.value,
         grind: form.grind.value,
@@ -730,7 +702,7 @@
       origin: new Set(),
       method: params.get("method") ? new Set([params.get("method")]) : new Set(),
       q: "",
-      sort: "fresh",
+      sort: "rating",
       lo: PMIN,
       hi: PMAX,
       view: "grid",
@@ -814,7 +786,6 @@
       }
       if (state.sort === "price-asc") list.sort((a, b) => a.price - b.price);
       if (state.sort === "price-desc") list.sort((a, b) => b.price - a.price);
-      if (state.sort === "fresh") list.sort((a, b) => b.roastDate.localeCompare(a.roastDate));
       if (state.sort === "rating") list.sort((a, b) => b.rating - a.rating);
 
       const n = list.length;
@@ -964,7 +935,6 @@
     fill("[data-pdp-origin]", `${p.region}, ${p.origin}`);
     fill("[data-pdp-species]", `${p.species} · ${p.process}`);
     fill("[data-pdp-notes]", p.notes.split(", ").map((n) => n).join(" · "));
-    fill("[data-pdp-roast-date]", `${roastBadge(p.roastDate)} <span class="tiny">${formatDate(p.roastDate)}</span>`);
     fill("[data-pdp-method]", p.methodLabel);
     fill("[data-pdp-roast]", p.roastLabel);
     const labels = window.ALJAR.profileLabels;
@@ -1047,7 +1017,6 @@
         id: p.id,
         name: p.name,
         image: p.image,
-        roastDate: p.roastDate,
         weight: state.weight,
         /* Своего выбора обжарки на странице товара нет — берём степень
            самой позиции, иначе строка в корзине окажется без неё, хотя
@@ -1137,13 +1106,6 @@
       sentinelHost.innerHTML = slides.map(() => '<div class="journey__sentinel"></div>').join("");
       progressHost.innerHTML = slides.map(() => "<li></li>").join("");
 
-      /* Нумерация шагов пересчитывается под реальный прогон: в разметке
-         записано «из 5» для полного списка, на мобильных кадров меньше. */
-      slides.forEach((s, i) => {
-        const step = s.querySelector(".journey__step");
-        if (step) step.textContent = `Шаг ${i + 1} из ${slides.length}`;
-      });
-
       /* Полоса в 1px поперёк середины экрана: метка её пересекла —
          кадр сменился. Никаких вычислений позиции на прокрутке. */
       observer = new IntersectionObserver(
@@ -1165,7 +1127,7 @@
     /* Кадры нельзя оставлять ленивыми: первый же кросс-фейд показал бы
        пустоту. Грузим и декодируем заранее, пиним только после. */
     function preload() {
-      return Promise.all(
+      const all = Promise.all(
         pickSlides().map((s) => {
           const img = s.querySelector("img");
           if (!img) return Promise.resolve();
@@ -1173,23 +1135,43 @@
           return img.decode().catch(() => {});
         })
       );
+      /* Предохранитель: decode() у не начавшего грузиться кадра может не
+         разрешиться вовсе. Без ограничения по времени промис зависает,
+         флаг подготовки остаётся поднятым — и галерея не собирается уже
+         никогда. Три секунды кадры почти наверняка успевают, а если нет,
+         показать сцену важнее, чем дождаться декодирования. */
+      return Promise.race([all, new Promise((r) => setTimeout(r, 3000))]);
     }
 
+    /* Наблюдатель не отключается при первом же срабатывании: если сборку
+       отменили (не догрузились кадры, пользователь уже внутри секции),
+       попытка должна повториться, а не пропасть навсегда. Отключаем
+       только после удачной сборки. */
+    let preparing = false;
     const prep = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting) return;
-        prep.disconnect();
+        if (!entry.isIntersecting || preparing) return;
         if (!canPin()) return;
+        preparing = true;
         preload().then(() => {
+          preparing = false;
           /* Пока грузились, пользователь мог доскроллить до секции.
-             Переключать режим у него под руками — значит дёрнуть
-             страницу; в этом случае просто оставляем список. */
+             Прыжок возможен только если высота меняется ВЫШЕ текущей
+             позиции прокрутки, то есть когда пользователь уже вошёл в
+             секцию. Пока её верх на экране или ниже, сцена растёт под
+             ним и прокрутка не сдвигается — пинить безопасно.
+             Прежнее условие (top < innerHeight) отменяло сборку всегда:
+             к концу предзагрузки секция успевала показаться, и галерея
+             не собиралась ни разу. */
           if (!canPin()) return;
-          if (section.getBoundingClientRect().top < window.innerHeight) return;
+          if (section.getBoundingClientRect().top < 0) return;
+          prep.disconnect();
           build();
         });
       },
-      { rootMargin: "800px 0px" }
+      /* Запас на предзагрузку: пять кадров должны успеть скачаться и
+         декодироваться, пока секция идёт к экрану. */
+      { rootMargin: "2200px 0px" }
     );
     if (canPin()) prep.observe(section);
 
@@ -1298,7 +1280,6 @@
           <div>
             <strong>${i.name}</strong>
             <div class="tiny">${i.weight} г${roastChoiceLabel(i.roast) ? " · " + roastChoiceLabel(i.roast) : ""} · ${grindLabel(i.grind)}${i.subscribe ? " · Подписка −10%" : ""}</div>
-            <div class="tiny">Обжарено ${formatDate(i.roastDate)}</div>
             <div class="qty" style="margin-top:8px">
               <button type="button" data-qty="${idx}:-1">−</button>
               <span>${i.qty}</span>
@@ -1385,7 +1366,6 @@
         <div>
           <strong>${i.name}${i.qty > 1 ? ` × ${i.qty}` : ""}</strong>
           <div class="tiny">${i.weight} г${roastChoiceLabel(i.roast) ? " · " + roastChoiceLabel(i.roast) : ""} · ${grindLabel(i.grind)}${i.subscribe ? " · Подписка" : ""}</div>
-          <div class="tiny">Обжарено ${formatDate(i.roastDate)}</div>
         </div>
         <div class="price">${formatPrice(i.price * i.qty)}</div>
       </div>`
@@ -1457,7 +1437,6 @@
         id: p.id,
         name: p.name,
         image: p.image,
-        roastDate: p.roastDate,
         weight: form.weight.value,
         roast: p.roast,
         grind: form.grind.value,
