@@ -1,128 +1,149 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import { useJourney } from '@/composables/useJourney';
+import RailBar from '@/components/RailBar.vue';
+import StorefrontFooter from '@/components/StorefrontFooter.vue';
+import { useRail } from '@/composables/useRail';
 
 /**
- * О бренде. Разметка и классы перенесены из прототипа
- * versions/v2-anim/about.html без изменений: дизайн утверждён,
- * переписывать его на другие классы значит расходиться с эталоном.
+ * О бренде. Страница собрана как главная — горизонтальным рельсом:
+ * секции стоят в ряд, колесо листает их по одной, снизу идёт шкала.
  *
- * Порядок блоков — как в прототипе после правок: «Ценности» идут
- * перед «Производством».
+ * Сценарий «От зерна к чашке» раньше жил здесь запиненной вертикальной
+ * сценой. Две механики на одной странице не уживаются: рельс забирает
+ * колесо себе, и пиннинг внутри панели остаётся без прокрутки, которая
+ * его двигала. Поэтому пять кадров сценария стали пятью панелями
+ * рельса — история осталась той же и той же длины, сменился способ её
+ * листать.
  *
- * Страница статическая — данных с сервера не требует.
+ * Тексты, снимки и классы блоков перенесены без изменений.
  */
 
-const journey = ref<HTMLElement | null>(null);
+const rail = ref<HTMLElement | null>(null);
 
-useJourney(journey);
+const { current, go, progress } = useRail(rail);
+
+/** Подписи остановок на шкале — по одной на панель, в порядке рельса. */
+const stops = [
+    'История',
+    'Ценности',
+    'Производство',
+    'Плантация',
+    'Отбор',
+    'Обжарка',
+    'Фасовка',
+    'Ритуал',
+];
 </script>
 
 <template>
     <Head title="О бренде" />
 
-    <section class="hero">
-        <div class="hero__grid container">
-            <div class="hero__copy">
-                <p class="eyebrow">О бренде</p>
-                <h1 class="display">История семьи и ритуала</h1>
-                <p class="lead">
-                    С XVI века кофе в Ливане — часть культуры, знак уважения и
-                    живая традиция. Al Jar продолжает её в современном формате:
-                    семейный бренд, опыт, внимание к деталям.
-                </p>
-            </div>
-            <div class="hero__visual">
-                <span class="blob blob--sand"></span>
-                <img
-                    src="/img/dallah.webp"
-                    width="1152"
-                    height="864"
-                    fetchpriority="high"
-                    decoding="async"
-                    alt="Медная турка — ритуал восточного кофе"
-                />
-            </div>
+    <div ref="rail" class="rail">
+        <div class="rail__panel" :class="{ 'is-current': current === 0 }">
+            <section class="hero">
+                <div class="hero__grid container">
+                    <div class="hero__copy">
+                        <p class="eyebrow">О бренде</p>
+                        <h1 class="display">История семьи и ритуала</h1>
+                        <p class="lead">
+                            С XVI века кофе в Ливане — часть культуры, знак
+                            уважения и живая традиция. Al Jar продолжает её в
+                            современном формате: семейный бренд, опыт, внимание
+                            к деталям.
+                        </p>
+                    </div>
+                    <div class="hero__visual">
+                        <span class="blob blob--sand"></span>
+                        <img
+                            src="/img/dallah.webp"
+                            width="1152"
+                            height="864"
+                            fetchpriority="high"
+                            decoding="async"
+                            alt="Медная турка — ритуал восточного кофе"
+                        />
+                    </div>
+                </div>
+            </section>
         </div>
-    </section>
 
-    <section class="section section--sand">
-        <div class="container">
-            <p class="eyebrow">Ценности</p>
-            <h2 class="h2" style="margin-bottom: 24px">Как мы работаем</h2>
-            <div class="steps">
-                <article class="step">
-                    <h3 class="h3">Честность</h3>
-                    <p class="muted">
-                        Происхождение партии, степень обжарки, вкусовой профиль
-                        — на виду, не в подвале карточки.
-                    </p>
-                </article>
-                <article class="step">
-                    <h3 class="h3">Ритуал</h3>
-                    <p class="muted">
-                        Кофе — способ собраться вместе. Мы уважаем гостя так же,
-                        как хороший хозяин.
-                    </p>
-                </article>
-                <article class="step">
-                    <h3 class="h3">Ремесло</h3>
-                    <p class="muted">
-                        Небольшие партии, стабильный профиль, никакой агрессии в
-                        продаже.
-                    </p>
-                </article>
-            </div>
+        <div class="rail__panel" :class="{ 'is-current': current === 1 }">
+            <section class="section section--sand">
+                <div class="container">
+                    <p class="eyebrow">Ценности</p>
+                    <h2 class="h2" style="margin-bottom: 24px">
+                        Как мы работаем
+                    </h2>
+                    <div class="steps">
+                        <article class="step">
+                            <h3 class="h3">Честность</h3>
+                            <p class="muted">
+                                Происхождение партии, степень обжарки, вкусовой
+                                профиль — на виду, не в подвале карточки.
+                            </p>
+                        </article>
+                        <article class="step">
+                            <h3 class="h3">Ритуал</h3>
+                            <p class="muted">
+                                Кофе — способ собраться вместе. Мы уважаем гостя
+                                так же, как хороший хозяин.
+                            </p>
+                        </article>
+                        <article class="step">
+                            <h3 class="h3">Ремесло</h3>
+                            <p class="muted">
+                                Небольшие партии, стабильный профиль, никакой
+                                агрессии в продаже.
+                            </p>
+                        </article>
+                    </div>
+                </div>
+            </section>
         </div>
-    </section>
 
-    <section class="section">
-        <div class="heritage container">
-            <div class="stack" data-reveal>
-                <p class="eyebrow">Производство</p>
-                <h2 class="h2">Полный цикл в России</h2>
-                <p class="lead">
-                    Закупка сырого зерна, обжарка до 20 тонн в месяц, фасовка.
-                    Не прячем цех: показываем, откуда зерно и как идёт обжарка.
-                </p>
-                <p class="muted">
-                    Специализация: эспрессо и ливанский кофе. Также — гейзер,
-                    френч-пресс, фильтр, турка (арабская и турецкая). На
-                    российский рынок бренд пришёл с многолетним опытом работы на
-                    Ближнем Востоке.
-                </p>
-            </div>
-            <div class="torn" data-reveal>
-                <img
-                    src="/img/roaster.webp"
-                    width="1152"
-                    height="864"
-                    loading="lazy"
-                    decoding="async"
-                    alt="Обжарочный барабан"
-                    style="height: 380px; width: 100%; object-fit: cover"
-                />
-            </div>
+        <div class="rail__panel" :class="{ 'is-current': current === 2 }">
+            <section class="section">
+                <div class="heritage container">
+                    <div class="stack" data-reveal>
+                        <p class="eyebrow">Производство</p>
+                        <h2 class="h2">Полный цикл в России</h2>
+                        <p class="lead">
+                            Закупка сырого зерна, обжарка до 20 тонн в месяц,
+                            фасовка. Не прячем цех: показываем, откуда зерно и
+                            как идёт обжарка.
+                        </p>
+                        <p class="muted">
+                            Специализация: эспрессо и ливанский кофе. Также —
+                            гейзер, френч-пресс, фильтр, турка (арабская и
+                            турецкая). На российский рынок бренд пришёл с
+                            многолетним опытом работы на Ближнем Востоке.
+                        </p>
+                    </div>
+                    <div class="torn" data-reveal>
+                        <img
+                            src="/img/roaster.webp"
+                            width="1152"
+                            height="864"
+                            loading="lazy"
+                            decoding="async"
+                            alt="Обжарочный барабан"
+                            style="
+                                height: 380px;
+                                width: 100%;
+                                object-fit: cover;
+                            "
+                        />
+                    </div>
+                </div>
+            </section>
         </div>
-    </section>
 
-    <!-- Сценарий «От зерна к чашке». Без JS и при reduce-motion читается
-         как обычный список из пяти блоков «кадр + подпись». -->
-    <section
-        ref="journey"
-        class="section section--sand journey"
-        aria-label="От зерна к чашке"
-    >
-        <div class="journey__track container">
-            <div class="journey__stage">
-                <ol
-                    class="journey__progress"
-                    data-journey-progress
-                    aria-hidden="true"
-                ></ol>
-
-                <article class="journey__slide" data-slide>
+        <!-- Сценарий «От зерна к чашке»: пять кадров — пять панелей.
+             Фон чередуется, чтобы соседние остановки не сливались. -->
+        <div class="rail__panel" :class="{ 'is-current': current === 3 }">
+            <section class="section section--sand">
+                <article class="journey__slide container">
                     <figure class="journey__media torn">
                         <img
                             src="/img/plantation.webp"
@@ -134,6 +155,7 @@ useJourney(journey);
                         />
                     </figure>
                     <div class="journey__copy">
+                        <p class="eyebrow">Кадр 1 из 5</p>
                         <h2 class="h2">Всё начинается с земли</h2>
                         <p class="lead">
                             Бразилия, Колумбия, Эфиопия. Высота, тень и ручной
@@ -145,8 +167,12 @@ useJourney(journey);
                         </p>
                     </div>
                 </article>
+            </section>
+        </div>
 
-                <article class="journey__slide" data-slide data-optional>
+        <div class="rail__panel" :class="{ 'is-current': current === 4 }">
+            <section class="section">
+                <article class="journey__slide container">
                     <figure class="journey__media torn">
                         <img
                             src="/img/beans.webp"
@@ -158,6 +184,7 @@ useJourney(journey);
                         />
                     </figure>
                     <div class="journey__copy">
+                        <p class="eyebrow">Кадр 2 из 5</p>
                         <h2 class="h2">Отбор партии</h2>
                         <p class="lead">
                             Скрин 16/18 — размер зерна, при котором обжарка идёт
@@ -168,8 +195,12 @@ useJourney(journey);
                         </p>
                     </div>
                 </article>
+            </section>
+        </div>
 
-                <article class="journey__slide" data-slide>
+        <div class="rail__panel" :class="{ 'is-current': current === 5 }">
+            <section class="section section--sand">
+                <article class="journey__slide container">
                     <figure class="journey__media torn">
                         <img
                             src="/img/roaster.webp"
@@ -181,6 +212,7 @@ useJourney(journey);
                         />
                     </figure>
                     <div class="journey__copy">
+                        <p class="eyebrow">Кадр 3 из 5</p>
                         <h2 class="h2">14 минут в барабане</h2>
                         <p class="lead">
                             Свой профиль под каждый способ заваривания:
@@ -195,8 +227,12 @@ useJourney(journey);
                         </p>
                     </div>
                 </article>
+            </section>
+        </div>
 
-                <article class="journey__slide" data-slide data-optional>
+        <div class="rail__panel" :class="{ 'is-current': current === 6 }">
+            <section class="section">
+                <article class="journey__slide container">
                     <figure class="journey__media torn">
                         <img
                             src="/img/bag-kraft.webp"
@@ -208,6 +244,7 @@ useJourney(journey);
                         />
                     </figure>
                     <div class="journey__copy">
+                        <p class="eyebrow">Кадр 4 из 5</p>
                         <h2 class="h2">Фасуем небольшими партиями</h2>
                         <p class="lead">
                             Фасуем сразу после обжарки, небольшими партиями —
@@ -215,8 +252,14 @@ useJourney(journey);
                         </p>
                     </div>
                 </article>
+            </section>
+        </div>
 
-                <article class="journey__slide" data-slide>
+        <!-- Последняя панель несёт подвал: у страницы одна ось прокрутки,
+             и место для подвала есть только здесь. -->
+        <div class="rail__panel" :class="{ 'is-current': current === 7 }">
+            <section class="section section--sand">
+                <article class="journey__slide container">
                     <figure class="journey__media torn">
                         <img
                             src="/img/brew.webp"
@@ -228,6 +271,7 @@ useJourney(journey);
                         />
                     </figure>
                     <div class="journey__copy">
+                        <p class="eyebrow">Кадр 5 из 5</p>
                         <h2 class="h2">Ваш ритуал</h2>
                         <p class="lead">
                             С XVI века кофе в Ливане — знак уважения и повод
@@ -242,12 +286,11 @@ useJourney(journey);
                         </p>
                     </div>
                 </article>
-            </div>
-            <div
-                class="journey__sentinels"
-                data-journey-sentinels
-                aria-hidden="true"
-            ></div>
+            </section>
+
+            <StorefrontFooter />
         </div>
-    </section>
+    </div>
+
+    <RailBar :stops="stops" :current="current" :progress="progress" @go="go" />
 </template>

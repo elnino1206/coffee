@@ -42,11 +42,13 @@ defineProps<{ page?: string }>();
 const inertia = usePage();
 
 /**
- * На главной подвал рисует сама страница — последней панелью рельса.
- * Здесь его выводить нельзя: он добавил бы странице вторую ось
+ * Страницы с горизонтальным рельсом рисуют подвал сами — последней
+ * панелью. Здесь его выводить нельзя: он добавил бы странице вторую ось
  * прокрутки, и рельс уезжал бы вверх вместе с ней.
  */
-const isHome = computed(() => inertia.component === 'Home');
+const railPages = ['Home', 'info/About'];
+
+const ownsFooter = computed(() => railPages.includes(inertia.component));
 
 /**
  * Панель поиска в шапке. В прототипе она фильтрует локальный каталог,
@@ -344,5 +346,5 @@ router.on('navigate', () =>
         <slot />
     </main>
 
-    <StorefrontFooter v-if="!isHome" />
+    <StorefrontFooter v-if="!ownsFooter" />
 </template>

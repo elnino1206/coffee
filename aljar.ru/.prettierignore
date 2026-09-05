@@ -1,2 +1,6 @@
+# Файл стилей витрины — общий со статикой versions/v2-anim и обязан
+# оставаться побайтово одинаковым с ней. Форматирование его ломает.
+resources/css/storefront.css
+
 resources/js/components/ui/*
 resources/views/mail/*
