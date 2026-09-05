@@ -46,7 +46,7 @@ const inertia = usePage();
  * панелью. Здесь его выводить нельзя: он добавил бы странице вторую ось
  * прокрутки, и рельс уезжал бы вверх вместе с ней.
  */
-const railPages = ['Home', 'info/About'];
+const railPages = ['Home', 'info/About', 'info/Subscription', 'info/Wholesale'];
 
 const ownsFooter = computed(() => railPages.includes(inertia.component));
 
