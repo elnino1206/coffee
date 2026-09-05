@@ -1,4 +1,5 @@
-import { onBeforeUnmount, onMounted, ref, type Ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref  } from 'vue';
+import type {Ref} from 'vue';
 
 /**
  * Горизонтальный рельс главной.
@@ -47,7 +48,9 @@ export function useRail(rail: Ref<HTMLElement | null>) {
     function indexFromScroll(): number {
         const el = rail.value;
 
-        if (!el || !el.clientWidth) return 0;
+        if (!el || !el.clientWidth) {
+return 0;
+}
 
         return Math.max(0, Math.min(panels().length - 1, Math.round(el.scrollLeft / el.clientWidth)));
     }
@@ -62,7 +65,9 @@ export function useRail(rail: Ref<HTMLElement | null>) {
         const list = panels();
         const n = Math.max(0, Math.min(list.length - 1, i));
 
-        if (!el || !list[n]) return;
+        if (!el || !list[n]) {
+return;
+}
 
         /* Прыжок больше чем на панель и режим без движения идут мгновенно:
            долгий проезд через промежуточные секции читается как сбой. */
@@ -83,40 +88,67 @@ export function useRail(rail: Ref<HTMLElement | null>) {
     function canPage(target: EventTarget | null, delta: number): boolean {
         const el = target as HTMLElement | null;
 
-        if (!el?.closest) return true;
-        if (el.closest('input, textarea, select')) return false;
-        if (document.querySelector('[data-add-modal]')) return false;
-        if (document.querySelector('.search-panel.is-open')) return false;
+        if (!el?.closest) {
+return true;
+}
+
+        if (el.closest('input, textarea, select')) {
+return false;
+}
+
+        if (document.querySelector('[data-add-modal]')) {
+return false;
+}
+
+        if (document.querySelector('.search-panel.is-open')) {
+return false;
+}
 
         const panel = el.closest<HTMLElement>('.rail__panel');
 
         if (panel && panel.scrollHeight > panel.clientHeight + 2) {
             const max = panel.scrollHeight - panel.clientHeight;
 
-            if (delta > 0 && panel.scrollTop < max - 2) return false;
-            if (delta < 0 && panel.scrollTop > 2) return false;
+            if (delta > 0 && panel.scrollTop < max - 2) {
+return false;
+}
+
+            if (delta < 0 && panel.scrollTop > 2) {
+return false;
+}
         }
 
         return true;
     }
 
     function onWheel(e: WheelEvent): void {
-        if (!desktop() || !rail.value) return;
+        if (!desktop() || !rail.value) {
+return;
+}
 
         const along = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
 
-        if (!along) return;
-        if (!canPage(e.target, along)) return;
+        if (!along) {
+return;
+}
+
+        if (!canPage(e.target, along)) {
+return;
+}
 
         /* С последней панели вперёд прокрутку отпускаем: ниже рельса
            лежит подвал, и до него нужно доехать обычным образом. */
         const at = indexFromScroll();
 
-        if (along > 0 && at === panels().length - 1) return;
+        if (along > 0 && at === panels().length - 1) {
+return;
+}
 
         e.preventDefault();
 
-        if (locked) return;
+        if (locked) {
+return;
+}
 
         /* deltaMode: 0 — пиксели, 1 — строки, 2 — экраны. Без приведения
            одно движение на разных устройствах даёт разный шаг. */
@@ -126,18 +158,28 @@ export function useRail(rail: Ref<HTMLElement | null>) {
         clearTimeout(accTimer);
         accTimer = setTimeout(() => (acc = 0), ACC_RESET);
 
-        if (acc > THRESHOLD) go(at + 1);
-        else if (acc < -THRESHOLD) go(at - 1);
+        if (acc > THRESHOLD) {
+go(at + 1);
+} else if (acc < -THRESHOLD) {
+go(at - 1);
+}
     }
 
     function onKey(e: KeyboardEvent): void {
-        if (!desktop() || locked) return;
-        if (!canPage(e.target, 1)) return;
+        if (!desktop() || locked) {
+return;
+}
+
+        if (!canPage(e.target, 1)) {
+return;
+}
 
         const forward = e.key === 'ArrowRight' || e.key === 'PageDown';
         const back = e.key === 'ArrowLeft' || e.key === 'PageUp';
 
-        if (!forward && !back) return;
+        if (!forward && !back) {
+return;
+}
 
         e.preventDefault();
         go(indexFromScroll() + (forward ? 1 : -1));
@@ -147,13 +189,17 @@ export function useRail(rail: Ref<HTMLElement | null>) {
     function onScroll(): void {
         const el = rail.value;
 
-        if (!el) return;
+        if (!el) {
+return;
+}
 
         const max = el.scrollWidth - el.clientWidth;
 
         progress.value = max > 0 ? el.scrollLeft / max : 0;
 
-        if (!locked) current.value = indexFromScroll();
+        if (!locked) {
+current.value = indexFromScroll();
+}
     }
 
     function onResize(): void {
@@ -161,7 +207,9 @@ export function useRail(rail: Ref<HTMLElement | null>) {
            иначе он останется между секциями. */
         const el = rail.value;
 
-        if (el && desktop()) el.scrollTo({ left: current.value * el.clientWidth, behavior: 'auto' });
+        if (el && desktop()) {
+el.scrollTo({ left: current.value * el.clientWidth, behavior: 'auto' });
+}
 
         onScroll();
     }

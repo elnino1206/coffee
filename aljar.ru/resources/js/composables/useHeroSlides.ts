@@ -1,4 +1,5 @@
-import { onBeforeUnmount, onMounted, ref, type Ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref  } from 'vue';
+import type {Ref} from 'vue';
 import { motionOn } from '@/lib/motion';
 
 /**
@@ -29,7 +30,9 @@ export function useHeroSlides(stage: Ref<HTMLElement | null>, count: number) {
     function decode(i: number): Promise<void> {
         const img = stage.value?.querySelectorAll('img')[i] as HTMLImageElement | undefined;
 
-        if (!img) return Promise.resolve();
+        if (!img) {
+return Promise.resolve();
+}
 
         img.loading = 'eager';
 
@@ -45,7 +48,9 @@ export function useHeroSlides(stage: Ref<HTMLElement | null>, count: number) {
         const next = (slide.value + 1) % count;
 
         decode(next).then(() => {
-            if (!timer) return;
+            if (!timer) {
+return;
+}
 
             slide.value = next;
             timer = setTimeout(step, HOLD);
@@ -55,7 +60,9 @@ export function useHeroSlides(stage: Ref<HTMLElement | null>, count: number) {
     function start(): void {
         /* Без движения кадр остаётся один: смена картинок — это тоже
            движение, и в reduce-motion её быть не должно. */
-        if (timer || !motionOn() || count < 2) return;
+        if (timer || !motionOn() || count < 2) {
+return;
+}
 
         timer = setTimeout(step, HOLD);
     }
@@ -66,7 +73,9 @@ export function useHeroSlides(stage: Ref<HTMLElement | null>, count: number) {
     }
 
     onMounted(() => {
-        if (!stage.value) return;
+        if (!stage.value) {
+return;
+}
 
         if (!('IntersectionObserver' in window)) {
             start();

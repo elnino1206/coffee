@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { guardReveals, initIsland, observeReveals, replayAnimation, watchHeaderOffset } from '@/lib/motion';
-import { formatPrice } from '@/lib/money';
 import StorefrontFooter from '@/components/StorefrontFooter.vue';
+import { formatPrice } from '@/lib/money';
+import { guardReveals, initIsland, observeReveals, replayAnimation, watchHeaderOffset } from '@/lib/motion';
 import { setupTornEdges, sizeTornMasks } from '@/lib/torn';
 import '../../css/storefront.css';
 
@@ -50,10 +50,17 @@ const searched = ref(false);
 function setSearch(open: boolean): void {
     searchOpen.value = open;
 
-    if (open) nextTick(() => searchInput.value?.focus());
+    if (open) {
+        nextTick(() => searchInput.value?.focus());
+
+        return;
+    }
+
     /* Фокус возвращаем на кнопку, только если он остался внутри панели:
        иначе отберём его у того, куда пользователь уже ушёл. */
-    else if (searchPanel.value?.contains(document.activeElement)) searchToggle.value?.focus();
+    if (searchPanel.value?.contains(document.activeElement)) {
+        searchToggle.value?.focus();
+    }
 }
 
 let searchTimer: ReturnType<typeof setTimeout>;
@@ -85,19 +92,25 @@ watch(query, (value) => {
 /* Панель не перекрывает страницу целиком, поэтому закрываться должна и
    по клику мимо, и по Escape: иначе останется висеть над содержимым. */
 function onPointerDown(event: PointerEvent): void {
-    if (!searchOpen.value) return;
+    if (!searchOpen.value) {
+return;
+}
 
     const target = event.target as Node;
 
     // Клик по самой кнопке обрабатывает её слушатель — иначе панель
     // закрылась бы здесь и тут же открылась снова.
-    if (searchPanel.value?.contains(target) || searchToggle.value?.contains(target)) return;
+    if (searchPanel.value?.contains(target) || searchToggle.value?.contains(target)) {
+return;
+}
 
     setSearch(false);
 }
 
 function onKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Escape' && searchOpen.value) setSearch(false);
+    if (event.key === 'Escape' && searchOpen.value) {
+setSearch(false);
+}
 }
 
 /** Бейдж корзины — чтобы подскочить при пополнении. */
@@ -108,7 +121,9 @@ const cartCount = computed(() => Number((inertia.props as { cart?: { count?: num
 /* Подскок только на пополнении: удаление позиции подпрыгивать не должно,
    и на первой отрисовке страницы — тоже. */
 watch(cartCount, (next, prev) => {
-    if (next > prev && next > 0) replayAnimation(cartBadge.value, 'is-bump');
+    if (next > prev && next > 0) {
+replayAnimation(cartBadge.value, 'is-bump');
+}
 });
 
 /* Решение о движении принимает app.ts, до монтирования. Здесь остаются

@@ -47,12 +47,17 @@ let revealObserver: IntersectionObserver | null = null;
  * как Inertia подставляет новые страницы.
  */
 export function observeReveals(root: ParentNode = document): void {
-    if (!motionOn()) return;
+    if (!motionOn()) {
+return;
+}
 
     revealObserver ??= new IntersectionObserver(
         (entries) => {
             entries.forEach((entry) => {
-                if (!entry.isIntersecting) return;
+                if (!entry.isIntersecting) {
+return;
+}
+
                 entry.target.classList.add('is-in');
                 /* Появление одноразовое: обратно ничего не прячем, иначе
                    прокрутка вверх превращается в мигание. */
@@ -70,7 +75,10 @@ export function observeReveals(root: ParentNode = document): void {
     const seq = new Map<Element | null, number>();
 
     root.querySelectorAll<HTMLElement>('[data-reveal]:not(.is-in)').forEach((el) => {
-        if (el.dataset.revealBound) return;
+        if (el.dataset.revealBound) {
+return;
+}
+
         el.dataset.revealBound = '1';
 
         const n = seq.get(el.parentElement) ?? 0;
@@ -89,7 +97,9 @@ export function observeReveals(root: ParentNode = document): void {
  */
 export function guardReveals(): void {
     setTimeout(() => {
-        if (!motionOn()) return;
+        if (!motionOn()) {
+return;
+}
 
         const stuck = [...document.querySelectorAll('[data-reveal]:not(.is-in)')].some((el) => {
             const r = el.getBoundingClientRect();
@@ -97,7 +107,9 @@ export function guardReveals(): void {
             return r.bottom > 0 && r.top < window.innerHeight;
         });
 
-        if (stuck) document.documentElement.classList.remove('is-enhanced');
+        if (stuck) {
+document.documentElement.classList.remove('is-enhanced');
+}
     }, 2000);
 }
 
@@ -117,11 +129,15 @@ export function animateNumber(
     format: (value: number) => string = String,
     duration = 700,
 ): void {
-    if (!el) return;
+    if (!el) {
+return;
+}
 
     el.textContent = format(to);
 
-    if (!motionOn() || from === to) return;
+    if (!motionOn() || from === to) {
+return;
+}
 
     /* Метка прогона: если значение сменилось ещё раз до конца текущей
        прокрутки, старый кадр обязан замолчать, иначе два
@@ -132,14 +148,18 @@ export function animateNumber(
     const t0 = performance.now();
 
     const tick = (now: number) => {
-        if (el.dataset.rollRun !== String(run)) return;
+        if (el.dataset.rollRun !== String(run)) {
+return;
+}
 
         const p = Math.min(1, (now - t0) / duration);
         const eased = 1 - Math.pow(1 - p, 3);
 
         el.textContent = format(from + (to - from) * eased);
 
-        if (p < 1) requestAnimationFrame(tick);
+        if (p < 1) {
+requestAnimationFrame(tick);
+}
     };
 
     requestAnimationFrame(tick);
@@ -151,7 +171,9 @@ export function animateNumber(
  * один кадр, и анимация не начнётся заново.
  */
 export function replayAnimation(el: HTMLElement | null, cls: string): void {
-    if (!el) return;
+    if (!el) {
+return;
+}
 
     el.classList.remove(cls);
     void el.offsetWidth;
@@ -167,7 +189,9 @@ export function replayAnimation(el: HTMLElement | null, cls: string): void {
 export function watchHeaderOffset(): void {
     const headerEl = document.getElementById('header');
 
-    if (!headerEl || document.querySelector('.header-sentinel')) return;
+    if (!headerEl || document.querySelector('.header-sentinel')) {
+return;
+}
 
     const sentinel = document.createElement('div');
     sentinel.className = 'header-sentinel';
@@ -197,7 +221,9 @@ export function initIsland(): void {
     islandObserver?.disconnect();
     islandObserver = null;
 
-    if (!stage) return;
+    if (!stage) {
+return;
+}
 
     if (!('IntersectionObserver' in window)) {
         stage.classList.add('is-live');

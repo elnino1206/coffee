@@ -23,11 +23,15 @@ export function sizeTornMasks(): void {
     tornImages().forEach((img, i) => {
         const rect = document.querySelector(`[data-torn-rect="${i}"]`);
 
-        if (!rect) return;
+        if (!rect) {
+return;
+}
 
         const box = img.getBoundingClientRect();
 
-        if (!box.width || !box.height) return;
+        if (!box.width || !box.height) {
+return;
+}
 
         rect.setAttribute('width', String(Math.ceil(box.width)));
         rect.setAttribute('height', String(Math.ceil(box.height)));
@@ -38,7 +42,9 @@ export function setupTornEdges(): void {
     const host = document.querySelector('[data-torn-defs]');
     const images = tornImages();
 
-    if (!host || !images.length) return;
+    if (!host || !images.length) {
+return;
+}
 
     host.innerHTML = images
         .map(
@@ -61,7 +67,9 @@ export function setupTornEdges(): void {
            вешаем один раз на элемент: Inertia может позвать сборку
            повторно по той же разметке, и без метки обработчики
            накапливались бы. */
-        if (img.dataset.tornBound) return;
+        if (img.dataset.tornBound) {
+return;
+}
 
         img.dataset.tornBound = '1';
         img.addEventListener('load', sizeTornMasks);

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { nextTick, ref, watch } from 'vue';
-import AddToCartModal, { type ModalProduct } from '@/components/AddToCartModal.vue';
+import AddToCartModal from '@/components/AddToCartModal.vue';
+import type {ModalProduct} from '@/components/AddToCartModal.vue';
 import { formatPrice } from '@/lib/money';
 import { motionOn, observeReveals } from '@/lib/motion';
 
@@ -40,7 +41,9 @@ const list = ref<HTMLElement | null>(null);
 const picked = ref<ModalProduct | null>(null);
 
 function setQty(item: Item, qty: number) {
-    if (qty < 1) return;
+    if (qty < 1) {
+return;
+}
 
     router.patch(`/cart/${item.id}`, { qty }, { preserveScroll: true });
 }

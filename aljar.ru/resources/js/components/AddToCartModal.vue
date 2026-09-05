@@ -68,7 +68,9 @@ const price = computed(() =>
 watch(
     () => props.product,
     (product) => {
-        if (!product) return;
+        if (!product) {
+return;
+}
 
         /* Предвыбран первый вариант в наличии: предлагать то, чего нет
            на складе, — тупик на ровном месте. */
@@ -81,7 +83,10 @@ watch(
         shown = null;
 
         nextTick(() => {
-            if (priceEl.value) priceEl.value.textContent = formatPrice(price.value);
+            if (priceEl.value) {
+priceEl.value.textContent = formatPrice(price.value);
+}
+
             shown = price.value;
             dialog.value?.querySelector<HTMLInputElement>('input:checked')?.focus();
         });
@@ -89,16 +94,23 @@ watch(
 );
 
 watch(price, (next) => {
-    if (!priceEl.value) return;
+    if (!priceEl.value) {
+return;
+}
 
-    if (shown === null) priceEl.value.textContent = formatPrice(next);
-    else animateNumber(priceEl.value, shown, next, formatPrice, 400);
+    if (shown === null) {
+priceEl.value.textContent = formatPrice(next);
+} else {
+animateNumber(priceEl.value, shown, next, formatPrice, 400);
+}
 
     shown = next;
 });
 
 function submit(): void {
-    if (variantId.value === null) return;
+    if (variantId.value === null) {
+return;
+}
 
     router.post(
         '/cart',

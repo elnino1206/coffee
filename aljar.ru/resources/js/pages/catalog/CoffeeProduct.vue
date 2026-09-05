@@ -64,7 +64,10 @@ let shownPrice = 0;
 
 onMounted(() => {
     /* Первая отрисовка идёт напрямую: значение ещё не менялось. */
-    if (priceEl.value) priceEl.value.textContent = formatPrice(price.value);
+    if (priceEl.value) {
+priceEl.value.textContent = formatPrice(price.value);
+}
+
     shownPrice = price.value;
 });
 

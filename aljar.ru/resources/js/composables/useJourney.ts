@@ -1,4 +1,5 @@
-import { onBeforeUnmount, onMounted, type Ref } from 'vue';
+import { onBeforeUnmount, onMounted  } from 'vue';
+import type {Ref} from 'vue';
 import { animateNumber, motionOn } from '@/lib/motion';
 
 /**
@@ -22,14 +23,19 @@ export function useJourney(section: Ref<HTMLElement | null>) {
 
     onMounted(() => {
         const root = section.value;
-        if (!root) return;
+
+        if (!root) {
+return;
+}
 
         const track = root.querySelector<HTMLElement>('.journey__track');
         const progressHost = root.querySelector<HTMLElement>('[data-journey-progress]');
         const sentinelHost = root.querySelector<HTMLElement>('[data-journey-sentinels]');
         const allSlides = [...root.querySelectorAll<HTMLElement>('[data-slide]')];
 
-        if (!track || !progressHost || !sentinelHost || !allSlides.length) return;
+        if (!track || !progressHost || !sentinelHost || !allSlides.length) {
+return;
+}
 
         /* На узких экранах прогон короче: пять запиненных экранов пальцем —
            перебор, а мобильный трафик здесь преобладающий. Второй и
@@ -49,14 +55,18 @@ export function useJourney(section: Ref<HTMLElement | null>) {
                 const to = Number(el.dataset.countTo);
                 const from = Number(el.dataset.countFrom ?? 0);
 
-                if (!Number.isFinite(to)) return;
+                if (!Number.isFinite(to)) {
+return;
+}
 
                 animateNumber(el, from, to, (v) => String(Math.round(v)), 900);
             });
         }
 
         function setFrame(i: number): void {
-            if (i === current || i < 0 || i >= slides.length) return;
+            if (i === current || i < 0 || i >= slides.length) {
+return;
+}
 
             current = i;
             slides.forEach((s, n) => s.classList.toggle('is-active', n === i));
@@ -79,7 +89,9 @@ export function useJourney(section: Ref<HTMLElement | null>) {
             observer = new IntersectionObserver(
                 (entries) => {
                     entries.forEach((e) => {
-                        if (!e.isIntersecting) return;
+                        if (!e.isIntersecting) {
+return;
+}
 
                         setFrame([...sentinelHost!.children].indexOf(e.target));
                     });
@@ -100,7 +112,9 @@ export function useJourney(section: Ref<HTMLElement | null>) {
                 pickSlides().map((s) => {
                     const img = s.querySelector('img');
 
-                    if (!img) return Promise.resolve();
+                    if (!img) {
+return Promise.resolve();
+}
 
                     img.loading = 'eager';
 
@@ -123,8 +137,13 @@ export function useJourney(section: Ref<HTMLElement | null>) {
            только после удачной сборки. */
         prep = new IntersectionObserver(
             ([entry]) => {
-                if (!entry.isIntersecting || preparing) return;
-                if (!canPin()) return;
+                if (!entry.isIntersecting || preparing) {
+return;
+}
+
+                if (!canPin()) {
+return;
+}
 
                 preparing = true;
 
@@ -136,8 +155,13 @@ export function useJourney(section: Ref<HTMLElement | null>) {
                        позиции прокрутки, то есть когда пользователь уже вошёл
                        в секцию. Пока её верх на экране или ниже, сцена растёт
                        под ним и прокрутка не сдвигается — пинить безопасно. */
-                    if (!canPin()) return;
-                    if (root!.getBoundingClientRect().top < 0) return;
+                    if (!canPin()) {
+return;
+}
+
+                    if (root!.getBoundingClientRect().top < 0) {
+return;
+}
 
                     prep?.disconnect();
                     build();
@@ -148,19 +172,28 @@ export function useJourney(section: Ref<HTMLElement | null>) {
             { rootMargin: '2200px 0px' },
         );
 
-        if (canPin()) prep.observe(root);
+        if (canPin()) {
+prep.observe(root);
+}
 
         /* Смена брейкпоинта меняет число кадров. Пересобираем только когда
            секция вне экрана — иначе перестройка отдаётся скачком. */
         onResize = () => {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(() => {
-                if (!root!.classList.contains('is-pinned')) return;
-                if (pickSlides().length === slides.length) return;
+                if (!root!.classList.contains('is-pinned')) {
+return;
+}
+
+                if (pickSlides().length === slides.length) {
+return;
+}
 
                 const r = root!.getBoundingClientRect();
 
-                if (r.bottom > 0 && r.top < window.innerHeight) return;
+                if (r.bottom > 0 && r.top < window.innerHeight) {
+return;
+}
 
                 observer?.disconnect();
                 build();
@@ -178,6 +211,8 @@ export function useJourney(section: Ref<HTMLElement | null>) {
         prep?.disconnect();
         clearTimeout(resizeTimer);
 
-        if (onResize) window.removeEventListener('resize', onResize);
+        if (onResize) {
+window.removeEventListener('resize', onResize);
+}
     });
 }

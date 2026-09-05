@@ -109,7 +109,10 @@ function resultsLabel(value: number): string {
 onMounted(() => {
     /* Первая отрисовка идёт без прокрутки: катить число от нуля при
        заходе на страницу нечего — оно ещё не менялось. */
-    if (resultsEl.value) resultsEl.value.textContent = resultsLabel(props.total);
+    if (resultsEl.value) {
+resultsEl.value.textContent = resultsLabel(props.total);
+}
+
     shownCount = props.total;
 });
 
@@ -149,7 +152,9 @@ function apply() {
     /* Старый набор гасим до подмены: иначе карточки меняются рывком
        прямо под курсором. Новые проявляются сами, через [data-reveal].
        Первая отрисовка и режим без движения идут напрямую. */
-    if (motionOn() && props.products.length) swapping.value = true;
+    if (motionOn() && props.products.length) {
+swapping.value = true;
+}
 
     router.get('/catalog/coffee', { ...form.value, q: search.value || undefined }, {
         preserveState: true,
