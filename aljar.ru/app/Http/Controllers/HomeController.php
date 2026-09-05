@@ -34,7 +34,7 @@ class HomeController extends Controller
     /**
      * Кофе для подборки на главной.
      *
-     * @return list<array<string, mixed>>
+     * @return array<int, array<string, mixed>>
      */
     protected function featured(): array
     {
@@ -64,7 +64,7 @@ class HomeController extends Controller
      * Варианты для окна быстрого добавления: без них покупателю нечего
      * выбирать, и кнопка на карточке снова кладёт вес за него.
      *
-     * @return list<array<string, mixed>>
+     * @return array<int, array<string, mixed>>
      */
     protected function variants(Coffee $coffee): array
     {

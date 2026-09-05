@@ -16,9 +16,16 @@ createInertiaApp({
             case name.startsWith('admin/'):
                 return null;
             case name === 'Home':
+            case name.startsWith('account/'):
             case name.startsWith('catalog/'):
             case name.startsWith('shop/'):
             case name.startsWith('info/'):
+                return StorefrontLayout;
+            case [
+                'auth/Login',
+                'auth/Register',
+                'auth/ForgotPassword',
+            ].includes(name):
                 return StorefrontLayout;
             case name.startsWith('auth/'):
                 return AuthLayout;

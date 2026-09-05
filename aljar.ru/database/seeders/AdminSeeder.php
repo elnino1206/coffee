@@ -18,7 +18,7 @@ class AdminSeeder extends Seeder
     public function run(): void
     {
         if (app()->isProduction()) {
-            $this->command?->warn('AdminSeeder пропущен: на production демонстрационный администратор не создаётся.');
+            $this->command->warn('AdminSeeder пропущен: на production демонстрационный администратор не создаётся.');
 
             return;
         }

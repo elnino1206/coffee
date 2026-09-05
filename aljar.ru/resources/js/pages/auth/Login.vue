@@ -1,24 +1,19 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
 import PasskeyVerify from '@/components/PasskeyVerify.vue';
-import PasswordInput from '@/components/PasswordInput.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
-defineOptions({
-    layout: {
-        title: 'Log in to your account',
-        description: 'Enter your email and password below to log in',
-    },
-});
+/**
+ * Вход. Разметка переведена на классы витрины (панель, поля, кнопки) —
+ * покупатель попадает сюда из шапки и с нижней панели, и стартовый вид
+ * набора выбивался из остального сайта.
+ *
+ * Механика прежняя, фортифаевская: тот же маршрут, те же поля, те же
+ * ключи доступа.
+ */
 
 defineProps<{
     status?: string;
@@ -27,84 +22,101 @@ defineProps<{
 </script>
 
 <template>
-    <Head title="Log in" />
+    <Head title="Вход" />
 
-    <div
-        v-if="status"
-        class="mb-4 text-center text-sm font-medium text-green-600"
-    >
-        {{ status }}
-    </div>
+    <div class="container">
+        <div class="page-hero">
+            <nav class="breadcrumbs"><Link href="/">Главная</Link> · Вход</nav>
+            <h1 class="h2">Вход в личный кабинет</h1>
+            <p class="lead">
+                Заказы, повтор в один клик и управление подпиской — в одном
+                месте.
+            </p>
+        </div>
 
-    <PasskeyVerify />
+        <div style="max-width: 520px">
+            <section class="panel stack">
+                <p v-if="status" class="sub-status">{{ status }}</p>
 
-    <Form
-        v-bind="store.form()"
-        :reset-on-success="['password']"
-        v-slot="{ errors, processing }"
-        class="flex flex-col gap-6"
-    >
-        <div class="grid gap-6">
-            <div class="grid gap-2">
-                <Label for="email">Email address</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    name="email"
-                    required
-                    autofocus
-                    :tabindex="1"
-                    autocomplete="email"
-                    placeholder="email@example.com"
-                />
-                <InputError :message="errors.email" />
-            </div>
+                <PasskeyVerify />
 
-            <div class="grid gap-2">
-                <div class="flex items-center justify-between">
-                    <Label for="password">Password</Label>
-                    <TextLink
-                        v-if="canResetPassword"
-                        :href="request()"
-                        class="text-sm"
-                        :tabindex="5"
+                <Form
+                    v-bind="store.form()"
+                    :reset-on-success="['password']"
+                    v-slot="{ errors, processing }"
+                    class="stack"
+                >
+                    <label class="label">
+                        <span class="label__text">
+                            Электронная почта
+                            <span
+                                class="req"
+                                aria-hidden="true"
+                                title="Обязательное поле"
+                                >*</span
+                            >
+                        </span>
+                        <input
+                            class="field"
+                            type="email"
+                            name="email"
+                            required
+                            autofocus
+                            autocomplete="email"
+                            placeholder="you@email.ru"
+                        />
+                        <InputError :message="errors.email" />
+                    </label>
+
+                    <label class="label">
+                        <span class="label__text">
+                            Пароль
+                            <span
+                                class="req"
+                                aria-hidden="true"
+                                title="Обязательное поле"
+                                >*</span
+                            >
+                        </span>
+                        <input
+                            class="field"
+                            type="password"
+                            name="password"
+                            required
+                            autocomplete="current-password"
+                        />
+                        <InputError :message="errors.password" />
+                    </label>
+
+                    <div class="cluster" style="justify-content: space-between">
+                        <label class="checkbox">
+                            <input type="checkbox" name="remember" />
+                            <span>Запомнить меня</span>
+                        </label>
+                        <Link
+                            v-if="canResetPassword"
+                            class="tiny"
+                            :href="request()"
+                        >
+                            Забыли пароль?
+                        </Link>
+                    </div>
+
+                    <button
+                        class="btn btn--petrol btn--block"
+                        type="submit"
+                        :disabled="processing"
                     >
-                        Forgot your password?
-                    </TextLink>
-                </div>
-                <PasswordInput
-                    id="password"
-                    name="password"
-                    required
-                    :tabindex="2"
-                    autocomplete="current-password"
-                    placeholder="Password"
-                />
-                <InputError :message="errors.password" />
-            </div>
+                        Войти
+                    </button>
+                </Form>
 
-            <div class="flex items-center justify-between">
-                <Label for="remember" class="flex items-center space-x-3">
-                    <Checkbox id="remember" name="remember" :tabindex="3" />
-                    <span>Remember me</span>
-                </Label>
-            </div>
-
-            <Button
-                type="submit"
-                class="mt-4 w-full"
-                :tabindex="4"
-                :disabled="processing"
-                data-test="login-button"
-            >
-                <Spinner v-if="processing" />
-                Log in
-            </Button>
+                <p class="tiny">
+                    Нет аккаунта?
+                    <Link :href="register()">Зарегистрируйтесь</Link> — это
+                    займёт минуту.
+                </p>
+            </section>
         </div>
-
-        <div class="text-center text-sm text-muted-foreground">
-            Don't have an account?
-            <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
-        </div>
-    </Form>
+    </div>
 </template>

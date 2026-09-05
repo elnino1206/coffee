@@ -219,7 +219,7 @@ class CartTest extends TestCase
 
         $this->withCart($this->cartToken())
             ->post(route('login.store'), ['email' => $customer->email, 'password' => 'password'])
-            ->assertRedirect(route('dashboard', absolute: false));
+            ->assertRedirect(route('account', absolute: false));
 
         $this->assertDatabaseHas('carts', ['customer_id' => $customer->id]);
         $this->assertSame(3, (int) Cart::query()->where('customer_id', $customer->id)->first()?->items()->sum('qty'));

@@ -45,11 +45,15 @@ class BlogController extends Controller
     }
 
     /**
-     * @return Collection<int, array<string, mixed>>
+     * @return Collection<int, array{
+     *     slug: string, title: string, tag: string, date: string,
+     *     image: string, excerpt: string, body: list<string>
+     * }>
      */
     protected function articles(): Collection
     {
-        return collect([
+        /** @var Collection<int, array{slug: string, title: string, tag: string, date: string, image: string, excerpt: string, body: list<string>}> $articles */
+        $articles = collect([
             [
                 'slug' => 'lebanese-coffee',
                 'title' => 'Ливанский кофе: ритуал гостеприимства',
@@ -83,5 +87,7 @@ class BlogController extends Controller
                 'body' => [],
             ],
         ]);
+
+        return $articles;
     }
 }

@@ -45,7 +45,7 @@ class SubscriptionController extends Controller
                 'value' => $grind->value,
                 'label' => $grind->label(),
             ]),
-            'frequencies' => collect(config('subscription.frequencies'))
+            'frequencies' => collect((array) config('subscription.frequencies'))
                 ->map(fn (int $weeks) => [
                     'value' => $weeks,
                     'label' => "Каждые {$weeks} недели",

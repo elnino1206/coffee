@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SubscriptionController;
@@ -18,7 +19,13 @@ Route::get('blog', [BlogController::class, 'index'])->name('info.blog');
 Route::get('blog/{slug}', [BlogController::class, 'show'])->name('info.article');
 
 Route::middleware(['auth:web', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'Dashboard')->name('dashboard');
+    Route::get('account', [AccountController::class, 'show'])->name('account');
+    Route::post('account/orders/{order:number}/repeat', [AccountController::class, 'repeat'])->name('account.orders.repeat');
+
+    // Стартовый набор уводил после входа на /dashboard. Кабинет у нас
+    // один и живёт по /account — прежний адрес остаётся ссылкой на него,
+    // чтобы старые закладки и ссылки набора не упирались в 404.
+    Route::redirect('dashboard', '/account')->name('dashboard');
 });
 
 require __DIR__.'/catalog.php';

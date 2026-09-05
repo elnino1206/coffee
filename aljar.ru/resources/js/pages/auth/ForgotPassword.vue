@@ -1,66 +1,74 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 
-defineOptions({
-    layout: {
-        title: 'Forgot password',
-        description: 'Enter your email to receive a password reset link',
-    },
-});
+/**
+ * Восстановление пароля. Классы витрины, механика фортифаевская.
+ */
 
-defineProps<{
-    status?: string;
-}>();
+defineProps<{ status?: string }>();
 </script>
 
 <template>
-    <Head title="Forgot password" />
+    <Head title="Восстановление пароля" />
 
-    <div
-        v-if="status"
-        class="mb-4 text-center text-sm font-medium text-green-600"
-    >
-        {{ status }}
-    </div>
+    <div class="container">
+        <div class="page-hero">
+            <nav class="breadcrumbs">
+                <Link href="/">Главная</Link> · Восстановление пароля
+            </nav>
+            <h1 class="h2">Забыли пароль</h1>
+            <p class="lead">
+                Пришлём на почту ссылку, по которой можно задать новый.
+            </p>
+        </div>
 
-    <div class="space-y-6">
-        <Form v-bind="email.form()" v-slot="{ errors, processing }">
-            <div class="grid gap-2">
-                <Label for="email">Email address</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    name="email"
-                    autocomplete="off"
-                    autofocus
-                    placeholder="email@example.com"
-                />
-                <InputError :message="errors.email" />
-            </div>
+        <div style="max-width: 520px">
+            <section class="panel stack">
+                <p v-if="status" class="sub-status">{{ status }}</p>
 
-            <div class="my-6 flex items-center justify-start">
-                <Button
-                    class="w-full"
-                    :disabled="processing"
-                    data-test="email-password-reset-link-button"
+                <Form
+                    v-bind="email.form()"
+                    v-slot="{ errors, processing }"
+                    class="stack"
                 >
-                    <Spinner v-if="processing" />
-                    Email password reset link
-                </Button>
-            </div>
-        </Form>
+                    <label class="label">
+                        <span class="label__text">
+                            Электронная почта
+                            <span
+                                class="req"
+                                aria-hidden="true"
+                                title="Обязательное поле"
+                                >*</span
+                            >
+                        </span>
+                        <input
+                            class="field"
+                            type="email"
+                            name="email"
+                            required
+                            autofocus
+                            autocomplete="email"
+                            placeholder="you@email.ru"
+                        />
+                        <InputError :message="errors.email" />
+                    </label>
 
-        <div class="space-x-1 text-center text-sm text-muted-foreground">
-            <span>Or, return to</span>
-            <TextLink :href="login()">log in</TextLink>
+                    <button
+                        class="btn btn--petrol btn--block"
+                        type="submit"
+                        :disabled="processing"
+                    >
+                        Отправить ссылку
+                    </button>
+                </Form>
+
+                <p class="tiny">
+                    Вспомнили пароль? <Link :href="login()">Войдите</Link>.
+                </p>
+            </section>
         </div>
     </div>
 </template>

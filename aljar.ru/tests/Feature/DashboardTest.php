@@ -12,16 +12,15 @@ class DashboardTest extends TestCase
 
     public function test_guests_are_redirected_to_the_login_page()
     {
-        $response = $this->get(route('dashboard'));
-        $response->assertRedirect(route('login'));
+        $this->get('/dashboard')->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_visit_the_dashboard()
+    public function test_old_dashboard_address_leads_to_the_account()
     {
-        $user = Customer::factory()->create();
-        $this->actingAs($user);
-
-        $response = $this->get(route('dashboard'));
-        $response->assertOk();
+        // Стартовый набор уводил после входа на /dashboard. Кабинет теперь
+        // один и живёт по /account, прежний адрес остаётся ссылкой на него.
+        $this->actingAs(Customer::factory()->create())
+            ->get('/dashboard')
+            ->assertRedirect('/account');
     }
 }

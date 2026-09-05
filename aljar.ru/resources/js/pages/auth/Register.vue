@@ -1,114 +1,132 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
-import PasswordInput from '@/components/PasswordInput.vue';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 
-defineProps<{
-    passwordRules: string;
-}>();
-
-defineOptions({
-    layout: {
-        title: 'Create an account',
-        description: 'Enter your details below to create your account',
-    },
-});
+/**
+ * Регистрация. Классы витрины, механика прежняя — маршрут и правила
+ * остались фортифаевскими.
+ */
 </script>
 
 <template>
-    <Head title="Register" />
+    <Head title="Регистрация" />
 
-    <Form
-        v-bind="store.form()"
-        :reset-on-success="['password', 'password_confirmation']"
-        v-slot="{ errors, processing }"
-        class="flex flex-col gap-6"
-    >
-        <div class="grid gap-6">
-            <div class="grid gap-2">
-                <Label for="name">Name</Label>
-                <Input
-                    id="name"
-                    type="text"
-                    required
-                    autofocus
-                    :tabindex="1"
-                    autocomplete="name"
-                    name="name"
-                    placeholder="Full name"
-                />
-                <InputError :message="errors.name" />
-            </div>
-
-            <div class="grid gap-2">
-                <Label for="email">Email address</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    required
-                    :tabindex="2"
-                    autocomplete="email"
-                    name="email"
-                    placeholder="email@example.com"
-                />
-                <InputError :message="errors.email" />
-            </div>
-
-            <div class="grid gap-2">
-                <Label for="password">Password</Label>
-                <PasswordInput
-                    id="password"
-                    required
-                    :tabindex="3"
-                    autocomplete="new-password"
-                    name="password"
-                    placeholder="Password"
-                    :passwordrules="passwordRules"
-                />
-                <InputError :message="errors.password" />
-            </div>
-
-            <div class="grid gap-2">
-                <Label for="password_confirmation">Confirm password</Label>
-                <PasswordInput
-                    id="password_confirmation"
-                    required
-                    :tabindex="4"
-                    autocomplete="new-password"
-                    name="password_confirmation"
-                    placeholder="Confirm password"
-                    :passwordrules="passwordRules"
-                />
-                <InputError :message="errors.password_confirmation" />
-            </div>
-
-            <Button
-                type="submit"
-                class="mt-2 w-full"
-                tabindex="5"
-                :disabled="processing"
-                data-test="register-user-button"
-            >
-                <Spinner v-if="processing" />
-                Create account
-            </Button>
+    <div class="container">
+        <div class="page-hero">
+            <nav class="breadcrumbs">
+                <Link href="/">Главная</Link> · Регистрация
+            </nav>
+            <h1 class="h2">Создать аккаунт</h1>
+            <p class="lead">
+                Нужен, чтобы видеть свои заказы и повторять их в один клик.
+                Покупать можно и без него.
+            </p>
         </div>
 
-        <div class="text-center text-sm text-muted-foreground">
-            Already have an account?
-            <TextLink
-                :href="login()"
-                class="underline underline-offset-4"
-                :tabindex="6"
-                >Log in</TextLink
-            >
+        <div style="max-width: 520px">
+            <section class="panel stack">
+                <Form
+                    v-bind="store.form()"
+                    :reset-on-success="['password', 'password_confirmation']"
+                    v-slot="{ errors, processing }"
+                    class="stack"
+                >
+                    <label class="label">
+                        <span class="label__text">
+                            Имя
+                            <span
+                                class="req"
+                                aria-hidden="true"
+                                title="Обязательное поле"
+                                >*</span
+                            >
+                        </span>
+                        <input
+                            class="field"
+                            name="name"
+                            required
+                            autofocus
+                            autocomplete="name"
+                        />
+                        <InputError :message="errors.name" />
+                    </label>
+
+                    <label class="label">
+                        <span class="label__text">
+                            Электронная почта
+                            <span
+                                class="req"
+                                aria-hidden="true"
+                                title="Обязательное поле"
+                                >*</span
+                            >
+                        </span>
+                        <input
+                            class="field"
+                            type="email"
+                            name="email"
+                            required
+                            autocomplete="email"
+                            placeholder="you@email.ru"
+                        />
+                        <InputError :message="errors.email" />
+                    </label>
+
+                    <label class="label">
+                        <span class="label__text">
+                            Пароль
+                            <span
+                                class="req"
+                                aria-hidden="true"
+                                title="Обязательное поле"
+                                >*</span
+                            >
+                        </span>
+                        <input
+                            class="field"
+                            type="password"
+                            name="password"
+                            required
+                            autocomplete="new-password"
+                        />
+                        <InputError :message="errors.password" />
+                    </label>
+
+                    <label class="label">
+                        <span class="label__text">
+                            Пароль ещё раз
+                            <span
+                                class="req"
+                                aria-hidden="true"
+                                title="Обязательное поле"
+                                >*</span
+                            >
+                        </span>
+                        <input
+                            class="field"
+                            type="password"
+                            name="password_confirmation"
+                            required
+                            autocomplete="new-password"
+                        />
+                        <InputError :message="errors.password_confirmation" />
+                    </label>
+
+                    <button
+                        class="btn btn--petrol btn--block"
+                        type="submit"
+                        :disabled="processing"
+                    >
+                        Зарегистрироваться
+                    </button>
+                </Form>
+
+                <p class="tiny">
+                    Уже есть аккаунт? <Link :href="login()">Войдите</Link>.
+                </p>
+            </section>
         </div>
-    </Form>
+    </div>
 </template>

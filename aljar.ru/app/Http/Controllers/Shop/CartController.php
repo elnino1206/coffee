@@ -56,8 +56,8 @@ class CartController extends Controller
      * Три — ровно под три колонки на широком экране; сетка выдержит и
      * больше, но блок перестанет читаться как короткая подсказка.
      *
-     * @param  list<int>  $exclude
-     * @return list<array<string, mixed>>
+     * @param  array<int, int|string|null>  $exclude
+     * @return array<int, array<string, mixed>>
      */
     protected function upsell(array $exclude): array
     {

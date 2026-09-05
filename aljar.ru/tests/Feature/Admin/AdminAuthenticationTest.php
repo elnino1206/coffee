@@ -98,7 +98,7 @@ class AdminAuthenticationTest extends TestCase
     {
         $admin = Admin::factory()->create();
 
-        $response = $this->actingAs($admin, 'admin')->get(route('dashboard'));
+        $response = $this->actingAs($admin, 'admin')->get(route('account'));
 
         $response->assertRedirect(route('login'));
     }

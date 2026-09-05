@@ -25,7 +25,7 @@ class OrderSeeder extends Seeder
     public function run(): void
     {
         if (app()->isProduction()) {
-            $this->command?->warn('OrderSeeder пропущен: на production демонстрационные заказы не создаются.');
+            $this->command->warn('OrderSeeder пропущен: на production демонстрационные заказы не создаются.');
 
             return;
         }
@@ -78,7 +78,7 @@ class OrderSeeder extends Seeder
             ->status($status)
             ->create([
                 'customer_id' => $customer?->id,
-                'contact_name' => $customer?->name ?? fake()->name(),
+                'contact_name' => $customer->name,
                 'email' => $customer?->email,
             ]);
 
