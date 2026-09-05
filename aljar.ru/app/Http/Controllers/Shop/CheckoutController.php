@@ -33,10 +33,15 @@ class CheckoutController extends Controller
         $goodsTotal = $cart->goodsTotal();
 
         return Inertia::render('shop/Checkout', [
+            // Сводка заказа показывает те же строки, что и корзина:
+            // снимок, кадр и все три выбора — вес, обжарка, помол.
             'items' => $cart->items->map(fn (CartItem $item) => [
                 'name' => $item->variant->product->name,
+                'image' => $item->variant->product->image_path,
                 'variant' => $item->variant->title,
                 'grind' => $item->grind?->label(),
+                'roast' => $item->roast?->label(),
+                'subscribe' => $item->subscribe,
                 'qty' => $item->qty,
                 'total' => $item->total(),
             ]),

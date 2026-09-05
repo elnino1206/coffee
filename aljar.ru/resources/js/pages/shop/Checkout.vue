@@ -13,7 +13,16 @@ type ShipMethod = {
 };
 
 const props = defineProps<{
-    items: { name: string | null; variant: string | null; grind: string | null; qty: number; total: number }[];
+    items: {
+        name: string | null;
+        image: string | null;
+        variant: string | null;
+        grind: string | null;
+        roast: string | null;
+        subscribe: boolean;
+        qty: number;
+        total: number;
+    }[];
     goods_total: number;
     ship_methods: ShipMethod[];
     pay_methods: { value: string; label: string; note: string }[];
@@ -36,6 +45,16 @@ const total = computed(() => props.goods_total + delivery.value);
                 <Link href="/">Главная</Link> · <Link href="/cart">Корзина</Link> · Оформление
             </nav>
             <h1 class="h2">Оформление заказа</h1>
+        </div>
+
+        <!-- Порядковый номер шага берём из --i: анимация появления
+             читает его как задержку, и точки проступают по очереди. -->
+        <div class="progress">
+            <span class="dot is-done" style="--i: 0">1</span> <span class="is-done">Корзина</span>
+            →
+            <span class="dot is-current" style="--i: 1">2</span> <span class="is-current">Доставка</span>
+            →
+            <span class="dot" style="--i: 2">3</span> Оплата
         </div>
 
         <Form action="/checkout" method="post" class="checkout" v-slot="{ errors, processing }">
@@ -118,10 +137,19 @@ const total = computed(() => props.goods_total + delivery.value);
 
             <aside class="summary">
                 <h2 class="h3">Ваш заказ</h2>
-                <div class="stack">
-                    <div v-for="(item, index) in items" :key="index" class="tiny">
-                        {{ item.name }} · {{ item.variant }}<template v-if="item.grind"> · {{ item.grind }}</template>
-                        × {{ item.qty }} — {{ formatPrice(item.total) }}
+                <div>
+                    <div v-for="(item, index) in items" :key="index" class="line-item">
+                        <img :src="`/${item.image}`" alt="" loading="lazy" decoding="async" />
+                        <div>
+                            <strong>{{ item.name }}<template v-if="item.qty > 1"> × {{ item.qty }}</template></strong>
+                            <div class="tiny">
+                                {{ item.variant
+                                }}<template v-if="item.roast"> · {{ item.roast }}</template
+                                ><template v-if="item.grind"> · {{ item.grind }}</template
+                                ><template v-if="item.subscribe"> · Подписка</template>
+                            </div>
+                        </div>
+                        <div class="price">{{ formatPrice(item.total) }}</div>
                     </div>
                 </div>
                 <div class="totals">

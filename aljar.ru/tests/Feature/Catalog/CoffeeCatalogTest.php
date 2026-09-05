@@ -58,6 +58,41 @@ class CoffeeCatalogTest extends TestCase
             );
     }
 
+    public function test_header_search_finds_coffee_by_name_and_notes()
+    {
+        $coffee = Coffee::factory()->create(['name' => 'Pink Bourbon']);
+        $coffee->detail()->update(['notes' => 'Жасмин, ягоды, мёд', 'origin' => 'Колумбия']);
+        $coffee->variants()->create(['title' => '250 г', 'price' => 70_000, 'weight_g' => 250]);
+
+        $this->getJson(route('catalog.search', ['q' => 'bourbon']))
+            ->assertOk()
+            ->assertJsonPath('results.0.name', 'Pink Bourbon')
+            ->assertJsonPath('results.0.price_from', 70_000);
+
+        $this->getJson(route('catalog.search', ['q' => 'ягоды']))
+            ->assertOk()
+            ->assertJsonCount(1, 'results');
+    }
+
+    public function test_header_search_returns_nothing_for_an_empty_query()
+    {
+        Coffee::factory()->create();
+
+        $this->getJson(route('catalog.search', ['q' => '  ']))
+            ->assertOk()
+            ->assertJsonCount(0, 'results');
+    }
+
+    public function test_header_search_never_shows_hidden_coffee()
+    {
+        $coffee = Coffee::factory()->create(['name' => 'Секретная партия', 'is_hidden' => true]);
+        $coffee->variants()->create(['title' => '250 г', 'price' => 70_000, 'weight_g' => 250]);
+
+        $this->getJson(route('catalog.search', ['q' => 'Секретная']))
+            ->assertOk()
+            ->assertJsonCount(0, 'results');
+    }
+
     public function test_hidden_coffee_never_reaches_the_storefront()
     {
         Coffee::factory()->hidden()->create();

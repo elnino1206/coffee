@@ -7,6 +7,7 @@ use App\Enums\Roast;
 use App\Models\Coffee;
 use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -201,6 +202,45 @@ class CoffeeCatalogController extends Controller
                 'max' => (int) ceil(((clone $visible)->join('product_variants', 'product_variants.product_id', '=', 'products.id')->max('price') ?? 0) / 100),
             ],
         ];
+    }
+
+    /**
+     * Подсказки для панели поиска в шапке.
+     *
+     * Отдельный метод, а не выдача каталога: панели нужны только имя,
+     * ссылка и цена, и отдавать ради подсказки весь набор фильтров и
+     * фасетов — впустую гонять данные на каждое нажатие клавиши.
+     */
+    public function search(Request $request): JsonResponse
+    {
+        $term = trim((string) $request->query('q'));
+
+        if ($term === '') {
+            return response()->json(['results' => []]);
+        }
+
+        $needle = '%'.mb_strtolower($term).'%';
+
+        $hits = Coffee::query()
+            ->visible()
+            ->with('variants')
+            ->where(fn (Builder $q) => $q
+                ->whereRaw('lower(products.name) like ?', [$needle])
+                ->orWhereHas('detail', fn (Builder $d) => $d
+                    ->whereRaw('lower(notes) like ?', [$needle])
+                    ->orWhereRaw('lower(origin) like ?', [$needle])
+                    ->orWhereRaw('lower(region) like ?', [$needle])))
+            // Подсказка обязана оставаться подсказкой: длинный список
+            // перекрывает страницу и перестаёт помогать.
+            ->limit(6)
+            ->get()
+            ->map(fn (Coffee $coffee): array => [
+                'slug' => $coffee->slug,
+                'name' => $coffee->name,
+                'price_from' => (int) ($coffee->variants->min('price') ?? 0),
+            ]);
+
+        return response()->json(['results' => $hits]);
     }
 
     /**

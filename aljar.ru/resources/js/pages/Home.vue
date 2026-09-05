@@ -2,6 +2,10 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import AddToCartModal from '@/components/AddToCartModal.vue';
+import RailBar from '@/components/RailBar.vue';
+import StorefrontFooter from '@/components/StorefrontFooter.vue';
+import { useHeroSlides } from '@/composables/useHeroSlides';
+import { useRail } from '@/composables/useRail';
 import { formatPrice } from '@/lib/money';
 
 /**
@@ -36,6 +40,35 @@ defineProps<{ featured: Product[] }>();
 
 /** Товар, для которого открыт выбор веса и помола. */
 const picked = ref<Product | null>(null);
+
+/* Горизонтальный рельс — только на главной: в каталоге, корзине и
+   оформлении перехватывать колесо нельзя, там человек работает со
+   списком, а не смотрит витрину. */
+const rail = ref<HTMLElement | null>(null);
+
+const { current, go, progress } = useRail(rail);
+
+/** Кадры героя — макро обжаренного зерна из съёмки. */
+const heroSlides = [
+    { src: '/img/hero-1.webp', alt: 'Россыпь свежеобжаренного зерна' },
+    { src: '/img/hero-2.webp', alt: 'Зёрна средней обжарки крупным планом' },
+    { src: '/img/hero-3.webp', alt: 'Обжаренное зерно, макросъёмка' },
+    { src: '/img/hero-4.webp', alt: 'Зерно тёмной обжарки' },
+];
+
+const heroStage = ref<HTMLElement | null>(null);
+
+const { slide } = useHeroSlides(heroStage, heroSlides.length);
+
+/** Подписи остановок на шкале — по одной на панель, в порядке рельса. */
+const stops = [
+    'От зерна',
+    'Обжарка недели',
+    'Подписка',
+    'Наследие',
+    'Отзывы',
+    'Подборки',
+];
 </script>
 
 <template>
@@ -47,7 +80,31 @@ const picked = ref<Product | null>(null);
         />
     </Head>
 
-    <section class="hero">
+    <div ref="rail" class="rail">
+    <div class="rail__panel rail__panel--hero" :class="{ 'is-current': current === 0 }">
+    <section class="hero hero--full">
+        <!-- Подложка героя. Вынесена из сетки: абсолютное позиционирование
+             должно считаться от секции, иначе снимок садится по ширине
+             контейнера и не закрывает панель. -->
+        <div ref="heroStage" class="hero__visual">
+            <!-- Кадры лежат стопкой: показанный проявлен, остальные
+                 прозрачны. Так смена идёт перекрёстным затуханием, а
+                 подменять src нельзя — на новом кадре был бы разрыв. -->
+            <span class="island__rock island__stack">
+                <img
+                    v-for="(frame, i) in heroSlides"
+                    :key="frame.src"
+                    :src="frame.src"
+                    :alt="i === slide ? frame.alt : ''"
+                    :class="{ 'is-shown': i === slide }"
+                    width="1152"
+                    height="998"
+                    :fetchpriority="i === 0 ? 'high' : 'auto'"
+                    :loading="i === 0 ? 'eager' : 'lazy'"
+                    decoding="async"
+                />
+            </span>
+                </div>
         <div class="container hero__grid">
             <div class="hero__copy">
                 <p class="eyebrow">Спешелти кофе · Ливанские корни</p>
@@ -83,34 +140,13 @@ const picked = ref<Product | null>(null);
                     </span>
                 </div>
             </div>
-            <!-- «Остров»: плита с чашкой оторвана от фона и парит. Прототип
-                 работает на текущем кадре без вырезки — форму держит
-                 органическая маска, глубину даёт отдельный слой тени. -->
-            <div class="hero__visual" data-island>
-                <span class="blob blob--baby"></span>
-                <span class="blob blob--sand"></span>
-                <span class="island__shadow" aria-hidden="true"></span>
-                <img
-                    class="island__rock"
-                    src="/img/hero.webp"
-                    width="1152"
-                    height="998"
-                    fetchpriority="high"
-                    decoding="async"
-                    alt="Горсть свежеобжаренных зёрен Al Jar в руке обжарщика"
-                />
-                <span class="island__beans" aria-hidden="true">
-                    <span class="bean" style="--x: 6%; --y: 14%; --s: 0.9; --dur: 11s; --lag: -2s"></span>
-                    <span class="bean" style="--x: 88%; --y: 26%; --s: 1.1; --dur: 13s; --lag: -6s"></span>
-                    <span class="bean" style="--x: 16%; --y: 74%; --s: 1; --dur: 9s; --lag: -4s"></span>
-                    <span class="bean bean--far" style="--x: 78%; --y: 82%; --s: 0.75; --dur: 14s; --lag: -9s"></span>
-                    <span class="bean bean--far" style="--x: 52%; --y: 6%; --s: 0.8; --dur: 12s; --lag: -1s"></span>
-                </span>
-            </div>
         </div>
     </section>
+    </div>
 
+    <div class="rail__panel" :class="{ 'is-current': current === 1 }">
     <section class="section">
+        <span class="lamp" aria-hidden="true" style="background: radial-gradient(62% 48% at 72% 18%, rgba(196, 154, 110, .17), rgba(196, 154, 110, 0) 72%)"></span>
         <div class="container">
             <div class="section-head" data-reveal>
                 <div>
@@ -154,8 +190,11 @@ const picked = ref<Product | null>(null);
             </div>
         </div>
     </section>
+    </div>
 
+    <div class="rail__panel" :class="{ 'is-current': current === 2 }">
     <section class="section" style="padding-top: 0">
+        <span class="lamp" aria-hidden="true" style="background: radial-gradient(52% 60% at 18% 46%, rgba(10, 186, 181, .12), rgba(10, 186, 181, 0) 70%)"></span>
         <div class="container">
             <div class="subscribe-band" data-reveal>
                 <div class="stack-s">
@@ -188,8 +227,11 @@ const picked = ref<Product | null>(null);
             </div>
         </div>
     </section>
+    </div>
 
+    <div class="rail__panel" :class="{ 'is-current': current === 3 }">
     <section class="section section--sand">
+        <span class="lamp" aria-hidden="true" style="background: radial-gradient(64% 52% at 78% 30%, rgba(255, 252, 247, .55), rgba(255, 252, 247, 0) 72%)"></span>
         <div class="container heritage">
             <div class="stack">
                 <p class="eyebrow">Наше наследие</p>
@@ -259,36 +301,12 @@ const picked = ref<Product | null>(null);
             </div>
         </div>
     </section>
+    </div>
 
-    <section class="section">
-        <div class="container">
-            <div class="section-head" data-reveal>
-                <div>
-                    <p class="eyebrow">Подборки</p>
-                    <h2 class="h2">Вам может подойти</h2>
-                </div>
-            </div>
-            <div class="product-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))">
-                <Link class="card" data-reveal href="/catalog/coffee?method[]=espresso" style="padding: 28px; background: var(--sand); border: 0">
-                    <p class="eyebrow">Способ</p>
-                    <h3 class="h3">Для эспрессо</h3>
-                    <p class="muted">Плотное тело, шоколад, стабильность в рожке.</p>
-                </Link>
-                <Link class="card" data-reveal href="/catalog/coffee?method[]=filter" style="padding: 28px; background: var(--sand); border: 0">
-                    <p class="eyebrow">Способ</p>
-                    <h3 class="h3">Для фильтра</h3>
-                    <p class="muted">Цветы, ягоды, чистая кислотность.</p>
-                </Link>
-                <Link class="card" data-reveal href="/catalog/coffee?method[]=cezve" style="padding: 28px; background: #fff">
-                    <p class="eyebrow">Способ</p>
-                    <h3 class="h3">Для турки</h3>
-                    <p class="muted">Ливанский ритуал и плотная чашка.</p>
-                </Link>
-            </div>
-        </div>
-    </section>
 
+    <div class="rail__panel" :class="{ 'is-current': current === 4 }">
     <section class="section section--petrol">
+        <span class="lamp" aria-hidden="true" style="background: radial-gradient(58% 62% at 34% 26%, rgba(255, 240, 214, .16), rgba(255, 240, 214, 0) 70%)"></span>
         <div class="container">
             <p class="eyebrow">Что говорят о нас</p>
             <h2 class="h2" style="color: #fff; margin: 8px 0 28px">Любимый кофе. Настоящие истории.</h2>
@@ -320,8 +338,36 @@ const picked = ref<Product | null>(null);
             </div>
         </div>
     </section>
-
-    <AddToCartModal :product="picked" @close="picked = null" />
+    </div>
+    <div class="rail__panel" :class="{ 'is-current': current === 5 }">
+    <section class="section">
+        <span class="lamp" aria-hidden="true" style="background: radial-gradient(56% 56% at 68% 62%, rgba(181, 106, 74, .12), rgba(181, 106, 74, 0) 72%)"></span>
+        <div class="container">
+            <div class="section-head" data-reveal>
+                <div>
+                    <p class="eyebrow">Подборки</p>
+                    <h2 class="h2">Вам может подойти</h2>
+                </div>
+            </div>
+            <div class="product-grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))">
+                <Link class="card" data-reveal href="/catalog/coffee?method[]=espresso" style="padding: 28px; background: var(--sand); border: 0">
+                    <p class="eyebrow">Способ</p>
+                    <h3 class="h3">Для эспрессо</h3>
+                    <p class="muted">Плотное тело, шоколад, стабильность в рожке.</p>
+                </Link>
+                <Link class="card" data-reveal href="/catalog/coffee?method[]=filter" style="padding: 28px; background: var(--sand); border: 0">
+                    <p class="eyebrow">Способ</p>
+                    <h3 class="h3">Для фильтра</h3>
+                    <p class="muted">Цветы, ягоды, чистая кислотность.</p>
+                </Link>
+                <Link class="card" data-reveal href="/catalog/coffee?method[]=cezve" style="padding: 28px; background: #fff">
+                    <p class="eyebrow">Способ</p>
+                    <h3 class="h3">Для турки</h3>
+                    <p class="muted">Ливанский ритуал и плотная чашка.</p>
+                </Link>
+            </div>
+        </div>
+    </section>
 
     <section class="section">
         <div class="container newsletter">
@@ -341,4 +387,14 @@ const picked = ref<Product | null>(null);
             </form>
         </div>
     </section>
+
+    <!-- Подвал внутри рельса: иначе у страницы появляется вторая ось
+         прокрутки, и рельс уезжает вверх вместе с ней. -->
+    <StorefrontFooter />
+    </div>
+    </div>
+
+    <RailBar :stops="stops" :current="current" :progress="progress" @go="go" />
+
+    <AddToCartModal :product="picked" @close="picked = null" />
 </template>

@@ -2,6 +2,8 @@
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { guardReveals, initIsland, observeReveals, replayAnimation, watchHeaderOffset } from '@/lib/motion';
+import { formatPrice } from '@/lib/money';
+import StorefrontFooter from '@/components/StorefrontFooter.vue';
 import { setupTornEdges, sizeTornMasks } from '@/lib/torn';
 import '../../css/storefront.css';
 
@@ -25,6 +27,78 @@ const nav = [
 defineProps<{ page?: string }>();
 
 const inertia = usePage();
+
+/**
+ * На главной подвал рисует сама страница — последней панелью рельса.
+ * Здесь его выводить нельзя: он добавил бы странице вторую ось
+ * прокрутки, и рельс уезжал бы вверх вместе с ней.
+ */
+const isHome = computed(() => inertia.component === 'Home');
+
+/**
+ * Панель поиска в шапке. В прототипе она фильтрует локальный каталог,
+ * здесь подсказки приходят с сервера — каталогом владеет он.
+ */
+const searchOpen = ref(false);
+const searchInput = ref<HTMLInputElement | null>(null);
+const searchPanel = ref<HTMLElement | null>(null);
+const searchToggle = ref<HTMLElement | null>(null);
+const query = ref('');
+const hits = ref<{ slug: string; name: string; price_from: number }[]>([]);
+const searched = ref(false);
+
+function setSearch(open: boolean): void {
+    searchOpen.value = open;
+
+    if (open) nextTick(() => searchInput.value?.focus());
+    /* Фокус возвращаем на кнопку, только если он остался внутри панели:
+       иначе отберём его у того, куда пользователь уже ушёл. */
+    else if (searchPanel.value?.contains(document.activeElement)) searchToggle.value?.focus();
+}
+
+let searchTimer: ReturnType<typeof setTimeout>;
+
+watch(query, (value) => {
+    clearTimeout(searchTimer);
+
+    const term = value.trim();
+
+    if (!term) {
+        hits.value = [];
+        searched.value = false;
+
+        return;
+    }
+
+    /* Задержка, чтобы не слать запрос на каждое нажатие клавиши. */
+    searchTimer = setTimeout(async () => {
+        const response = await fetch(`/catalog/search?q=${encodeURIComponent(term)}`, {
+            headers: { Accept: 'application/json' },
+        });
+        const data = await response.json();
+
+        hits.value = data.results ?? [];
+        searched.value = true;
+    }, 250);
+});
+
+/* Панель не перекрывает страницу целиком, поэтому закрываться должна и
+   по клику мимо, и по Escape: иначе останется висеть над содержимым. */
+function onPointerDown(event: PointerEvent): void {
+    if (!searchOpen.value) return;
+
+    const target = event.target as Node;
+
+    // Клик по самой кнопке обрабатывает её слушатель — иначе панель
+    // закрылась бы здесь и тут же открылась снова.
+    if (searchPanel.value?.contains(target) || searchToggle.value?.contains(target)) return;
+
+    setSearch(false);
+}
+
+function onKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && searchOpen.value) setSearch(false);
+}
 
 /** Бейдж корзины — чтобы подскочить при пополнении. */
 const cartBadge = ref<HTMLElement | null>(null);
@@ -52,9 +126,15 @@ onMounted(() => {
     /* Маски рваного края зависят от фактических размеров снимков,
        а те меняются вместе с шириной окна. */
     window.addEventListener('resize', sizeTornMasks);
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeydown);
 });
 
-onBeforeUnmount(() => window.removeEventListener('resize', sizeTornMasks));
+onBeforeUnmount(() => {
+    window.removeEventListener('resize', sizeTornMasks);
+    document.removeEventListener('pointerdown', onPointerDown);
+    document.removeEventListener('keydown', onKeydown);
+});
 
 /* Набор снимков меняется вместе со страницей, а маски нумеруются по
    порядку — после перехода их нужно пересобрать, иначе на новой странице
@@ -100,6 +180,20 @@ router.on('navigate', () =>
             </nav>
 
             <div class="header-actions">
+                <button
+                    ref="searchToggle"
+                    class="icon-btn"
+                    type="button"
+                    aria-label="Поиск"
+                    aria-controls="search"
+                    :aria-expanded="searchOpen"
+                    @click="setSearch(!searchOpen)"
+                >
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
+                        <circle cx="9" cy="9" r="6" />
+                        <path d="M14 14l4 4" />
+                    </svg>
+                </button>
                 <a class="icon-btn" href="#" aria-label="Личный кабинет">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
                         <circle cx="10" cy="7" r="3.2" />
@@ -115,48 +209,49 @@ router.on('navigate', () =>
                 </Link>
             </div>
         </div>
+
+        <!-- Панель поиска живёт внутри шапки: так она разворачивается
+             ровно под её нижней границей, какой бы высоты шапка ни была.
+             При прокрутке шапка сжимается — привязка к фиксированному
+             отступу разъехалась бы. -->
+        <div id="search" ref="searchPanel" class="search-panel" :class="{ 'is-open': searchOpen }">
+            <div class="search-panel__inner">
+                <div class="container search-panel__body">
+                    <div class="search-panel__field">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
+                            <circle cx="9" cy="9" r="6" />
+                            <path d="M14 14l4 4" />
+                        </svg>
+                        <input
+                            ref="searchInput"
+                            v-model="query"
+                            class="field"
+                            type="search"
+                            placeholder="Найти кофе по названию, региону, вкусу…"
+                            aria-label="Поиск по каталогу"
+                        />
+                        <button class="icon-btn" type="button" aria-label="Закрыть поиск" @click="setSearch(false)">
+                            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7">
+                                <path d="M5 5l12 12M17 5L5 17" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="search-results">
+                        <Link v-for="hit in hits" :key="hit.slug" class="chip" :href="`/catalog/coffee/${hit.slug}`">
+                            {{ hit.name }} · {{ formatPrice(hit.price_from) }}
+                        </Link>
+                        <p v-if="searched && !hits.length" class="empty">
+                            Ничего не нашли. Попробуйте «эспрессо» или «Эфиопия».
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </header>
 
     <main id="main">
         <slot />
     </main>
 
-    <footer class="site-footer">
-        <div class="container footer-grid">
-            <div class="footer-brand">
-                <Link class="logo logo--lg" href="/">
-                    <img
-                        src="/img/logo.webp"
-                        alt="Al Jar Coffee"
-                        width="187"
-                        height="138"
-                        loading="lazy"
-                        decoding="async"
-                    />
-                </Link>
-                <p class="tiny">
-                    Семейный бренд с ливанскими корнями и современной обжаркой
-                    полного цикла в России. От зерна к чашке.
-                </p>
-            </div>
-            <div class="footer-col">
-                <h4>Магазин</h4>
-                <Link href="/catalog/coffee">Каталог</Link>
-                <a href="/catalog/coffee?method[]=espresso">Для эспрессо</a>
-                <a href="/catalog/coffee?method[]=filter">Для фильтра</a>
-            </div>
-            <div class="footer-col">
-                <h4>Контакты</h4>
-                <a href="tel:+79851379235">8 (985) 137-92-35</a>
-                <a href="mailto:hello@aljar.ru">hello@aljar.ru</a>
-                <p class="tiny" style="margin-top: 8px">
-                    Телефон — основной способ связи. Email по желанию.
-                </p>
-            </div>
-        </div>
-        <div class="container footer-bottom">
-            <span>© 2026 Al Jar Coffee. Все права защищены.</span>
-            <span>Обжариваем в России · Корни в Ливане</span>
-        </div>
-    </footer>
+    <StorefrontFooter v-if="!isHome" />
 </template>
