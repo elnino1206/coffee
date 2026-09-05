@@ -32,7 +32,12 @@ const props = defineProps<{
         profile: Record<string, number>;
         variants: Variant[];
     };
-    related: { slug: string; name: string; image: string | null; price_from: number }[];
+    related: {
+        slug: string;
+        name: string;
+        image: string | null;
+        price_from: number;
+    }[];
 }>();
 
 /** Подписи шкал — те же, что в прототипе: порядок держит смысл. */
@@ -49,7 +54,9 @@ const grinds = GRINDS;
 const variantId = ref(props.coffee.variants[0]?.id ?? null);
 const grind = ref('whole');
 
-const variant = computed(() => props.coffee.variants.find((item) => item.id === variantId.value));
+const variant = computed(() =>
+    props.coffee.variants.find((item) => item.id === variantId.value),
+);
 const price = computed(() => variant.value?.price ?? props.coffee.price_from);
 const adding = ref(false);
 
@@ -65,8 +72,8 @@ let shownPrice = 0;
 onMounted(() => {
     /* Первая отрисовка идёт напрямую: значение ещё не менялось. */
     if (priceEl.value) {
-priceEl.value.textContent = formatPrice(price.value);
-}
+        priceEl.value.textContent = formatPrice(price.value);
+    }
 
     shownPrice = price.value;
 });
@@ -124,7 +131,8 @@ function addToCart() {
                 <p class="tiny">{{ coffee.region }}, {{ coffee.origin }}</p>
                 <p class="tiny">{{ coffee.species }} · {{ coffee.process }}</p>
                 <p class="tiny">
-                    Рекомендуем: <strong>{{ coffee.method }}</strong> · {{ coffee.roast }}
+                    Рекомендуем: <strong>{{ coffee.method }}</strong> ·
+                    {{ coffee.roast }}
                 </p>
 
                 <div ref="priceEl" class="price"></div>
@@ -140,9 +148,16 @@ function addToCart() {
                         >
                             <span>{{ label }}</span>
                             <div class="bar__track">
-                                <div class="bar__fill" :style="{ '--v': coffee.profile[key] / 100 }"></div>
+                                <div
+                                    class="bar__fill"
+                                    :style="{
+                                        '--v': coffee.profile[key] / 100,
+                                    }"
+                                ></div>
                             </div>
-                            <span class="bar__value">{{ coffee.profile[key] }}%</span>
+                            <span class="bar__value"
+                                >{{ coffee.profile[key] }}%</span
+                            >
                         </div>
                     </div>
                     <p class="tiny">{{ coffee.notes }}</p>
@@ -151,7 +166,11 @@ function addToCart() {
                 <label class="label">
                     Вес
                     <select class="select" v-model="variantId">
-                        <option v-for="item in coffee.variants" :key="item.id" :value="item.id">
+                        <option
+                            v-for="item in coffee.variants"
+                            :key="item.id"
+                            :value="item.id"
+                        >
                             {{ item.title }} — {{ formatPrice(item.price) }}
                         </option>
                     </select>
@@ -169,7 +188,12 @@ function addToCart() {
                             :aria-pressed="grind === item.id"
                             @click="grind = item.id"
                         >
-                            <img :src="item.image" alt="" width="32" height="32" />
+                            <img
+                                :src="item.image"
+                                alt=""
+                                width="32"
+                                height="32"
+                            />
                             <span>{{ item.tile }}</span>
                             <span class="tiny">{{ item.note }}</span>
                         </button>
@@ -182,9 +206,15 @@ function addToCart() {
                     :disabled="adding || !variant?.in_stock"
                     @click="addToCart"
                 >
-                    {{ variant?.in_stock ? 'Добавить в корзину' : 'Нет в наличии' }}
+                    {{
+                        variant?.in_stock
+                            ? 'Добавить в корзину'
+                            : 'Нет в наличии'
+                    }}
                 </button>
-                <p class="tiny">Доставка по всей России · Свежий обжар ежедневно</p>
+                <p class="tiny">
+                    Доставка по всей России · Свежий обжар ежедневно
+                </p>
             </div>
         </div>
 
@@ -193,12 +223,18 @@ function addToCart() {
             <div class="product-grid">
                 <article v-for="item in related" :key="item.slug" class="card">
                     <div class="card__media">
-                        <img :src="`/${item.image}`" :alt="item.name" loading="lazy" />
+                        <img
+                            :src="`/${item.image}`"
+                            :alt="item.name"
+                            loading="lazy"
+                        />
                     </div>
                     <div class="card__body">
                         <span class="card__title">{{ item.name }}</span>
                         <div class="card__row">
-                            <span class="price">{{ formatPrice(item.price_from) }}</span>
+                            <span class="price">{{
+                                formatPrice(item.price_from)
+                            }}</span>
                         </div>
                     </div>
                 </article>

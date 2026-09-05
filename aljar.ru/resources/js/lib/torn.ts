@@ -17,21 +17,23 @@
 
 const TORN_SEEDS = [9, 23, 41, 57, 68, 84, 102, 119];
 
-const tornImages = (): HTMLImageElement[] => [...document.querySelectorAll<HTMLImageElement>('.torn img')];
+const tornImages = (): HTMLImageElement[] => [
+    ...document.querySelectorAll<HTMLImageElement>('.torn img'),
+];
 
 export function sizeTornMasks(): void {
     tornImages().forEach((img, i) => {
         const rect = document.querySelector(`[data-torn-rect="${i}"]`);
 
         if (!rect) {
-return;
-}
+            return;
+        }
 
         const box = img.getBoundingClientRect();
 
         if (!box.width || !box.height) {
-return;
-}
+            return;
+        }
 
         rect.setAttribute('width', String(Math.ceil(box.width)));
         rect.setAttribute('height', String(Math.ceil(box.height)));
@@ -43,8 +45,8 @@ export function setupTornEdges(): void {
     const images = tornImages();
 
     if (!host || !images.length) {
-return;
-}
+        return;
+    }
 
     host.innerHTML = images
         .map(
@@ -68,8 +70,8 @@ return;
            повторно по той же разметке, и без метки обработчики
            накапливались бы. */
         if (img.dataset.tornBound) {
-return;
-}
+            return;
+        }
 
         img.dataset.tornBound = '1';
         img.addEventListener('load', sizeTornMasks);

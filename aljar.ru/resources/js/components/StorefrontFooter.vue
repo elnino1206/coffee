@@ -11,7 +11,7 @@ import { Link } from '@inertiajs/vue3';
 
 <template>
     <footer class="site-footer">
-        <div class="container footer-grid">
+        <div class="footer-grid container">
             <div class="footer-brand">
                 <Link class="logo logo--lg" href="/">
                     <img
@@ -43,7 +43,7 @@ import { Link } from '@inertiajs/vue3';
                 </p>
             </div>
         </div>
-        <div class="container footer-bottom">
+        <div class="footer-bottom container">
             <span>© 2026 Al Jar Coffee. Все права защищены.</span>
             <span>Обжариваем в России · Корни в Ливане</span>
         </div>

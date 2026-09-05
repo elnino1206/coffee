@@ -110,8 +110,8 @@ onMounted(() => {
     /* Первая отрисовка идёт без прокрутки: катить число от нуля при
        заходе на страницу нечего — оно ещё не менялось. */
     if (resultsEl.value) {
-resultsEl.value.textContent = resultsLabel(props.total);
-}
+        resultsEl.value.textContent = resultsLabel(props.total);
+    }
 
     shownCount = props.total;
 });
@@ -153,16 +153,20 @@ function apply() {
        прямо под курсором. Новые проявляются сами, через [data-reveal].
        Первая отрисовка и режим без движения идут напрямую. */
     if (motionOn() && props.products.length) {
-swapping.value = true;
-}
+        swapping.value = true;
+    }
 
-    router.get('/catalog/coffee', { ...form.value, q: search.value || undefined }, {
-        preserveState: true,
-        preserveScroll: true,
-        replace: true,
-        only: ['products', 'total', 'filters'],
-        onFinish: () => (swapping.value = false),
-    });
+    router.get(
+        '/catalog/coffee',
+        { ...form.value, q: search.value || undefined },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+            only: ['products', 'total', 'filters'],
+            onFinish: () => (swapping.value = false),
+        },
+    );
 }
 
 function toggle(list: 'roast' | 'method' | 'origin', value: string) {
@@ -190,9 +194,22 @@ function reset() {
 }
 
 const activeChips = computed(() => [
-    ...form.value.roast.map((value) => ({ list: 'roast' as const, value, label: roastShort[value] ?? value })),
-    ...form.value.method.map((value) => ({ list: 'method' as const, value, label: props.facets.methods.find((f) => f.value === value)?.label ?? value })),
-    ...form.value.origin.map((value) => ({ list: 'origin' as const, value, label: value })),
+    ...form.value.roast.map((value) => ({
+        list: 'roast' as const,
+        value,
+        label: roastShort[value] ?? value,
+    })),
+    ...form.value.method.map((value) => ({
+        list: 'method' as const,
+        value,
+        label:
+            props.facets.methods.find((f) => f.value === value)?.label ?? value,
+    })),
+    ...form.value.origin.map((value) => ({
+        list: 'origin' as const,
+        value,
+        label: value,
+    })),
 ]);
 
 let typing: ReturnType<typeof setTimeout>;
@@ -220,9 +237,15 @@ const picked = ref<Card | null>(null);
 
     <div class="catalog-page">
         <div class="catalog-shell">
-            <aside id="filters-panel" class="filters" :class="{ 'is-open': filtersOpen }">
+            <aside
+                id="filters-panel"
+                class="filters"
+                :class="{ 'is-open': filtersOpen }"
+            >
                 <div class="filters__head">
-                    <nav class="breadcrumbs"><Link href="/">Главная</Link> · Каталог</nav>
+                    <nav class="breadcrumbs">
+                        <Link href="/">Главная</Link> · Каталог
+                    </nav>
                     <h1 class="h2 filters__title">Весь кофе</h1>
                     <p class="tiny">
                         Моносорта и смеси — обжариваем небольшими партиями ради
@@ -238,23 +261,41 @@ const picked = ref<Card | null>(null);
                         @click="collapsed.roast = !collapsed.roast"
                     >
                         <span>Обжарка</span>
-                        <svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <svg
+                            class="chev"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                        >
                             <path d="M4 10l4-4 4 4" />
                         </svg>
                     </button>
                     <div class="filter-group__body">
-                        <label v-for="roast in facets.roasts" :key="roast.value" class="facet">
+                        <label
+                            v-for="roast in facets.roasts"
+                            :key="roast.value"
+                            class="facet"
+                        >
                             <input
                                 type="checkbox"
                                 :checked="form.roast.includes(roast.value)"
                                 @change="toggle('roast', roast.value)"
                             />
-                            <span class="facet__label">{{ roastShort[roast.value] ?? roast.label }}</span>
+                            <span class="facet__label">{{
+                                roastShort[roast.value] ?? roast.label
+                            }}</span>
                             <span class="roast-scale" aria-hidden="true">
                                 <i
                                     v-for="n in ROAST_SCALE"
                                     :key="n"
-                                    :class="{ on: n <= (roastLevels[roast.value] ?? 0) }"
+                                    :class="{
+                                        on:
+                                            n <=
+                                            (roastLevels[roast.value] ?? 0),
+                                    }"
                                 ></i>
                             </span>
                         </label>
@@ -269,12 +310,24 @@ const picked = ref<Card | null>(null);
                         @click="collapsed.origin = !collapsed.origin"
                     >
                         <span>Происхождение</span>
-                        <svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <svg
+                            class="chev"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                        >
                             <path d="M4 10l4-4 4 4" />
                         </svg>
                     </button>
                     <div class="filter-group__body">
-                        <label v-for="origin in facets.origins" :key="origin.value" class="facet">
+                        <label
+                            v-for="origin in facets.origins"
+                            :key="origin.value"
+                            class="facet"
+                        >
                             <input
                                 type="checkbox"
                                 :checked="form.origin.includes(origin.value)"
@@ -294,14 +347,25 @@ const picked = ref<Card | null>(null);
                         @click="collapsed.price = !collapsed.price"
                     >
                         <span>Цена</span>
-                        <svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <svg
+                            class="chev"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                        >
                             <path d="M4 10l4-4 4 4" />
                         </svg>
                     </button>
                     <div class="filter-group__body">
                         <div class="price-range">
                             <div class="price-range__track">
-                                <div class="price-range__fill" :style="fill"></div>
+                                <div
+                                    class="price-range__fill"
+                                    :style="fill"
+                                ></div>
                             </div>
                             <input
                                 type="range"
@@ -309,7 +373,13 @@ const picked = ref<Card | null>(null);
                                 :max="facets.price.max"
                                 :value="priceLo"
                                 aria-label="Цена от"
-                                @change="form.price_min = Number(($event.target as HTMLInputElement).value); apply()"
+                                @change="
+                                    form.price_min = Number(
+                                        ($event.target as HTMLInputElement)
+                                            .value,
+                                    );
+                                    apply();
+                                "
                             />
                             <input
                                 type="range"
@@ -317,7 +387,13 @@ const picked = ref<Card | null>(null);
                                 :max="facets.price.max"
                                 :value="priceHi"
                                 aria-label="Цена до"
-                                @change="form.price_max = Number(($event.target as HTMLInputElement).value); apply()"
+                                @change="
+                                    form.price_max = Number(
+                                        ($event.target as HTMLInputElement)
+                                            .value,
+                                    );
+                                    apply();
+                                "
                             />
                         </div>
                         <div class="price-range__labels">
@@ -335,28 +411,55 @@ const picked = ref<Card | null>(null);
                         @click="collapsed.method = !collapsed.method"
                     >
                         <span>Способ приготовления</span>
-                        <svg class="chev" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <svg
+                            class="chev"
+                            width="14"
+                            height="14"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.8"
+                        >
                             <path d="M4 10l4-4 4 4" />
                         </svg>
                     </button>
                     <div class="filter-group__body method-grid">
-                        <label v-for="method in facets.methods" :key="method.value" class="facet">
+                        <label
+                            v-for="method in facets.methods"
+                            :key="method.value"
+                            class="facet"
+                        >
                             <input
                                 type="checkbox"
                                 :checked="form.method.includes(method.value)"
                                 @change="toggle('method', method.value)"
                             />
-                            <img :src="methodIcons[method.value]" alt="" loading="lazy" decoding="async" />
+                            <img
+                                :src="methodIcons[method.value]"
+                                alt=""
+                                loading="lazy"
+                                decoding="async"
+                            />
                             <span class="facet__label">{{ method.label }}</span>
                         </label>
                     </div>
                 </div>
 
                 <div class="filters__actions">
-                    <button class="btn btn--petrol btn--m" type="button" @click="filtersOpen = false">
+                    <button
+                        class="btn btn--petrol btn--m"
+                        type="button"
+                        @click="filtersOpen = false"
+                    >
                         Показать
                     </button>
-                    <button class="btn btn--ghost btn--m" type="button" @click="reset">Сбросить</button>
+                    <button
+                        class="btn btn--ghost btn--m"
+                        type="button"
+                        @click="reset"
+                    >
+                        Сбросить
+                    </button>
                 </div>
             </aside>
 
@@ -369,13 +472,27 @@ const picked = ref<Card | null>(null);
                     <div class="results-tools">
                         <label class="sort-label">
                             Сортировка
-                            <select v-model="form.sort" class="select" @change="apply">
-                                <option value="rating">Сначала популярные</option>
-                                <option value="price-asc">Цена по возрастанию</option>
-                                <option value="price-desc">Цена по убыванию</option>
+                            <select
+                                v-model="form.sort"
+                                class="select"
+                                @change="apply"
+                            >
+                                <option value="rating">
+                                    Сначала популярные
+                                </option>
+                                <option value="price-asc">
+                                    Цена по возрастанию
+                                </option>
+                                <option value="price-desc">
+                                    Цена по убыванию
+                                </option>
                             </select>
                         </label>
-                        <div class="view-toggle" role="group" aria-label="Вид списка">
+                        <div
+                            class="view-toggle"
+                            role="group"
+                            aria-label="Вид списка"
+                        >
                             <button
                                 type="button"
                                 :class="{ 'is-active': view === 'grid' }"
@@ -383,11 +500,40 @@ const picked = ref<Card | null>(null);
                                 aria-label="Сеткой"
                                 @click="view = 'grid'"
                             >
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                                    <rect x="1" y="1" width="6" height="6" rx="1.5" />
-                                    <rect x="9" y="1" width="6" height="6" rx="1.5" />
-                                    <rect x="1" y="9" width="6" height="6" rx="1.5" />
-                                    <rect x="9" y="9" width="6" height="6" rx="1.5" />
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 16 16"
+                                    fill="currentColor"
+                                >
+                                    <rect
+                                        x="1"
+                                        y="1"
+                                        width="6"
+                                        height="6"
+                                        rx="1.5"
+                                    />
+                                    <rect
+                                        x="9"
+                                        y="1"
+                                        width="6"
+                                        height="6"
+                                        rx="1.5"
+                                    />
+                                    <rect
+                                        x="1"
+                                        y="9"
+                                        width="6"
+                                        height="6"
+                                        rx="1.5"
+                                    />
+                                    <rect
+                                        x="9"
+                                        y="9"
+                                        width="6"
+                                        height="6"
+                                        rx="1.5"
+                                    />
                                 </svg>
                             </button>
                             <button
@@ -397,7 +543,15 @@ const picked = ref<Card | null>(null);
                                 aria-label="Списком"
                                 @click="view = 'list'"
                             >
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                                <svg
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 16 16"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.8"
+                                    stroke-linecap="round"
+                                >
                                     <path d="M2 4h12M2 8h12M2 12h12" />
                                 </svg>
                             </button>
@@ -423,41 +577,85 @@ const picked = ref<Card | null>(null);
                 </div>
 
                 <div class="chips">
-                    <span v-for="chip in activeChips" :key="`${chip.list}-${chip.value}`" class="chip">
+                    <span
+                        v-for="chip in activeChips"
+                        :key="`${chip.list}-${chip.value}`"
+                        class="chip"
+                    >
                         {{ chip.label }}
-                        <button type="button" aria-label="Сбросить" @click="toggle(chip.list, chip.value)">×</button>
+                        <button
+                            type="button"
+                            aria-label="Сбросить"
+                            @click="toggle(chip.list, chip.value)"
+                        >
+                            ×
+                        </button>
                     </span>
                 </div>
 
                 <div
                     ref="grid"
                     class="product-grid"
-                    :class="{ 'is-list': view === 'list', 'is-swapping': swapping }"
+                    :class="{
+                        'is-list': view === 'list',
+                        'is-swapping': swapping,
+                    }"
                 >
-                    <article v-for="product in products" :key="product.slug" class="catalog-card" data-reveal>
+                    <article
+                        v-for="product in products"
+                        :key="product.slug"
+                        class="catalog-card"
+                        data-reveal
+                    >
                         <div class="catalog-card__media">
                             <Link :href="`/catalog/coffee/${product.slug}`">
-                                <img :src="`/${product.image}`" :alt="product.name" loading="lazy" decoding="async" />
+                                <img
+                                    :src="`/${product.image}`"
+                                    :alt="product.name"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
                             </Link>
                         </div>
                         <div class="catalog-card__body">
-                            <Link class="catalog-card__title" :href="`/catalog/coffee/${product.slug}`">
+                            <Link
+                                class="catalog-card__title"
+                                :href="`/catalog/coffee/${product.slug}`"
+                            >
                                 {{ product.name }}
                             </Link>
                             <p class="catalog-card__origin">
                                 {{ product.origin
-                                }}<template v-if="product.region && product.region !== product.origin">
+                                }}<template
+                                    v-if="
+                                        product.region &&
+                                        product.region !== product.origin
+                                    "
+                                >
                                     · {{ product.region }}
                                 </template>
                             </p>
-                            <p class="catalog-card__notes">{{ product.notes?.split(', ').join(' · ') }}</p>
+                            <p class="catalog-card__notes">
+                                {{ product.notes?.split(', ').join(' · ') }}
+                            </p>
                             <p class="catalog-card__price">
-                                <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
-                                    <path d="M3 8.5V4a1 1 0 0 1 1-1h4.5L17 11.5 11.5 17 3 8.5z" />
+                                <svg
+                                    width="15"
+                                    height="15"
+                                    viewBox="0 0 20 20"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="1.6"
+                                >
+                                    <path
+                                        d="M3 8.5V4a1 1 0 0 1 1-1h4.5L17 11.5 11.5 17 3 8.5z"
+                                    />
                                     <circle cx="6.6" cy="6.6" r="1.1" />
                                 </svg>
                                 {{ formatPrice(product.price_from) }}
-                                <small v-if="product.price_from_title">/ {{ product.price_from_title }}</small>
+                                <small v-if="product.price_from_title"
+                                    >/ {{ product.price_from_title }}</small
+                                >
                             </p>
                             <div class="catalog-card__cta">
                                 <button
@@ -466,9 +664,18 @@ const picked = ref<Card | null>(null);
                                     :aria-label="`Выбрать вес и помол: ${product.name}`"
                                     @click="picked = product"
                                 >
-                                    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+                                    <svg
+                                        width="15"
+                                        height="15"
+                                        viewBox="0 0 20 20"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="1.7"
+                                    >
                                         <path d="M4.5 6.5h11l-1 10h-9l-1-10z" />
-                                        <path d="M7.5 6.5V5a2.5 2.5 0 0 1 5 0v1.5" />
+                                        <path
+                                            d="M7.5 6.5V5a2.5 2.5 0 0 1 5 0v1.5"
+                                        />
                                     </svg>
                                     В корзину
                                 </button>

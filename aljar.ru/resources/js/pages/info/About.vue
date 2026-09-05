@@ -23,14 +23,14 @@ useJourney(journey);
     <Head title="О бренде" />
 
     <section class="hero">
-        <div class="container hero__grid">
+        <div class="hero__grid container">
             <div class="hero__copy">
                 <p class="eyebrow">О бренде</p>
                 <h1 class="display">История семьи и ритуала</h1>
                 <p class="lead">
-                    С XVI века кофе в Ливане — часть культуры, знак уважения и живая традиция.
-                    Al Jar продолжает её в современном формате: семейный бренд, опыт, внимание
-                    к деталям.
+                    С XVI века кофе в Ливане — часть культуры, знак уважения и
+                    живая традиция. Al Jar продолжает её в современном формате:
+                    семейный бренд, опыт, внимание к деталям.
                 </p>
             </div>
             <div class="hero__visual">
@@ -55,37 +55,42 @@ useJourney(journey);
                 <article class="step">
                     <h3 class="h3">Честность</h3>
                     <p class="muted">
-                        Происхождение партии, степень обжарки, вкусовой профиль — на виду,
-                        не в подвале карточки.
+                        Происхождение партии, степень обжарки, вкусовой профиль
+                        — на виду, не в подвале карточки.
                     </p>
                 </article>
                 <article class="step">
                     <h3 class="h3">Ритуал</h3>
                     <p class="muted">
-                        Кофе — способ собраться вместе. Мы уважаем гостя так же, как хороший хозяин.
+                        Кофе — способ собраться вместе. Мы уважаем гостя так же,
+                        как хороший хозяин.
                     </p>
                 </article>
                 <article class="step">
                     <h3 class="h3">Ремесло</h3>
-                    <p class="muted">Небольшие партии, стабильный профиль, никакой агрессии в продаже.</p>
+                    <p class="muted">
+                        Небольшие партии, стабильный профиль, никакой агрессии в
+                        продаже.
+                    </p>
                 </article>
             </div>
         </div>
     </section>
 
     <section class="section">
-        <div class="container heritage">
+        <div class="heritage container">
             <div class="stack" data-reveal>
                 <p class="eyebrow">Производство</p>
                 <h2 class="h2">Полный цикл в России</h2>
                 <p class="lead">
-                    Закупка сырого зерна, обжарка до 20 тонн в месяц, фасовка. Не прячем цех:
-                    показываем, откуда зерно и как идёт обжарка.
+                    Закупка сырого зерна, обжарка до 20 тонн в месяц, фасовка.
+                    Не прячем цех: показываем, откуда зерно и как идёт обжарка.
                 </p>
                 <p class="muted">
-                    Специализация: эспрессо и ливанский кофе. Также — гейзер, френч-пресс, фильтр,
-                    турка (арабская и турецкая). На российский рынок бренд пришёл с многолетним
-                    опытом работы на Ближнем Востоке.
+                    Специализация: эспрессо и ливанский кофе. Также — гейзер,
+                    френч-пресс, фильтр, турка (арабская и турецкая). На
+                    российский рынок бренд пришёл с многолетним опытом работы на
+                    Ближнем Востоке.
                 </p>
             </div>
             <div class="torn" data-reveal>
@@ -104,10 +109,18 @@ useJourney(journey);
 
     <!-- Сценарий «От зерна к чашке». Без JS и при reduce-motion читается
          как обычный список из пяти блоков «кадр + подпись». -->
-    <section ref="journey" class="section section--sand journey" aria-label="От зерна к чашке">
-        <div class="container journey__track">
+    <section
+        ref="journey"
+        class="section section--sand journey"
+        aria-label="От зерна к чашке"
+    >
+        <div class="journey__track container">
             <div class="journey__stage">
-                <ol class="journey__progress" data-journey-progress aria-hidden="true"></ol>
+                <ol
+                    class="journey__progress"
+                    data-journey-progress
+                    aria-hidden="true"
+                ></ol>
 
                 <article class="journey__slide" data-slide>
                     <figure class="journey__media torn">
@@ -123,11 +136,12 @@ useJourney(journey);
                     <div class="journey__copy">
                         <h2 class="h2">Всё начинается с земли</h2>
                         <p class="lead">
-                            Бразилия, Колумбия, Эфиопия. Высота, тень и ручной сбор решают,
-                            каким зерно приедет в цех.
+                            Бразилия, Колумбия, Эфиопия. Высота, тень и ручной
+                            сбор решают, каким зерно приедет в цех.
                         </p>
                         <p class="journey__metric">
-                            <span data-count-to="1800">1800</span><small>метров над уровнем моря</small>
+                            <span data-count-to="1800">1800</span
+                            ><small>метров над уровнем моря</small>
                         </p>
                     </div>
                 </article>
@@ -146,10 +160,12 @@ useJourney(journey);
                     <div class="journey__copy">
                         <h2 class="h2">Отбор партии</h2>
                         <p class="lead">
-                            Скрин 16/18 — размер зерна, при котором обжарка идёт ровно.
-                            Дефекты выбираем вручную.
+                            Скрин 16/18 — размер зерна, при котором обжарка идёт
+                            ровно. Дефекты выбираем вручную.
                         </p>
-                        <p class="journey__metric">16/18<small>размер скрина</small></p>
+                        <p class="journey__metric">
+                            16/18<small>размер скрина</small>
+                        </p>
                     </div>
                 </article>
 
@@ -167,11 +183,15 @@ useJourney(journey);
                     <div class="journey__copy">
                         <h2 class="h2">14 минут в барабане</h2>
                         <p class="lead">
-                            Свой профиль под каждый способ заваривания: эспрессо, фильтр, турка.
-                            Небольшие партии, стабильный результат.
+                            Свой профиль под каждый способ заваривания:
+                            эспрессо, фильтр, турка. Небольшие партии,
+                            стабильный результат.
                         </p>
                         <p class="journey__metric">
-                            <span data-count-to="205" data-count-from="20">205</span> °C<small>на выгрузке</small>
+                            <span data-count-to="205" data-count-from="20"
+                                >205</span
+                            >
+                            °C<small>на выгрузке</small>
                         </p>
                     </div>
                 </article>
@@ -190,8 +210,8 @@ useJourney(journey);
                     <div class="journey__copy">
                         <h2 class="h2">Фасуем небольшими партиями</h2>
                         <p class="lead">
-                            Фасуем сразу после обжарки, небольшими партиями — столько, сколько
-                            разойдётся, пока зерно в форме.
+                            Фасуем сразу после обжарки, небольшими партиями —
+                            столько, сколько разойдётся, пока зерно в форме.
                         </p>
                     </div>
                 </article>
@@ -210,14 +230,24 @@ useJourney(journey);
                     <div class="journey__copy">
                         <h2 class="h2">Ваш ритуал</h2>
                         <p class="lead">
-                            С XVI века кофе в Ливане — знак уважения и повод собраться.
-                            Дальше история продолжается у вас дома.
+                            С XVI века кофе в Ливане — знак уважения и повод
+                            собраться. Дальше история продолжается у вас дома.
                         </p>
-                        <p><Link class="btn btn--primary" href="/catalog/coffee">Смотреть кофе →</Link></p>
+                        <p>
+                            <Link
+                                class="btn btn--primary"
+                                href="/catalog/coffee"
+                                >Смотреть кофе →</Link
+                            >
+                        </p>
                     </div>
                 </article>
             </div>
-            <div class="journey__sentinels" data-journey-sentinels aria-hidden="true"></div>
+            <div
+                class="journey__sentinels"
+                data-journey-sentinels
+                aria-hidden="true"
+            ></div>
         </div>
     </section>
 </template>

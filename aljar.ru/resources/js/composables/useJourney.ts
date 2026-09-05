@@ -1,5 +1,5 @@
-import { onBeforeUnmount, onMounted  } from 'vue';
-import type {Ref} from 'vue';
+import { onBeforeUnmount, onMounted } from 'vue';
+import type { Ref } from 'vue';
 import { animateNumber, motionOn } from '@/lib/motion';
 
 /**
@@ -25,23 +25,32 @@ export function useJourney(section: Ref<HTMLElement | null>) {
         const root = section.value;
 
         if (!root) {
-return;
-}
+            return;
+        }
 
         const track = root.querySelector<HTMLElement>('.journey__track');
-        const progressHost = root.querySelector<HTMLElement>('[data-journey-progress]');
-        const sentinelHost = root.querySelector<HTMLElement>('[data-journey-sentinels]');
-        const allSlides = [...root.querySelectorAll<HTMLElement>('[data-slide]')];
+        const progressHost = root.querySelector<HTMLElement>(
+            '[data-journey-progress]',
+        );
+        const sentinelHost = root.querySelector<HTMLElement>(
+            '[data-journey-sentinels]',
+        );
+        const allSlides = [
+            ...root.querySelectorAll<HTMLElement>('[data-slide]'),
+        ];
 
         if (!track || !progressHost || !sentinelHost || !allSlides.length) {
-return;
-}
+            return;
+        }
 
         /* На узких экранах прогон короче: пять запиненных экранов пальцем —
            перебор, а мобильный трафик здесь преобладающий. Второй и
            четвёртый кадры помечены data-optional и выпадают. */
         const compact = () => window.matchMedia('(max-width: 767px)').matches;
-        const pickSlides = () => allSlides.filter((s) => !(compact() && s.hasAttribute('data-optional')));
+        const pickSlides = () =>
+            allSlides.filter(
+                (s) => !(compact() && s.hasAttribute('data-optional')),
+            );
 
         const canPin = () =>
             /* motionOn покрывает и настройку движения, и видимость вкладки,
@@ -51,26 +60,36 @@ return;
             window.innerHeight >= 520;
 
         function runCounters(slide: HTMLElement): void {
-            slide.querySelectorAll<HTMLElement>('[data-count-to]').forEach((el) => {
-                const to = Number(el.dataset.countTo);
-                const from = Number(el.dataset.countFrom ?? 0);
+            slide
+                .querySelectorAll<HTMLElement>('[data-count-to]')
+                .forEach((el) => {
+                    const to = Number(el.dataset.countTo);
+                    const from = Number(el.dataset.countFrom ?? 0);
 
-                if (!Number.isFinite(to)) {
-return;
-}
+                    if (!Number.isFinite(to)) {
+                        return;
+                    }
 
-                animateNumber(el, from, to, (v) => String(Math.round(v)), 900);
-            });
+                    animateNumber(
+                        el,
+                        from,
+                        to,
+                        (v) => String(Math.round(v)),
+                        900,
+                    );
+                });
         }
 
         function setFrame(i: number): void {
             if (i === current || i < 0 || i >= slides.length) {
-return;
-}
+                return;
+            }
 
             current = i;
             slides.forEach((s, n) => s.classList.toggle('is-active', n === i));
-            [...progressHost!.children].forEach((li, n) => li.classList.toggle('is-active', n === i));
+            [...progressHost!.children].forEach((li, n) =>
+                li.classList.toggle('is-active', n === i),
+            );
             runCounters(slides[i]);
         }
 
@@ -78,10 +97,14 @@ return;
             slides = pickSlides();
             /* Выпавшие кадры прячем атрибутом, а не через JS-состояние:
                снялся is-pinned или is-enhanced — они возвращаются сами. */
-            allSlides.forEach((s) => s.toggleAttribute('data-skip', !slides.includes(s)));
+            allSlides.forEach((s) =>
+                s.toggleAttribute('data-skip', !slides.includes(s)),
+            );
 
             track!.style.setProperty('--frames', String(slides.length));
-            sentinelHost!.innerHTML = slides.map(() => '<div class="journey__sentinel"></div>').join('');
+            sentinelHost!.innerHTML = slides
+                .map(() => '<div class="journey__sentinel"></div>')
+                .join('');
             progressHost!.innerHTML = slides.map(() => '<li></li>').join('');
 
             /* Полоса в 1px поперёк середины экрана: метка её пересекла —
@@ -90,8 +113,8 @@ return;
                 (entries) => {
                     entries.forEach((e) => {
                         if (!e.isIntersecting) {
-return;
-}
+                            return;
+                        }
 
                         setFrame([...sentinelHost!.children].indexOf(e.target));
                     });
@@ -113,8 +136,8 @@ return;
                     const img = s.querySelector('img');
 
                     if (!img) {
-return Promise.resolve();
-}
+                        return Promise.resolve();
+                    }
 
                     img.loading = 'eager';
 
@@ -138,12 +161,12 @@ return Promise.resolve();
         prep = new IntersectionObserver(
             ([entry]) => {
                 if (!entry.isIntersecting || preparing) {
-return;
-}
+                    return;
+                }
 
                 if (!canPin()) {
-return;
-}
+                    return;
+                }
 
                 preparing = true;
 
@@ -156,12 +179,12 @@ return;
                        в секцию. Пока её верх на экране или ниже, сцена растёт
                        под ним и прокрутка не сдвигается — пинить безопасно. */
                     if (!canPin()) {
-return;
-}
+                        return;
+                    }
 
                     if (root!.getBoundingClientRect().top < 0) {
-return;
-}
+                        return;
+                    }
 
                     prep?.disconnect();
                     build();
@@ -173,8 +196,8 @@ return;
         );
 
         if (canPin()) {
-prep.observe(root);
-}
+            prep.observe(root);
+        }
 
         /* Смена брейкпоинта меняет число кадров. Пересобираем только когда
            секция вне экрана — иначе перестройка отдаётся скачком. */
@@ -182,18 +205,18 @@ prep.observe(root);
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(() => {
                 if (!root!.classList.contains('is-pinned')) {
-return;
-}
+                    return;
+                }
 
                 if (pickSlides().length === slides.length) {
-return;
-}
+                    return;
+                }
 
                 const r = root!.getBoundingClientRect();
 
                 if (r.bottom > 0 && r.top < window.innerHeight) {
-return;
-}
+                    return;
+                }
 
                 observer?.disconnect();
                 build();
@@ -212,7 +235,7 @@ return;
         clearTimeout(resizeTimer);
 
         if (onResize) {
-window.removeEventListener('resize', onResize);
-}
+            window.removeEventListener('resize', onResize);
+        }
     });
 }

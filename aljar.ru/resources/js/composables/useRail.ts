@@ -1,5 +1,5 @@
-import { onBeforeUnmount, onMounted, ref  } from 'vue';
-import type {Ref} from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
+import type { Ref } from 'vue';
 
 /**
  * Горизонтальный рельс главной.
@@ -39,25 +39,37 @@ export function useRail(rail: Ref<HTMLElement | null>) {
     let accTimer: ReturnType<typeof setTimeout> | undefined;
     let lockTimer: ReturnType<typeof setTimeout> | undefined;
 
-    const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = () =>
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const desktop = () => window.innerWidth >= DESKTOP_FROM;
 
-    const panels = (): HTMLElement[] => [...(rail.value?.querySelectorAll<HTMLElement>('.rail__panel') ?? [])];
+    const panels = (): HTMLElement[] => [
+        ...(rail.value?.querySelectorAll<HTMLElement>('.rail__panel') ?? []),
+    ];
 
     /** Индекс панели по фактическому положению рельса. */
     function indexFromScroll(): number {
         const el = rail.value;
 
         if (!el || !el.clientWidth) {
-return 0;
-}
+            return 0;
+        }
 
-        return Math.max(0, Math.min(panels().length - 1, Math.round(el.scrollLeft / el.clientWidth)));
+        return Math.max(
+            0,
+            Math.min(
+                panels().length - 1,
+                Math.round(el.scrollLeft / el.clientWidth),
+            ),
+        );
     }
 
     function unlockSoon(ms?: number): void {
         clearTimeout(lockTimer);
-        lockTimer = setTimeout(() => (locked = false), ms ?? (reduced() ? LOCK_REDUCED : LOCK));
+        lockTimer = setTimeout(
+            () => (locked = false),
+            ms ?? (reduced() ? LOCK_REDUCED : LOCK),
+        );
     }
 
     function go(i: number): void {
@@ -66,8 +78,8 @@ return 0;
         const n = Math.max(0, Math.min(list.length - 1, i));
 
         if (!el || !list[n]) {
-return;
-}
+            return;
+        }
 
         /* Прыжок больше чем на панель и режим без движения идут мгновенно:
            долгий проезд через промежуточные секции читается как сбой. */
@@ -77,7 +89,10 @@ return;
         acc = 0;
         current.value = n;
 
-        el.scrollTo({ left: n * el.clientWidth, behavior: jump ? 'auto' : 'smooth' });
+        el.scrollTo({
+            left: n * el.clientWidth,
+            behavior: jump ? 'auto' : 'smooth',
+        });
         unlockSoon(jump ? 50 : undefined);
     }
 
@@ -89,20 +104,20 @@ return;
         const el = target as HTMLElement | null;
 
         if (!el?.closest) {
-return true;
-}
+            return true;
+        }
 
         if (el.closest('input, textarea, select')) {
-return false;
-}
+            return false;
+        }
 
         if (document.querySelector('[data-add-modal]')) {
-return false;
-}
+            return false;
+        }
 
         if (document.querySelector('.search-panel.is-open')) {
-return false;
-}
+            return false;
+        }
 
         const panel = el.closest<HTMLElement>('.rail__panel');
 
@@ -110,12 +125,12 @@ return false;
             const max = panel.scrollHeight - panel.clientHeight;
 
             if (delta > 0 && panel.scrollTop < max - 2) {
-return false;
-}
+                return false;
+            }
 
             if (delta < 0 && panel.scrollTop > 2) {
-return false;
-}
+                return false;
+            }
         }
 
         return true;
@@ -123,63 +138,69 @@ return false;
 
     function onWheel(e: WheelEvent): void {
         if (!desktop() || !rail.value) {
-return;
-}
+            return;
+        }
 
-        const along = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        const along =
+            Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
 
         if (!along) {
-return;
-}
+            return;
+        }
 
         if (!canPage(e.target, along)) {
-return;
-}
+            return;
+        }
 
         /* С последней панели вперёд прокрутку отпускаем: ниже рельса
            лежит подвал, и до него нужно доехать обычным образом. */
         const at = indexFromScroll();
 
         if (along > 0 && at === panels().length - 1) {
-return;
-}
+            return;
+        }
 
         e.preventDefault();
 
         if (locked) {
-return;
-}
+            return;
+        }
 
         /* deltaMode: 0 — пиксели, 1 — строки, 2 — экраны. Без приведения
            одно движение на разных устройствах даёт разный шаг. */
-        const step = e.deltaMode === 1 ? along * 16 : e.deltaMode === 2 ? along * window.innerWidth : along;
+        const step =
+            e.deltaMode === 1
+                ? along * 16
+                : e.deltaMode === 2
+                  ? along * window.innerWidth
+                  : along;
 
         acc += step;
         clearTimeout(accTimer);
         accTimer = setTimeout(() => (acc = 0), ACC_RESET);
 
         if (acc > THRESHOLD) {
-go(at + 1);
-} else if (acc < -THRESHOLD) {
-go(at - 1);
-}
+            go(at + 1);
+        } else if (acc < -THRESHOLD) {
+            go(at - 1);
+        }
     }
 
     function onKey(e: KeyboardEvent): void {
         if (!desktop() || locked) {
-return;
-}
+            return;
+        }
 
         if (!canPage(e.target, 1)) {
-return;
-}
+            return;
+        }
 
         const forward = e.key === 'ArrowRight' || e.key === 'PageDown';
         const back = e.key === 'ArrowLeft' || e.key === 'PageUp';
 
         if (!forward && !back) {
-return;
-}
+            return;
+        }
 
         e.preventDefault();
         go(indexFromScroll() + (forward ? 1 : -1));
@@ -190,16 +211,16 @@ return;
         const el = rail.value;
 
         if (!el) {
-return;
-}
+            return;
+        }
 
         const max = el.scrollWidth - el.clientWidth;
 
         progress.value = max > 0 ? el.scrollLeft / max : 0;
 
         if (!locked) {
-current.value = indexFromScroll();
-}
+            current.value = indexFromScroll();
+        }
     }
 
     function onResize(): void {
@@ -208,8 +229,11 @@ current.value = indexFromScroll();
         const el = rail.value;
 
         if (el && desktop()) {
-el.scrollTo({ left: current.value * el.clientWidth, behavior: 'auto' });
-}
+            el.scrollTo({
+                left: current.value * el.clientWidth,
+                behavior: 'auto',
+            });
+        }
 
         onScroll();
     }

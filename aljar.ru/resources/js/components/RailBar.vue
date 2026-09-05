@@ -29,12 +29,15 @@ const ring = ref<HTMLElement | null>(null);
 let raf = 0;
 let pos = 0;
 
-const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reduced = () =>
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function loop(): void {
     const step = () => {
         if (ring.value) {
-            const target = props.progress * Math.max(0, window.innerWidth - RING_TRACK_TRIM);
+            const target =
+                props.progress *
+                Math.max(0, window.innerWidth - RING_TRACK_TRIM);
 
             pos += (target - pos) * (reduced() ? 1 : RING_EASE);
             ring.value.style.transform = `translate(${RING_INSET + pos}px, 0)`;

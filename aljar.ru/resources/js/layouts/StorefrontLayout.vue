@@ -1,9 +1,22 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import {
+    computed,
+    nextTick,
+    onBeforeUnmount,
+    onMounted,
+    ref,
+    watch,
+} from 'vue';
 import StorefrontFooter from '@/components/StorefrontFooter.vue';
 import { formatPrice } from '@/lib/money';
-import { guardReveals, initIsland, observeReveals, replayAnimation, watchHeaderOffset } from '@/lib/motion';
+import {
+    guardReveals,
+    initIsland,
+    observeReveals,
+    replayAnimation,
+    watchHeaderOffset,
+} from '@/lib/motion';
 import { setupTornEdges, sizeTornMasks } from '@/lib/torn';
 import '../../css/storefront.css';
 
@@ -79,9 +92,12 @@ watch(query, (value) => {
 
     /* Задержка, чтобы не слать запрос на каждое нажатие клавиши. */
     searchTimer = setTimeout(async () => {
-        const response = await fetch(`/catalog/search?q=${encodeURIComponent(term)}`, {
-            headers: { Accept: 'application/json' },
-        });
+        const response = await fetch(
+            `/catalog/search?q=${encodeURIComponent(term)}`,
+            {
+                headers: { Accept: 'application/json' },
+            },
+        );
         const data = await response.json();
 
         hits.value = data.results ?? [];
@@ -93,37 +109,42 @@ watch(query, (value) => {
    по клику мимо, и по Escape: иначе останется висеть над содержимым. */
 function onPointerDown(event: PointerEvent): void {
     if (!searchOpen.value) {
-return;
-}
+        return;
+    }
 
     const target = event.target as Node;
 
     // Клик по самой кнопке обрабатывает её слушатель — иначе панель
     // закрылась бы здесь и тут же открылась снова.
-    if (searchPanel.value?.contains(target) || searchToggle.value?.contains(target)) {
-return;
-}
+    if (
+        searchPanel.value?.contains(target) ||
+        searchToggle.value?.contains(target)
+    ) {
+        return;
+    }
 
     setSearch(false);
 }
 
 function onKeydown(event: KeyboardEvent): void {
     if (event.key === 'Escape' && searchOpen.value) {
-setSearch(false);
-}
+        setSearch(false);
+    }
 }
 
 /** Бейдж корзины — чтобы подскочить при пополнении. */
 const cartBadge = ref<HTMLElement | null>(null);
 
-const cartCount = computed(() => Number((inertia.props as { cart?: { count?: number } }).cart?.count ?? 0));
+const cartCount = computed(() =>
+    Number((inertia.props as { cart?: { count?: number } }).cart?.count ?? 0),
+);
 
 /* Подскок только на пополнении: удаление позиции подпрыгивать не должно,
    и на первой отрисовке страницы — тоже. */
 watch(cartCount, (next, prev) => {
     if (next > prev && next > 0) {
-replayAnimation(cartBadge.value, 'is-bump');
-}
+        replayAnimation(cartBadge.value, 'is-bump');
+    }
 });
 
 /* Решение о движении принимает app.ts, до монтирования. Здесь остаются
@@ -169,10 +190,15 @@ router.on('navigate', () =>
     <!-- Сюда собираются маски рваного края: по одной на снимок. Общей
          маской не обойтись — размер её прямоугольника задаётся в пикселях
          под конкретную фотографию. -->
-    <svg class="svg-defs" data-torn-defs aria-hidden="true" focusable="false"></svg>
+    <svg
+        class="svg-defs"
+        data-torn-defs
+        aria-hidden="true"
+        focusable="false"
+    ></svg>
 
     <header class="site-header" id="header">
-        <div class="container site-header__inner">
+        <div class="site-header__inner container">
             <Link class="logo" href="/">
                 <img
                     src="/img/logo.webp"
@@ -204,23 +230,45 @@ router.on('navigate', () =>
                     :aria-expanded="searchOpen"
                     @click="setSearch(!searchOpen)"
                 >
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
+                    <svg
+                        width="20"
+                        height="20"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                    >
                         <circle cx="9" cy="9" r="6" />
                         <path d="M14 14l4 4" />
                     </svg>
                 </button>
                 <a class="icon-btn" href="#" aria-label="Личный кабинет">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
+                    <svg
+                        width="20"
+                        height="20"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                    >
                         <circle cx="10" cy="7" r="3.2" />
                         <path d="M4 17c1.2-3 3.2-4.5 6-4.5S14.8 14 16 17" />
                     </svg>
                 </a>
                 <Link class="icon-btn" href="/cart" aria-label="Корзина">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
+                    <svg
+                        width="20"
+                        height="20"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
+                    >
                         <path d="M5 7h10l-1 11H6L5 7z" />
-                        <path d="M8 7V5.5A2 2 0 0 1 10 3.5 2 2 0 0 1 12 5.5V7" />
+                        <path
+                            d="M8 7V5.5A2 2 0 0 1 10 3.5 2 2 0 0 1 12 5.5V7"
+                        />
                     </svg>
-                    <span ref="cartBadge" class="cart-count">{{ $page.props.cart.count }}</span>
+                    <span ref="cartBadge" class="cart-count">{{
+                        $page.props.cart.count
+                    }}</span>
                 </Link>
             </div>
         </div>
@@ -229,11 +277,22 @@ router.on('navigate', () =>
              ровно под её нижней границей, какой бы высоты шапка ни была.
              При прокрутке шапка сжимается — привязка к фиксированному
              отступу разъехалась бы. -->
-        <div id="search" ref="searchPanel" class="search-panel" :class="{ 'is-open': searchOpen }">
+        <div
+            id="search"
+            ref="searchPanel"
+            class="search-panel"
+            :class="{ 'is-open': searchOpen }"
+        >
             <div class="search-panel__inner">
-                <div class="container search-panel__body">
+                <div class="search-panel__body container">
                     <div class="search-panel__field">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7">
+                        <svg
+                            width="20"
+                            height="20"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="1.7"
+                        >
                             <circle cx="9" cy="9" r="6" />
                             <path d="M14 14l4 4" />
                         </svg>
@@ -245,18 +304,35 @@ router.on('navigate', () =>
                             placeholder="Найти кофе по названию, региону, вкусу…"
                             aria-label="Поиск по каталогу"
                         />
-                        <button class="icon-btn" type="button" aria-label="Закрыть поиск" @click="setSearch(false)">
-                            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7">
+                        <button
+                            class="icon-btn"
+                            type="button"
+                            aria-label="Закрыть поиск"
+                            @click="setSearch(false)"
+                        >
+                            <svg
+                                width="22"
+                                height="22"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1.7"
+                            >
                                 <path d="M5 5l12 12M17 5L5 17" />
                             </svg>
                         </button>
                     </div>
                     <div class="search-results">
-                        <Link v-for="hit in hits" :key="hit.slug" class="chip" :href="`/catalog/coffee/${hit.slug}`">
+                        <Link
+                            v-for="hit in hits"
+                            :key="hit.slug"
+                            class="chip"
+                            :href="`/catalog/coffee/${hit.slug}`"
+                        >
                             {{ hit.name }} · {{ formatPrice(hit.price_from) }}
                         </Link>
                         <p v-if="searched && !hits.length" class="empty">
-                            Ничего не нашли. Попробуйте «эспрессо» или «Эфиопия».
+                            Ничего не нашли. Попробуйте «эспрессо» или
+                            «Эфиопия».
                         </p>
                     </div>
                 </div>

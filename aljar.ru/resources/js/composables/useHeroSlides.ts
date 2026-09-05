@@ -1,5 +1,5 @@
-import { onBeforeUnmount, onMounted, ref  } from 'vue';
-import type {Ref} from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
+import type { Ref } from 'vue';
 import { motionOn } from '@/lib/motion';
 
 /**
@@ -28,11 +28,12 @@ export function useHeroSlides(stage: Ref<HTMLElement | null>, count: number) {
      * кадр прозрачный и в глаза не бросается.
      */
     function decode(i: number): Promise<void> {
-        const img = stage.value?.querySelectorAll('img')[i] as HTMLImageElement | undefined;
+        const img = stage.value?.querySelectorAll('img')[i] as
+            HTMLImageElement | undefined;
 
         if (!img) {
-return Promise.resolve();
-}
+            return Promise.resolve();
+        }
 
         img.loading = 'eager';
 
@@ -49,8 +50,8 @@ return Promise.resolve();
 
         decode(next).then(() => {
             if (!timer) {
-return;
-}
+                return;
+            }
 
             slide.value = next;
             timer = setTimeout(step, HOLD);
@@ -61,8 +62,8 @@ return;
         /* Без движения кадр остаётся один: смена картинок — это тоже
            движение, и в reduce-motion её быть не должно. */
         if (timer || !motionOn() || count < 2) {
-return;
-}
+            return;
+        }
 
         timer = setTimeout(step, HOLD);
     }
@@ -74,8 +75,8 @@ return;
 
     onMounted(() => {
         if (!stage.value) {
-return;
-}
+            return;
+        }
 
         if (!('IntersectionObserver' in window)) {
             start();
@@ -83,9 +84,12 @@ return;
             return;
         }
 
-        visibility = new IntersectionObserver(([entry]) => (entry.isIntersecting ? start() : stop()), {
-            threshold: 0,
-        });
+        visibility = new IntersectionObserver(
+            ([entry]) => (entry.isIntersecting ? start() : stop()),
+            {
+                threshold: 0,
+            },
+        );
         visibility.observe(stage.value);
     });
 

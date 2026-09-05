@@ -59,22 +59,30 @@ const dialog = ref<HTMLElement | null>(null);
 /** Показанная сумма — чтобы прокрутить число от неё, а не от нуля. */
 let shown: number | null = null;
 
-const variant = computed(() => props.product?.variants.find((v) => v.id === variantId.value) ?? null);
-const base = computed(() => variant.value?.price ?? props.product?.variants[0]?.price ?? 0);
+const variant = computed(
+    () => props.product?.variants.find((v) => v.id === variantId.value) ?? null,
+);
+const base = computed(
+    () => variant.value?.price ?? props.product?.variants[0]?.price ?? 0,
+);
 const price = computed(() =>
-    subscribe.value ? Math.round(base.value * (1 - SUBSCRIBE_DISCOUNT)) : base.value,
+    subscribe.value
+        ? Math.round(base.value * (1 - SUBSCRIBE_DISCOUNT))
+        : base.value,
 );
 
 watch(
     () => props.product,
     (product) => {
         if (!product) {
-return;
-}
+            return;
+        }
 
         /* Предвыбран первый вариант в наличии: предлагать то, чего нет
            на складе, — тупик на ровном месте. */
-        variantId.value = (product.variants.find((v) => v.in_stock) ?? product.variants[0])?.id ?? null;
+        variantId.value =
+            (product.variants.find((v) => v.in_stock) ?? product.variants[0])
+                ?.id ?? null;
         grind.value = 'whole';
         /* Обжарка из карточки — значение по умолчанию, а не запрет:
            покупатель может попросить другую. */
@@ -84,33 +92,35 @@ return;
 
         nextTick(() => {
             if (priceEl.value) {
-priceEl.value.textContent = formatPrice(price.value);
-}
+                priceEl.value.textContent = formatPrice(price.value);
+            }
 
             shown = price.value;
-            dialog.value?.querySelector<HTMLInputElement>('input:checked')?.focus();
+            dialog.value
+                ?.querySelector<HTMLInputElement>('input:checked')
+                ?.focus();
         });
     },
 );
 
 watch(price, (next) => {
     if (!priceEl.value) {
-return;
-}
+        return;
+    }
 
     if (shown === null) {
-priceEl.value.textContent = formatPrice(next);
-} else {
-animateNumber(priceEl.value, shown, next, formatPrice, 400);
-}
+        priceEl.value.textContent = formatPrice(next);
+    } else {
+        animateNumber(priceEl.value, shown, next, formatPrice, 400);
+    }
 
     shown = next;
 });
 
 function submit(): void {
     if (variantId.value === null) {
-return;
-}
+        return;
+    }
 
     router.post(
         '/cart',
@@ -163,8 +173,18 @@ return;
                     <fieldset class="opt-group">
                         <legend class="opt-group__label">Вес</legend>
                         <div class="opt-row">
-                            <label v-for="item in product.variants" :key="item.id" class="opt">
-                                <input v-model="variantId" type="radio" name="weight" :value="item.id" :disabled="!item.in_stock" />
+                            <label
+                                v-for="item in product.variants"
+                                :key="item.id"
+                                class="opt"
+                            >
+                                <input
+                                    v-model="variantId"
+                                    type="radio"
+                                    name="weight"
+                                    :value="item.id"
+                                    :disabled="!item.in_stock"
+                                />
                                 <span>{{ item.title }}</span>
                             </label>
                         </div>
@@ -173,8 +193,17 @@ return;
                     <fieldset class="opt-group">
                         <legend class="opt-group__label">Обжарка</legend>
                         <div class="opt-row">
-                            <label v-for="item in ROASTS" :key="item.id" class="opt">
-                                <input v-model="roast" type="radio" name="roast" :value="item.id" />
+                            <label
+                                v-for="item in ROASTS"
+                                :key="item.id"
+                                class="opt"
+                            >
+                                <input
+                                    v-model="roast"
+                                    type="radio"
+                                    name="roast"
+                                    :value="item.id"
+                                />
                                 <span>{{ item.label }}</span>
                             </label>
                         </div>
@@ -183,16 +212,32 @@ return;
                     <fieldset class="opt-group">
                         <legend class="opt-group__label">Помол</legend>
                         <div class="opt-row">
-                            <label v-for="item in GRINDS" :key="item.id" class="opt">
-                                <input v-model="grind" type="radio" name="grind" :value="item.id" />
+                            <label
+                                v-for="item in GRINDS"
+                                :key="item.id"
+                                class="opt"
+                            >
+                                <input
+                                    v-model="grind"
+                                    type="radio"
+                                    name="grind"
+                                    :value="item.id"
+                                />
                                 <span>{{ item.label }}</span>
                             </label>
                         </div>
                     </fieldset>
 
                     <label class="checkbox">
-                        <input v-model="subscribe" type="checkbox" name="subscribe" />
-                        <span>Оформить подпиской — −10% и свежая обжарка к дате доставки</span>
+                        <input
+                            v-model="subscribe"
+                            type="checkbox"
+                            name="subscribe"
+                        />
+                        <span
+                            >Оформить подпиской — −10% и свежая обжарка к дате
+                            доставки</span
+                        >
                     </label>
                 </div>
 
@@ -200,11 +245,18 @@ return;
                     <div class="add-modal__price">
                         <span ref="priceEl" class="price"></span>
                         <span v-if="subscribe" class="tiny">
-                            Вместо {{ formatPrice(base) }} — экономия {{ formatPrice(base - price) }}
+                            Вместо {{ formatPrice(base) }} — экономия
+                            {{ formatPrice(base - price) }}
                         </span>
-                        <span v-else class="tiny">{{ product.roast }} · {{ product.species }}</span>
+                        <span v-else class="tiny"
+                            >{{ product.roast }} · {{ product.species }}</span
+                        >
                     </div>
-                    <button class="btn btn--primary" type="submit" :disabled="adding || variantId === null">
+                    <button
+                        class="btn btn--primary"
+                        type="submit"
+                        :disabled="adding || variantId === null"
+                    >
                         В корзину
                     </button>
                 </div>
