@@ -31,10 +31,10 @@ import '../../css/storefront.css';
  */
 const nav = [
     { label: 'Кофе', href: '/catalog/coffee', page: 'catalog' },
-    { label: 'Подписка', href: '#', page: 'subscription' },
+    { label: 'Подписка', href: '/subscription', page: 'subscription' },
     { label: 'О нас', href: '/about', page: 'about' },
-    { label: 'Для бизнеса', href: '#', page: 'wholesale' },
-    { label: 'Журнал', href: '#', page: 'blog' },
+    { label: 'Для бизнеса', href: '/wholesale', page: 'wholesale' },
+    { label: 'Журнал', href: '/blog', page: 'blog' },
 ];
 
 defineProps<{ page?: string }>();
