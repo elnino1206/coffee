@@ -9,6 +9,7 @@ import {
     watch,
 } from 'vue';
 import StorefrontFooter from '@/components/StorefrontFooter.vue';
+import TabBar from '@/components/TabBar.vue';
 import { formatPrice } from '@/lib/money';
 import {
     guardReveals,
@@ -49,6 +50,11 @@ const inertia = usePage();
 const railPages = ['Home', 'info/About', 'info/Subscription', 'info/Wholesale'];
 
 const ownsFooter = computed(() => railPages.includes(inertia.component));
+
+/** Кабинет ведёт туда, где человек окажется: внутрь или на вход. */
+const account = computed(() =>
+    inertia.props.auth.user ? '/dashboard' : '/login',
+);
 
 /**
  * Панель поиска в шапке. В прототипе она фильтрует локальный каталог,
@@ -243,7 +249,11 @@ router.on('navigate', () =>
                         <path d="M14 14l4 4" />
                     </svg>
                 </button>
-                <a class="icon-btn" href="#" aria-label="Личный кабинет">
+                <Link
+                    class="icon-btn"
+                    :href="account"
+                    aria-label="Личный кабинет"
+                >
                     <svg
                         width="20"
                         height="20"
@@ -254,7 +264,7 @@ router.on('navigate', () =>
                         <circle cx="10" cy="7" r="3.2" />
                         <path d="M4 17c1.2-3 3.2-4.5 6-4.5S14.8 14 16 17" />
                     </svg>
-                </a>
+                </Link>
                 <Link class="icon-btn" href="/cart" aria-label="Корзина">
                     <svg
                         width="20"
@@ -347,4 +357,6 @@ router.on('navigate', () =>
     </main>
 
     <StorefrontFooter v-if="!ownsFooter" />
+
+    <TabBar />
 </template>

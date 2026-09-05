@@ -615,9 +615,17 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   /* контент не должен уходить под панель; на чекауте панели нет — отступ не нужен */
   body:has(.tabbar) { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px)); }
 
-  /* корзина и кабинет теперь в нижней панели — в шапке дублировать незачем */
-  .header-actions .icon-btn[href="cart.html"],
-  .header-actions .icon-btn[href="account.html"] { display: none; }
+  /* корзина и кабинет теперь в нижней панели — в шапке дублировать незачем.
+     Адреса перечислены и статики, и приложения: в Laravel корзина живёт
+     по /cart, а кабинет — по /dashboard либо /login, смотря вошёл ли
+     человек. Один файл стилей обслуживает обе витрины.
+     Прячем только там, где панель есть: на оформлении её нет, и иконка
+     корзины в шапке остаётся единственным путём назад. */
+  body:has(.tabbar) .header-actions .icon-btn[href="cart.html"],
+  body:has(.tabbar) .header-actions .icon-btn[href="account.html"],
+  body:has(.tabbar) .header-actions .icon-btn[href="/cart"],
+  body:has(.tabbar) .header-actions .icon-btn[href="/dashboard"],
+  body:has(.tabbar) .header-actions .icon-btn[href="/login"] { display: none; }
 }
 
 /* Header */
