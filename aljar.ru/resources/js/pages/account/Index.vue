@@ -48,7 +48,7 @@ function repeat(number: string): void {
             <a href="#sub">Подписка</a>
             <a href="#orders">История заказов</a>
             <a href="#ref">Реферальная ссылка</a>
-            <Link href="/delivery">Поддержка</Link>
+            <Link href="/contacts">Поддержка</Link>
         </nav>
 
         <div class="stack-l">

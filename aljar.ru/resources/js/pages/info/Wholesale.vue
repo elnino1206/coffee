@@ -203,7 +203,7 @@ const stops = ['Опт', 'Кому', 'Заявка'];
                             <input type="checkbox" required />
                             <span>
                                 Согласен на обработку персональных данных и с
-                                <Link href="/delivery"
+                                <Link href="/legal#privacy"
                                     >политикой конфиденциальности</Link
                                 >
                             </span>

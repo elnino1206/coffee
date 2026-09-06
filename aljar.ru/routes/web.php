@@ -12,6 +12,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::inertia('delivery', 'info/Delivery')->name('info.delivery');
 Route::inertia('about', 'info/About')->name('info.about');
 Route::inertia('wholesale', 'info/Wholesale')->name('info.wholesale');
+Route::inertia('contacts', 'info/Contacts')->name('info.contacts');
+Route::inertia('legal', 'info/Legal')->name('info.legal');
 
 // Подписка и журнал берут данные с сервера: сорта с ценами и список статей.
 Route::get('subscription', [SubscriptionController::class, 'show'])->name('info.subscription');

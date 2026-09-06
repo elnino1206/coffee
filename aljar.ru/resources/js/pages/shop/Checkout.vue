@@ -250,9 +250,10 @@ const total = computed(() => props.goods_total + delivery.value);
                         value="1"
                         required
                     />
-                    <span
-                        >Согласен с офертой и политикой конфиденциальности</span
-                    >
+                    <span>
+                        Согласен с <Link href="/legal#offer">офертой</Link> и
+                        <Link href="/legal#privacy">политикой</Link>
+                    </span>
                 </label>
                 <InputError :message="errors.agreement" />
                 <button
