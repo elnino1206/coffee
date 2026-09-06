@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
-import { KeyRound } from '@lucide/vue';
 import { destroy } from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyRegistrationController';
-import Heading from '@/components/Heading.vue';
 import PasskeyItem from '@/components/PasskeyItem.vue';
 import PasskeyRegister from '@/components/PasskeyRegister.vue';
 import type { Passkey } from '@/types/auth';
+
+/**
+ * Ключи доступа. Разметка на классах витрины; работа с ключами прежняя.
+ *
+ * Входа по ключу на странице входа сейчас нет — ключом подтверждают
+ * пароль в защищённых разделах.
+ */
 
 export type Props = {
     canManagePasskeys?: boolean;
@@ -18,10 +23,7 @@ withDefaults(defineProps<Props>(), {
 });
 
 const handleDelete = (id: number, onError: () => void) => {
-    router.delete(destroy.url(id), {
-        preserveScroll: true,
-        onError,
-    });
+    router.delete(destroy.url(id), { preserveScroll: true, onError });
 };
 
 const handleRegisterSuccess = () => {
@@ -30,36 +32,28 @@ const handleRegisterSuccess = () => {
 </script>
 
 <template>
-    <div v-if="canManagePasskeys" class="space-y-6">
-        <Heading
-            variant="small"
-            title="Ключи доступа"
-            description="Вход без пароля — по отпечатку или лицу"
-        />
-
-        <div class="overflow-hidden rounded-lg border border-border">
-            <template v-if="passkeys.length">
-                <PasskeyItem
-                    v-for="passkey in passkeys"
-                    :key="passkey.id"
-                    :passkey="passkey"
-                    @remove="handleDelete"
-                />
-            </template>
-
-            <div v-else class="p-8 text-center">
-                <div
-                    class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted"
-                >
-                    <KeyRound class="h-7 w-7 text-muted-foreground" />
-                </div>
-                <p class="font-medium">Ключей пока нет</p>
-                <p class="mt-1 text-sm text-muted-foreground">
-                    Добавьте ключ, чтобы входить без пароля
-                </p>
-            </div>
+    <section v-if="canManagePasskeys" class="panel stack">
+        <div>
+            <h2 class="h3">Ключи доступа</h2>
+            <p class="muted">
+                Подтверждение вместо пароля — по отпечатку, лицу или PIN.
+            </p>
         </div>
 
+        <template v-if="passkeys.length">
+            <PasskeyItem
+                v-for="passkey in passkeys"
+                :key="passkey.id"
+                :passkey="passkey"
+                @remove="handleDelete"
+            />
+        </template>
+
+        <p v-else class="tiny">
+            Ключей пока нет. Добавьте ключ, чтобы не вводить пароль в защищённых
+            разделах.
+        </p>
+
         <PasskeyRegister @success="handleRegisterSuccess" />
-    </div>
+    </section>
 </template>

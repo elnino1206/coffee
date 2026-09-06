@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
-import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import type { Props as ManagePasskeysProps } from '@/components/ManagePasskeys.vue';
 import ManagePasskeys from '@/components/ManagePasskeys.vue';
 import type { Props as ManageTwoFactorProps } from '@/components/ManageTwoFactor.vue';
 import ManageTwoFactor from '@/components/ManageTwoFactor.vue';
-import PasswordInput from '@/components/PasswordInput.vue';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { edit } from '@/routes/security';
+
+/**
+ * Безопасность: пароль, двухфакторная защита и ключи доступа. Разметка на
+ * классах витрины, логика прежняя — контроллер и правила не менялись.
+ */
 
 type Props = {
     passwordRules: string;
@@ -18,93 +18,78 @@ type Props = {
     ManageTwoFactorProps;
 
 const props = defineProps<Props>();
-
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            {
-                title: 'Безопасность',
-                href: edit(),
-            },
-        ],
-    },
-});
 </script>
 
 <template>
     <Head title="Безопасность" />
 
-    <h1 class="sr-only">Безопасность</h1>
-
-    <div class="space-y-6">
-        <Heading
-            variant="small"
-            title="Смена пароля"
-            description="Длинный случайный пароль — лучшая защита аккаунта"
-        />
+    <section class="panel stack">
+        <div>
+            <h2 class="h3">Смена пароля</h2>
+            <p class="muted">
+                Длинный случайный пароль — лучшая защита аккаунта.
+            </p>
+        </div>
 
         <Form
             v-bind="SecurityController.update.form()"
-            :options="{
-                preserveScroll: true,
-            }"
+            :options="{ preserveScroll: true }"
             reset-on-success
             :reset-on-error="[
                 'password',
                 'password_confirmation',
                 'current_password',
             ]"
-            class="space-y-6"
+            class="stack"
             v-slot="{ errors, processing }"
         >
-            <div class="grid gap-2">
-                <Label for="current_password">Текущий пароль</Label>
-                <PasswordInput
-                    id="current_password"
+            <label class="label">
+                <span class="label__text">Текущий пароль</span>
+                <input
+                    class="field"
+                    type="password"
                     name="current_password"
-                    class="mt-1 block w-full"
                     autocomplete="current-password"
-                    placeholder="Текущий пароль"
                 />
                 <InputError :message="errors.current_password" />
-            </div>
+            </label>
 
-            <div class="grid gap-2">
-                <Label for="password">Новый пароль</Label>
-                <PasswordInput
-                    id="password"
+            <label class="label">
+                <span class="label__text">Новый пароль</span>
+                <input
+                    class="field"
+                    type="password"
                     name="password"
-                    class="mt-1 block w-full"
                     autocomplete="new-password"
-                    placeholder="Новый пароль"
                     :passwordrules="props.passwordRules"
                 />
                 <InputError :message="errors.password" />
-            </div>
+            </label>
 
-            <div class="grid gap-2">
-                <Label for="password_confirmation">Пароль ещё раз</Label>
-                <PasswordInput
-                    id="password_confirmation"
+            <label class="label">
+                <span class="label__text">Пароль ещё раз</span>
+                <input
+                    class="field"
+                    type="password"
                     name="password_confirmation"
-                    class="mt-1 block w-full"
                     autocomplete="new-password"
-                    placeholder="Пароль ещё раз"
                     :passwordrules="props.passwordRules"
                 />
                 <InputError :message="errors.password_confirmation" />
-            </div>
+            </label>
 
-            <div class="flex items-center gap-4">
-                <Button
+            <div class="cluster">
+                <button
+                    class="btn btn--petrol btn--m"
+                    type="submit"
                     :disabled="processing"
                     data-test="update-password-button"
                 >
                     Сохранить
-                </Button>
+                </button>
             </div>
         </Form>
-    </div>
+    </section>
 
     <ManageTwoFactor
         :canManageTwoFactor="canManageTwoFactor"

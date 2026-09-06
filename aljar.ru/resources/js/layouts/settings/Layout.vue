@@ -1,71 +1,50 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import Heading from '@/components/Heading.vue';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
-import { toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit as editProfile } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
-import type { NavItem } from '@/types';
 
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Профиль',
-        href: editProfile(),
-    },
-    {
-        title: 'Безопасность',
-        href: editSecurity(),
-    },
-    {
-        title: 'Оформление',
-        href: editAppearance(),
-    },
+/**
+ * Оболочка настроек. Раньше это был экран стартового набора с боковой
+ * панелью и своими компонентами — он выбивался из сайта, хотя покупатель
+ * попадает сюда прямо из кабинета.
+ *
+ * Теперь та же навигация и те же панели, что в кабинете: настройки —
+ * его продолжение, а не отдельное приложение.
+ */
+
+const links = [
+    { title: 'Профиль', href: editProfile() },
+    { title: 'Безопасность', href: editSecurity() },
+    { title: 'Оформление', href: editAppearance() },
 ];
 
 const { isCurrentOrParentUrl } = useCurrentUrl();
 </script>
 
 <template>
-    <div class="px-4 py-6">
-        <Heading
-            title="Настройки"
-            description="Профиль, безопасность и оформление"
-        />
+    <div class="container">
+        <nav class="account-nav" aria-label="Настройки">
+            <Link href="/account">Кабинет</Link>
+            <Link
+                v-for="link in links"
+                :key="link.title"
+                :href="link.href"
+                :class="{ 'is-active': isCurrentOrParentUrl(link.href) }"
+            >
+                {{ link.title }}
+            </Link>
+        </nav>
 
-        <div class="flex flex-col lg:flex-row lg:space-x-12">
-            <aside class="w-full max-w-xl lg:w-48">
-                <nav
-                    class="flex flex-col space-y-1 space-x-0"
-                    aria-label="Настройки"
-                >
-                    <Button
-                        v-for="item in sidebarNavItems"
-                        :key="toUrl(item.href)"
-                        variant="ghost"
-                        :class="[
-                            'w-full justify-start',
-                            { 'bg-muted': isCurrentOrParentUrl(item.href) },
-                        ]"
-                        as-child
-                    >
-                        <Link :href="item.href">
-                            <component :is="item.icon" class="h-4 w-4" />
-                            {{ item.title }}
-                        </Link>
-                    </Button>
-                </nav>
-            </aside>
-
-            <Separator class="my-6 lg:hidden" />
-
-            <div class="flex-1 md:max-w-2xl">
-                <section class="max-w-xl space-y-12">
-                    <slot />
-                </section>
+        <div class="stack-l">
+            <div>
+                <p class="eyebrow">Учётная запись</p>
+                <h1 class="h2">Настройки</h1>
+                <p class="muted">Профиль, безопасность и оформление.</p>
             </div>
+
+            <slot />
         </div>
     </div>
 </template>

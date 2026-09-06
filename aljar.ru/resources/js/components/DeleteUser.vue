@@ -1,104 +1,101 @@
 <script setup lang="ts">
 import { Form } from '@inertiajs/vue3';
-import { useTemplateRef } from 'vue';
+import { ref } from 'vue';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
-import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
-import PasswordInput from '@/components/PasswordInput.vue';
-import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
 
-const passwordInput = useTemplateRef('passwordInput');
+/**
+ * Удаление аккаунта.
+ *
+ * Подтверждение — окно из прототипа (.modal / .modal__box), а не диалог
+ * стартового набора: у сайта своё оформление окон, и держать два разных
+ * незачем.
+ */
+
+const open = ref(false);
 </script>
 
 <template>
-    <div class="space-y-6">
-        <Heading
-            variant="small"
-            title="Удалить аккаунт"
-            description="Удалить аккаунт вместе со всеми данными"
-        />
-        <div
-            class="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10"
-        >
-            <div class="relative space-y-0.5 text-red-600 dark:text-red-100">
-                <p class="font-medium">Внимание</p>
-                <p class="text-sm">Действие необратимо.</p>
-            </div>
-            <Dialog>
-                <DialogTrigger as-child>
-                    <Button variant="destructive" data-test="delete-user-button"
-                        >Удалить аккаунт</Button
+    <section class="panel stack">
+        <div>
+            <h2 class="h3">Удалить аккаунт</h2>
+            <p class="muted">Удалить аккаунт вместе со всеми данными.</p>
+        </div>
+
+        <p class="tiny">
+            <strong>Внимание.</strong> Действие необратимо: вместе с аккаунтом
+            навсегда удалятся заказы и вся история.
+        </p>
+
+        <div class="cluster">
+            <button
+                class="btn btn--danger btn--m"
+                type="button"
+                data-test="delete-user-button"
+                @click="open = true"
+            >
+                Удалить аккаунт
+            </button>
+        </div>
+    </section>
+
+    <div
+        class="modal"
+        :class="{ 'is-open': open }"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Удаление аккаунта"
+        @click.self="open = false"
+    >
+        <div class="modal__box">
+            <Form
+                v-bind="ProfileController.destroy.form()"
+                reset-on-success
+                :options="{ preserveScroll: true }"
+                class="stack"
+                v-slot="{ errors, processing, reset, clearErrors }"
+            >
+                <h3 class="h3">Точно удалить аккаунт?</h3>
+                <p class="muted">
+                    Вместе с аккаунтом навсегда удалятся заказы и все данные.
+                    Введите пароль, чтобы подтвердить удаление.
+                </p>
+
+                <label class="label">
+                    <span class="label__text">Пароль</span>
+                    <input
+                        class="field"
+                        type="password"
+                        name="password"
+                        autocomplete="current-password"
+                    />
+                    <InputError :message="errors.password" />
+                </label>
+
+                <div class="cluster">
+                    <button
+                        class="btn btn--danger btn--m"
+                        type="submit"
+                        :disabled="processing"
+                        data-test="confirm-delete-user-button"
                     >
-                </DialogTrigger>
-                <DialogContent>
-                    <Form
-                        v-bind="ProfileController.destroy.form()"
-                        reset-on-success
-                        @error="() => passwordInput?.focus()"
-                        :options="{
-                            preserveScroll: true,
-                        }"
-                        class="space-y-6"
-                        v-slot="{ errors, processing, reset, clearErrors }"
+                        Удалить аккаунт
+                    </button>
+                    <button
+                        class="btn btn--ghost btn--m"
+                        type="button"
+                        @click="
+                            () => {
+                                clearErrors();
+                                reset();
+                                open = false;
+                            }
+                        "
                     >
-                        <DialogHeader class="space-y-3">
-                            <DialogTitle>Точно удалить аккаунт?</DialogTitle>
-                            <DialogDescription>
-                                Вместе с аккаунтом навсегда удалятся заказы и
-                                все данные. Введите пароль, чтобы подтвердить
-                                удаление.
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        <div class="grid gap-2">
-                            <Label for="password" class="sr-only">Пароль</Label>
-                            <PasswordInput
-                                id="password"
-                                name="password"
-                                ref="passwordInput"
-                                placeholder="Пароль"
-                            />
-                            <InputError :message="errors.password" />
-                        </div>
-
-                        <DialogFooter class="gap-2">
-                            <DialogClose as-child>
-                                <Button
-                                    variant="secondary"
-                                    @click="
-                                        () => {
-                                            clearErrors();
-                                            reset();
-                                        }
-                                    "
-                                >
-                                    Отмена
-                                </Button>
-                            </DialogClose>
-
-                            <Button
-                                type="submit"
-                                variant="destructive"
-                                :disabled="processing"
-                                data-test="confirm-delete-user-button"
-                            >
-                                Удалить аккаунт
-                            </Button>
-                        </DialogFooter>
-                    </Form>
-                </DialogContent>
-            </Dialog>
+                        Отмена
+                    </button>
+                </div>
+            </Form>
         </div>
     </div>
 </template>

@@ -2,9 +2,6 @@
 import { usePasskeyRegister } from '@laravel/passkeys/vue';
 import { ref } from 'vue';
 import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
 const emit = defineEmits<{
     success: [];
@@ -60,43 +57,53 @@ const handleCancel = () => {
 </script>
 
 <template>
-    <div v-if="!isSupported" class="text-sm text-muted-foreground">
+    <p v-if="!isSupported" class="tiny">
         Этот браузер не поддерживает ключи доступа.
+    </p>
+
+    <div v-else-if="!showForm" class="cluster">
+        <button
+            class="btn btn--ghost btn--m"
+            type="button"
+            @click="showForm = true"
+        >
+            Добавить ключ
+        </button>
     </div>
 
-    <Button v-else-if="!showForm" variant="outline" @click="showForm = true">
-        Добавить ключ
-    </Button>
-
-    <form
-        v-else
-        @submit="handleSubmit"
-        class="space-y-4 rounded-lg border border-border bg-muted/50 p-4"
-    >
-        <div class="grid gap-2">
-            <Label for="passkey-name">Название ключа</Label>
-            <Input
+    <form v-else class="stack" @submit="handleSubmit">
+        <label class="label">
+            <span class="label__text">Название ключа</span>
+            <input
                 id="passkey-name"
+                class="field"
                 type="text"
                 v-model="name"
                 placeholder="например, ноутбук или телефон"
-                class="mt-1 block w-full border-foreground/20"
                 autofocus
             />
-            <p class="text-xs text-muted-foreground">
-                Название поможет узнать этот ключ в списке.
-            </p>
-        </div>
+            <span class="tiny"
+                >Название поможет узнать этот ключ в списке.</span
+            >
+        </label>
 
         <InputError v-if="error" :message="error" />
 
-        <div class="flex gap-2">
-            <Button type="submit" :disabled="isLoading || !name.trim()">
-                {{ isLoading ? 'Registering...' : 'Добавить ключ доступа' }}
-            </Button>
-            <Button type="button" variant="ghost" @click="handleCancel">
+        <div class="cluster">
+            <button
+                class="btn btn--petrol btn--m"
+                type="submit"
+                :disabled="isLoading || !name.trim()"
+            >
+                {{ isLoading ? 'Добавляем…' : 'Добавить ключ доступа' }}
+            </button>
+            <button
+                class="btn btn--ghost btn--m"
+                type="button"
+                @click="handleCancel"
+            >
                 Отмена
-            </Button>
+            </button>
         </div>
     </form>
 </template>

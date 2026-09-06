@@ -1,27 +1,15 @@
 <script setup lang="ts">
-import { Form, Head, usePage } from '@inertiajs/vue3';
-import { Link } from '@inertiajs/vue3';
+import { Form, Head, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/DeleteUser.vue';
-import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 
-defineOptions({
-    layout: {
-        breadcrumbs: [
-            {
-                title: 'Настройки профиля',
-                href: edit(),
-            },
-        ],
-    },
-});
+/**
+ * Профиль. Разметка на классах витрины — те же панели, поля и кнопки,
+ * что в кабинете и на оформлении заказа.
+ */
 
 const page = usePage();
 const user = computed(() => page.props.auth.user);
@@ -30,76 +18,85 @@ const user = computed(() => page.props.auth.user);
 <template>
     <Head title="Настройки профиля" />
 
-    <h1 class="sr-only">Настройки профиля</h1>
-
-    <div class="flex flex-col space-y-6">
-        <Heading
-            variant="small"
-            title="Профиль"
-            description="Имя и адрес почты"
-        />
+    <section class="panel stack">
+        <div>
+            <h2 class="h3">Профиль</h2>
+            <p class="muted">Имя и адрес почты.</p>
+        </div>
 
         <Form
             v-bind="ProfileController.update.form()"
-            class="space-y-6"
+            class="stack"
             v-slot="{ errors, processing }"
         >
-            <div class="grid gap-2">
-                <Label for="name">Имя</Label>
-                <Input
-                    id="name"
-                    class="mt-1 block w-full"
+            <label class="label">
+                <span class="label__text">
+                    Имя
+                    <span
+                        class="req"
+                        aria-hidden="true"
+                        title="Обязательное поле"
+                        >*</span
+                    >
+                </span>
+                <input
+                    class="field"
                     name="name"
-                    :default-value="user.name"
+                    :value="user.name"
                     required
                     autocomplete="name"
-                    placeholder="Имя и фамилия"
                 />
-                <InputError class="mt-2" :message="errors.name" />
-            </div>
+                <InputError :message="errors.name" />
+            </label>
 
-            <div class="grid gap-2">
-                <Label for="email">Электронная почта</Label>
-                <Input
-                    id="email"
+            <label class="label">
+                <span class="label__text">
+                    Электронная почта
+                    <span
+                        class="req"
+                        aria-hidden="true"
+                        title="Обязательное поле"
+                        >*</span
+                    >
+                </span>
+                <input
+                    class="field"
                     type="email"
-                    class="mt-1 block w-full"
                     name="email"
-                    :default-value="user.email"
+                    :value="user.email"
                     required
                     autocomplete="username"
-                    placeholder="Электронная почта"
                 />
-                <InputError class="mt-2" :message="errors.email" />
-            </div>
+                <InputError :message="errors.email" />
+            </label>
 
             <div v-if="page.props.mustVerifyEmail && !user.email_verified_at">
-                <p class="-mt-4 text-sm text-muted-foreground">
+                <p class="tiny">
                     Почта не подтверждена.
-                    <Link
-                        :href="send()"
-                        as="button"
-                        class="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                    >
+                    <Link :href="send()" as="button">
                         Отправить письмо ещё раз.
                     </Link>
                 </p>
-
-                <div
+                <p
                     v-if="page.props.status === 'verification-link-sent'"
-                    class="mt-2 text-sm font-medium text-green-600"
+                    class="sub-status"
                 >
                     Новая ссылка отправлена на вашу почту.
-                </div>
+                </p>
             </div>
 
-            <div class="flex items-center gap-4">
-                <Button :disabled="processing" data-test="update-profile-button"
-                    >Сохранить</Button
+            <div class="cluster">
+                <button
+                    class="btn btn--petrol btn--m"
+                    type="submit"
+                    :disabled="processing"
+                    data-test="update-profile-button"
                 >
+                    Сохранить
+                </button>
             </div>
         </Form>
-    </div>
+    </section>
 
     <DeleteUser />
 </template>
