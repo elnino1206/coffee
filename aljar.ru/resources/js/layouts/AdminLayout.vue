@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form, Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import StorefrontToast from '@/components/StorefrontToast.vue';
 import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import '../../css/storefront.css';
 import '../../css/admin.css';
