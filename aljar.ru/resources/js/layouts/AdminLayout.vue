@@ -121,5 +121,9 @@ const active = (href: string): boolean =>
                 <slot />
             </div>
         </div>
+
+        <!-- Тостер общий с витриной: сообщения об успехе шлёт тот же
+             механизм, и своя копия здесь была бы лишней. -->
+        <StorefrontToast />
     </div>
 </template>

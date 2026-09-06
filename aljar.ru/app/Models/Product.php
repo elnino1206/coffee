@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -64,6 +65,29 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get the coffee-specific attributes, if the product is coffee.
+     *
+     * Наследники читают деталь через detail(); эта связь нужна там, где
+     * список смешанный — в админке одна таблица показывает оба типа.
+     *
+     * @return HasOne<CoffeeDetail, $this>
+     */
+    public function coffeeDetail(): HasOne
+    {
+        return $this->hasOne(CoffeeDetail::class, 'product_id');
+    }
+
+    /**
+     * Get the equipment-specific attributes, if the product is equipment.
+     *
+     * @return HasOne<EquipmentDetail, $this>
+     */
+    public function equipmentDetail(): HasOne
+    {
+        return $this->hasOne(EquipmentDetail::class, 'product_id');
     }
 
     /**
