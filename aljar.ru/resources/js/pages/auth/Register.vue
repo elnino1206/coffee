@@ -14,18 +14,18 @@ import { store } from '@/routes/register';
     <Head title="Регистрация" />
 
     <div class="container">
-        <div class="page-hero">
-            <nav class="breadcrumbs">
-                <Link href="/">Главная</Link> · Регистрация
-            </nav>
-            <h1 class="h2">Создать аккаунт</h1>
-            <p class="lead">
-                Нужен, чтобы видеть свои заказы и повторять их в один клик.
-                Покупать можно и без него.
-            </p>
-        </div>
+        <div style="max-width: 520px; margin-inline: auto">
+            <div class="page-hero">
+                <nav class="breadcrumbs">
+                    <Link href="/">Главная</Link> · Регистрация
+                </nav>
+                <h1 class="h2">Создать аккаунт</h1>
+                <p class="lead">
+                    Нужен, чтобы видеть свои заказы и повторять их в один клик.
+                    Покупать можно и без него.
+                </p>
+            </div>
 
-        <div style="max-width: 520px">
             <section class="panel stack">
                 <Form
                     v-bind="store.form()"

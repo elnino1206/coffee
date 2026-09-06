@@ -15,17 +15,17 @@ defineProps<{ status?: string }>();
     <Head title="Восстановление пароля" />
 
     <div class="container">
-        <div class="page-hero">
-            <nav class="breadcrumbs">
-                <Link href="/">Главная</Link> · Восстановление пароля
-            </nav>
-            <h1 class="h2">Забыли пароль</h1>
-            <p class="lead">
-                Пришлём на почту ссылку, по которой можно задать новый.
-            </p>
-        </div>
+        <div style="max-width: 520px; margin-inline: auto">
+            <div class="page-hero">
+                <nav class="breadcrumbs">
+                    <Link href="/">Главная</Link> · Восстановление пароля
+                </nav>
+                <h1 class="h2">Забыли пароль</h1>
+                <p class="lead">
+                    Пришлём на почту ссылку, по которой можно задать новый.
+                </p>
+            </div>
 
-        <div style="max-width: 520px">
             <section class="panel stack">
                 <p v-if="status" class="sub-status">{{ status }}</p>
 

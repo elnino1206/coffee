@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import InputError from '@/components/InputError.vue';
-import PasskeyVerify from '@/components/PasskeyVerify.vue';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
 /**
- * Вход. Разметка переведена на классы витрины (панель, поля, кнопки) —
+ * Вход по почте и паролю. Кнопка входа по ключу доступа снята с этого
+ * экрана по решению заказчика: остаётся один способ, без развилки.
+ * Управление ключами в настройках безопасности осталось — там же ключом
+ * можно подтвердить вход в защищённый раздел вместо пароля.
+ *
+ * Разметка переведена на классы витрины (панель, поля, кнопки) —
  * покупатель попадает сюда из шапки и с нижней панели, и стартовый вид
  * набора выбивался из остального сайта.
  *
@@ -25,20 +29,20 @@ defineProps<{
     <Head title="Вход" />
 
     <div class="container">
-        <div class="page-hero">
-            <nav class="breadcrumbs"><Link href="/">Главная</Link> · Вход</nav>
-            <h1 class="h2">Вход в личный кабинет</h1>
-            <p class="lead">
-                Заказы, повтор в один клик и управление подпиской — в одном
-                месте.
-            </p>
-        </div>
+        <div style="max-width: 520px; margin-inline: auto">
+            <div class="page-hero">
+                <nav class="breadcrumbs">
+                    <Link href="/">Главная</Link> · Вход
+                </nav>
+                <h1 class="h2">Вход в личный кабинет</h1>
+                <p class="lead">
+                    Заказы, повтор в один клик и управление подпиской — в одном
+                    месте.
+                </p>
+            </div>
 
-        <div style="max-width: 520px">
             <section class="panel stack">
                 <p v-if="status" class="sub-status">{{ status }}</p>
-
-                <PasskeyVerify />
 
                 <Form
                     v-bind="store.form()"
