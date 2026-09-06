@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\LeadStatus;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderLine;
+use App\Models\WholesaleLead;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,6 +23,8 @@ class DashboardController extends Controller
     public function index(): Response
     {
         $orders = Order::query()->with('lines')->get();
+
+        $newLeads = WholesaleLead::query()->where('status', LeadStatus::New)->count();
 
         $revenueWeek = $orders
             ->where('status', '!=', OrderStatus::Canceled)
@@ -45,9 +49,9 @@ class DashboardController extends Controller
                     'note' => 'заказы в статусе «новый»',
                 ],
                 [
-                    'label' => 'Покупателей',
-                    'value' => (string) $orders->whereNotNull('customer_id')->pluck('customer_id')->unique()->count(),
-                    'note' => 'с аккаунтом',
+                    'label' => 'Новых заявок опта',
+                    'value' => (string) $newLeads,
+                    'note' => $newLeads > 0 ? 'ждут ответа' : 'все разобраны',
                 ],
             ],
             'orders' => $orders

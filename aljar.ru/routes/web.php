@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NewsletterController;
+use App\Http\Controllers\Shop\WholesaleLeadController;
 use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,7 +13,8 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Справочные страницы: только вёрстка, данных с сервера не требуют.
 Route::inertia('delivery', 'info/Delivery')->name('info.delivery');
 Route::inertia('about', 'info/About')->name('info.about');
-Route::inertia('wholesale', 'info/Wholesale')->name('info.wholesale');
+Route::get('wholesale', [WholesaleLeadController::class, 'show'])->name('info.wholesale');
+Route::post('wholesale', [WholesaleLeadController::class, 'store'])->name('info.wholesale.store');
 Route::inertia('contacts', 'info/Contacts')->name('info.contacts');
 Route::inertia('legal', 'info/Legal')->name('info.legal');
 

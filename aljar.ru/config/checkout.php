@@ -52,6 +52,7 @@ return [
 
     'numbers' => [
         'order' => ['prefix' => 'AJ-', 'start' => 2400],
+        'lead' => ['prefix' => 'B2B-', 'start' => 40],
     ],
 
 ];

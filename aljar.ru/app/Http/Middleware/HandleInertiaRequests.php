@@ -3,8 +3,10 @@
 namespace App\Http\Middleware;
 
 use App\Actions\Cart\ResolveCart;
+use App\Enums\LeadStatus;
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Models\WholesaleLead;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -50,7 +52,10 @@ class HandleInertiaRequests extends Middleware
             // лишний запрос на каждой странице ни к чему.
             'adminCounts' => fn (): array => $request->user('admin') === null
                 ? []
-                : ['orders' => Order::query()->where('status', OrderStatus::New)->count()],
+                : [
+                    'orders' => Order::query()->where('status', OrderStatus::New)->count(),
+                    'leads' => WholesaleLead::query()->where('status', LeadStatus::New)->count(),
+                ],
             // Счётчик в шапке: сумма количеств, а не число строк —
             // две пачки одного сорта это две пачки.
             'cart' => fn (): array => [

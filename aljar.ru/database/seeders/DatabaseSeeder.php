@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             CatalogSeeder::class,
             AdminSeeder::class,
             OrderSeeder::class,
+            LeadSeeder::class,
         ]);
     }
 }

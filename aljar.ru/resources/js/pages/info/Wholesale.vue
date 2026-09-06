@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import InputError from '@/components/InputError.vue';
 import RailBar from '@/components/RailBar.vue';
 import StorefrontFooter from '@/components/StorefrontFooter.vue';
 import { useRail } from '@/composables/useRail';
@@ -10,11 +11,16 @@ import { useRail } from '@/composables/useRail';
  * versions/v2-anim/wholesale.html без изменений: дизайн утверждён,
  * переписывать его на другие классы значит расходиться с эталоном.
  *
- * Форма пока не отправляется. По ТЗ 5.4 оптовая заявка идёт отдельным
- * потоком: своя таблица, свой адресат, уведомление менеджеру почтой и в
- * Telegram. Всё это появится вместе с приёмом заявок — до тех пор кнопка
- * выключена, а не делает вид, что письмо ушло.
+ * Заявка идёт отдельным потоком от розничных обращений — требование
+ * ТЗ 5.4: своя таблица и свой адресат, отдел продаж B2B. После отправки
+ * показывается подтверждение с номером: человеку нужно, на что сослаться
+ * при звонке.
  */
+
+defineProps<{
+    businessTypes: { value: string; label: string }[];
+    accepted?: string | null;
+}>();
 
 const rail = ref<HTMLElement | null>(null);
 
@@ -110,7 +116,22 @@ const stops = ['Опт', 'Кому', 'Заявка'];
                         менеджер по опту, не поддержка розницы.
                     </p>
 
-                    <form class="panel stack" @submit.prevent>
+                    <div v-if="accepted" class="success-box is-visible">
+                        <h3 class="h3">Заявка {{ accepted }} принята</h3>
+                        <p>
+                            Менеджер свяжется в течение рабочего дня. Если
+                            срочно — позвоните
+                            <a href="tel:+79851379235">8 (985) 137-92-35</a>.
+                        </p>
+                    </div>
+
+                    <Form
+                        v-else
+                        action="/wholesale"
+                        method="post"
+                        class="panel stack"
+                        v-slot="{ errors, processing }"
+                    >
                         <div class="form-grid">
                             <label class="label">
                                 <span class="label__text">
@@ -123,6 +144,7 @@ const stops = ['Опт', 'Кому', 'Заявка'];
                                     >
                                 </span>
                                 <input class="field" name="name" required />
+                                <InputError :message="errors.name" />
                             </label>
                             <label class="label">
                                 <span class="label__text">
@@ -135,6 +157,7 @@ const stops = ['Опт', 'Кому', 'Заявка'];
                                     >
                                 </span>
                                 <input class="field" name="company" required />
+                                <InputError :message="errors.company" />
                             </label>
                             <label class="label">
                                 <span class="label__text">
@@ -153,27 +176,35 @@ const stops = ['Опт', 'Кому', 'Заявка'];
                                     required
                                     placeholder="+7 …"
                                 />
+                                <InputError :message="errors.phone" />
                             </label>
                             <label class="label">
-                                Email (необязательно)
+                                <span class="label__text"
+                                    >Email (необязательно)</span
+                                >
                                 <input
                                     class="field"
                                     name="email"
                                     type="email"
                                 />
+                                <InputError :message="errors.email" />
                             </label>
                             <label class="label">
-                                Тип бизнеса
-                                <select class="select" name="type">
-                                    <option>Кофейня</option>
-                                    <option>Ресторан</option>
-                                    <option>Отель</option>
-                                    <option>Офис</option>
-                                    <option>Другое</option>
+                                <span class="label__text">Тип бизнеса</span>
+                                <select class="select" name="business_type">
+                                    <option
+                                        v-for="type in businessTypes"
+                                        :key="type.value"
+                                        :value="type.value"
+                                    >
+                                        {{ type.label }}
+                                    </option>
                                 </select>
                             </label>
                             <label class="label">
-                                Интересующий объём / позиции
+                                <span class="label__text">
+                                    Интересующий объём / позиции
+                                </span>
                                 <input
                                     class="field"
                                     name="volume"
@@ -181,26 +212,34 @@ const stops = ['Опт', 'Кому', 'Заявка'];
                                 />
                             </label>
                             <label class="label full">
-                                Комментарий
+                                <span class="label__text">Комментарий</span>
                                 <textarea
                                     class="textarea"
                                     name="comment"
-                                    maxlength="120"
                                     placeholder="Как вы пьёте кофе?"
                                 ></textarea>
                             </label>
                             <label class="label full">
-                                Файл (спецификация, бриф) — необязательно
+                                <span class="label__text">
+                                    Файл (спецификация, бриф) — необязательно
+                                </span>
                                 <input
                                     class="field field--file"
                                     type="file"
                                     name="file"
                                     accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.png"
                                 />
+                                <InputError :message="errors.file" />
                             </label>
                         </div>
+
                         <label class="checkbox">
-                            <input type="checkbox" required />
+                            <input
+                                type="checkbox"
+                                name="agreement"
+                                value="1"
+                                required
+                            />
                             <span>
                                 Согласен на обработку персональных данных и с
                                 <Link href="/legal#privacy"
@@ -208,22 +247,16 @@ const stops = ['Опт', 'Кому', 'Заявка'];
                                 >
                             </span>
                         </label>
-                        <button class="btn btn--petrol" type="submit" disabled>
+                        <InputError :message="errors.agreement" />
+
+                        <button
+                            class="btn btn--petrol btn--m"
+                            type="submit"
+                            :disabled="processing"
+                        >
                             Отправить заявку
                         </button>
-                        <p class="tiny">
-                            Приём заявок подключим вместе с админкой: заявка
-                            идёт отдельным потоком от розничных обращений и
-                            уходит менеджеру по опту почтой и в Telegram. Пока
-                            форма показывает поля, но ничего не отправляет —
-                            обещать отправку и потерять заявку хуже, чем честно
-                            сказать.
-                        </p>
-                        <p class="tiny">
-                            Срочно — звоните:
-                            <a href="tel:+79851379235">8 (985) 137-92-35</a>.
-                        </p>
-                    </form>
+                    </Form>
                 </div>
             </section>
 

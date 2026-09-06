@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AuthenticatedSessionController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +17,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
         Route::patch('orders/{order:number}', [OrderController::class, 'update'])->name('orders.update');
+
+        Route::get('leads', [LeadController::class, 'index'])->name('leads.index');
+        Route::patch('leads/{lead}', [LeadController::class, 'update'])->name('leads.update');
+        Route::get('leads/{lead}/file', [LeadController::class, 'attachment'])->name('leads.attachment');
 
         Route::get('products', [ProductController::class, 'index'])->name('products.index');
         Route::patch('products/{product}', [ProductController::class, 'update'])->name('products.update');
