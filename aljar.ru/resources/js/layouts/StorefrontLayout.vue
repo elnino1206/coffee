@@ -9,6 +9,7 @@ import {
     watch,
 } from 'vue';
 import StorefrontFooter from '@/components/StorefrontFooter.vue';
+import StorefrontToast from '@/components/StorefrontToast.vue';
 import TabBar from '@/components/TabBar.vue';
 import { formatPrice } from '@/lib/money';
 import {
@@ -359,4 +360,6 @@ router.on('navigate', () =>
     <StorefrontFooter v-if="!ownsFooter" />
 
     <TabBar />
+
+    <StorefrontToast />
 </template>

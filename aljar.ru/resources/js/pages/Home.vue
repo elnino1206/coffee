@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Form, Head, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import AddToCartModal from '@/components/AddToCartModal.vue';
+import InputError from '@/components/InputError.vue';
 import RailBar from '@/components/RailBar.vue';
 import StorefrontFooter from '@/components/StorefrontFooter.vue';
 import { useHeroSlides } from '@/composables/useHeroSlides';
@@ -653,7 +654,15 @@ const stops = [
                     <!-- Обёртка вокруг поля, а не вокруг пары «поле + кнопка»: по
                  CSS flex-элементом формы становится .field-wrap, и кнопка
                  обязана быть её соседом, иначе уезжает внутрь пилюли. -->
-                    <form class="newsletter-form" @submit.prevent>
+                    <Form
+                        class="newsletter-form"
+                        action="/newsletter"
+                        method="post"
+                        reset-on-success
+                        :options="{ preserveScroll: true }"
+                        v-slot="{ errors, processing }"
+                    >
+                        <input type="hidden" name="source" value="home" />
                         <span class="field-wrap">
                             <input
                                 class="field"
@@ -663,10 +672,15 @@ const stops = [
                                 placeholder="Ваш e-mail"
                             />
                         </span>
-                        <button class="btn btn--petrol btn--m" type="submit">
+                        <button
+                            class="btn btn--petrol btn--m"
+                            type="submit"
+                            :disabled="processing"
+                        >
                             Подписаться
                         </button>
-                    </form>
+                        <InputError :message="errors.email" />
+                    </Form>
                 </div>
             </section>
 
