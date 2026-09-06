@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use App\Actions\Cart\ResolveCart;
+use App\Enums\OrderStatus;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -43,6 +45,12 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'admin' => $request->user('admin'),
             ],
+            // Счётчики в меню админки: сколько записей ждут разбора.
+            // Считаются только внутри админки — витрине они не нужны, а
+            // лишний запрос на каждой странице ни к чему.
+            'adminCounts' => fn (): array => $request->user('admin') === null
+                ? []
+                : ['orders' => Order::query()->where('status', OrderStatus::New)->count()],
             // Счётчик в шапке: сумма количеств, а не число строк —
             // две пачки одного сорта это две пачки.
             'cart' => fn (): array => [

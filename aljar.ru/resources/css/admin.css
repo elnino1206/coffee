@@ -1,0 +1,512 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Админка Al Jar Coffee — прототип
+
+   Надстройка над styles.css витрины: токены, кнопки, поля и бейджи
+   берутся оттуда, здесь только то, чего на витрине нет — оболочка с
+   сайдбаром, таблицы и статусы.
+
+   Слой анимаций витрины включается классом is-enhanced на <html>.
+   Админка его не выдаёт, поэтому всё, что там спрятано ради появления,
+   здесь просто видимо. Это осознанно: в рабочем инструменте движение
+   мешает, а не помогает.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.admin {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 100vh;
+  background: var(--paper);
+}
+@media (min-width: 900px) {
+  .admin { grid-template-columns: 248px 1fr; }
+}
+
+/* ── Боковая навигация ─────────────────────────────────────────────*/
+.admin-nav {
+  background: var(--petrol);
+  color: #fff;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+@media (min-width: 900px) {
+  .admin-nav {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+}
+.admin-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-head);
+  font-size: 19px;
+  letter-spacing: -.01em;
+}
+.admin-nav__brand img { width: 38px; height: auto; }
+.admin-nav__tag {
+  font-size: 10.5px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.55);
+  display: block;
+  margin-top: 2px;
+}
+.admin-nav__group { display: grid; gap: 2px; }
+.admin-nav__label {
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  padding: 0 10px 6px;
+}
+.admin-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--radius-s);
+  font-size: 14px;
+  color: rgba(255,255,255,.8);
+  transition: background .18s, color .18s;
+}
+.admin-nav a:hover { background: rgba(255,255,255,.08); color: #fff; }
+.admin-nav a.is-active { background: var(--teal-ink); color: #fff; }
+.admin-nav a svg { flex-shrink: 0; opacity: .9; }
+/* счётчик непрочитанного у пункта меню */
+.admin-nav__count {
+  margin-left: auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 99px;
+  background: var(--terracotta);
+  color: #fff;
+  font-size: 11px;
+  display: grid;
+  place-items: center;
+}
+.admin-nav__foot {
+  margin-top: auto;
+  font-size: 12px;
+  color: rgba(255,255,255,.5);
+  display: grid;
+  gap: 8px;
+}
+.admin-nav__foot a { padding: 0; font-size: 12px; }
+
+/* ── Основная область ──────────────────────────────────────────────*/
+.admin-main { min-width: 0; display: flex; flex-direction: column; }
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+@media (min-width: 900px) {
+  .admin-topbar { padding: 20px 32px; }
+}
+.admin-topbar__title { display: grid; gap: 2px; min-width: 0; }
+.admin-topbar__title h1 {
+  font-family: var(--font-head);
+  font-size: clamp(21px, 2.2vw, 28px);
+  font-weight: 500;
+  letter-spacing: -.01em;
+}
+.admin-topbar__actions { margin-left: auto; display: flex; gap: 10px; flex-wrap: wrap; }
+
+.admin-content { padding: 20px; display: grid; gap: 22px; align-content: start; }
+@media (min-width: 900px) {
+  .admin-content { padding: 28px 32px 60px; }
+}
+
+/* ── Панель ────────────────────────────────────────────────────────*/
+.admin-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  overflow: hidden;
+}
+.admin-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.admin-panel__head h2 { font-size: 16px; font-weight: 600; }
+.admin-panel__head .admin-panel__aside { margin-left: auto; }
+.admin-panel__body { padding: 18px; }
+
+/* ── Плитки показателей ────────────────────────────────────────────*/
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+.admin-stat {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-m);
+  padding: 16px 18px;
+  display: grid;
+  gap: 6px;
+}
+.admin-stat__label {
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--grey);
+}
+.admin-stat__value {
+  font-family: var(--font-head);
+  font-size: 30px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.admin-stat__delta { font-size: 12.5px; color: var(--grey); }
+.admin-stat__delta.is-up { color: var(--success); }
+.admin-stat__delta.is-down { color: var(--error); }
+
+/* ── Таблица ───────────────────────────────────────────────────────
+   На узком экране таблица не ужимается, а прокручивается: колонок
+   восемь, и складывать их в карточки — значит терять сравнимость
+   строк, ради которой таблицу и открывают. */
+.admin-table-wrap { overflow-x: auto; }
+.admin-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.admin-table th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--grey);
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+}
+.admin-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.admin-table tr:last-child td { border-bottom: 0; }
+.admin-table tbody tr:hover { background: var(--paper); }
+.admin-table .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.admin-table .admin-actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+.admin-cell-product { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.admin-cell-product img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--sand);
+  flex-shrink: 0;
+}
+.admin-cell-product strong { font-weight: 500; }
+.admin-cell-product .tiny { display: block; }
+
+/* ── Статусы ───────────────────────────────────────────────────────*/
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  white-space: nowrap;
+  background: var(--sand);
+  color: var(--petrol);
+}
+.status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.status--new      { background: var(--teal-wash); color: var(--teal-deep); }
+.status--work     { background: var(--warning-bg); color: var(--warning); }
+.status--done     { background: var(--success-bg); color: var(--success); }
+.status--paused   { background: var(--sand); color: var(--grey); }
+.status--canceled { background: var(--error-bg); color: var(--error); }
+
+/* ── Мелкая кнопка строки ──────────────────────────────────────────*/
+.admin-btn {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 12.5px;
+  white-space: nowrap;
+  transition: border-color .18s, background .18s;
+}
+.admin-btn:hover { border-color: var(--teal-ink); background: var(--teal-wash); }
+.admin-btn--ghost { border-color: transparent; color: var(--grey); }
+.admin-btn--ghost:hover { color: var(--error); background: var(--error-bg); border-color: transparent; }
+
+/* ── Фильтры над таблицей ──────────────────────────────────────────*/
+.admin-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.admin-filters .field,
+.admin-filters .select { height: 38px; font-size: 13.5px; }
+.admin-filters .field { min-width: 200px; }
+
+/* ── Пустое состояние ──────────────────────────────────────────────*/
+.admin-empty {
+  padding: 44px 20px;
+  text-align: center;
+  color: var(--grey);
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+
+/* ── Вход ──────────────────────────────────────────────────────────*/
+.admin-login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--paper);
+}
+.admin-login__card {
+  width: min(400px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-l);
+  padding: 30px;
+  display: grid;
+  gap: 16px;
+  box-shadow: var(--shadow-soft);
+}
+.admin-login__brand { display: grid; justify-items: center; gap: 8px; text-align: center; }
+.admin-login__brand img { width: 64px; height: auto; }
+
+/* ── Двухколоночная раскладка дашборда ─────────────────────────────*/
+.admin-cols { display: grid; gap: 22px; }
+@media (min-width: 1180px) {
+  .admin-cols { grid-template-columns: 1.4fr 1fr; align-items: start; }
+}
+
+/* ── Список свежести на дашборде ───────────────────────────────────*/
+.roast-list { display: grid; gap: 2px; }
+.roast-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.roast-row:last-child { border-bottom: 0; }
+.roast-row__name { min-width: 0; flex: 1; font-size: 13.5px; }
+.roast-row__name span { display: block; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Редактирование записи
+
+   Выдвижная панель, а не модальное окно: список слева остаётся на
+   виду, и видно, какую строку правишь. Для табличных данных это
+   важнее, чем фокус на одной карточке.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  grid-template-columns: 1fr auto;
+}
+.drawer[hidden] { display: none; }
+
+.drawer__scrim {
+  background: rgba(20, 52, 60, .38);
+  cursor: pointer;
+}
+
+.drawer__panel {
+  width: min(460px, 100vw);
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  box-shadow: -18px 0 48px rgba(20, 52, 60, .14);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  max-height: 100vh;
+}
+
+.drawer__head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.drawer__head h2 {
+  font-family: var(--font-head);
+  font-size: 21px;
+  font-weight: 500;
+  letter-spacing: -.01em;
+}
+.drawer__head .tiny { margin-top: 2px; }
+.drawer__close {
+  margin-left: auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--grey);
+  flex-shrink: 0;
+  transition: background .18s, color .18s;
+}
+.drawer__close:hover { background: var(--sand); color: var(--petrol); }
+
+.drawer__body {
+  padding: 20px;
+  overflow-y: auto;
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.drawer__foot {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--line);
+  background: var(--paper);
+}
+.drawer__foot .btn { flex: 1; }
+
+/* ── Поля формы редактора ──────────────────────────────────────────*/
+.drawer__row { display: grid; gap: 12px; }
+@media (min-width: 520px) {
+  .drawer__row--2 { grid-template-columns: 1fr 1fr; }
+}
+
+/* Значения, которые считаются из других сущностей, показываем, но не
+   даём править: сумма заказа идёт из состава, а не из этого поля. */
+.drawer__readonly {
+  display: grid;
+  gap: 3px;
+  padding: 10px 14px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-s);
+  background: var(--paper);
+}
+.drawer__readonly strong { font-weight: 500; font-variant-numeric: tabular-nums; }
+
+.drawer__hint {
+  font-size: 12px;
+  color: var(--grey);
+  padding: 10px 14px;
+  border-radius: var(--radius-s);
+  background: var(--teal-wash);
+}
+
+/* Скрытая с витрины позиция должна отличаться в списке, иначе про неё
+   забывают и потом ищут, почему товара нет в каталоге. */
+.admin-table tr.is-hidden td { opacity: .55; }
+.admin-table tr.is-hidden .admin-cell-product strong { text-decoration: line-through; }
+
+/* ── Состав заказа в редакторе ─────────────────────────────────────
+   Помол покупатель выбирает на сайте, и до цеха он доезжает через эту
+   строку — поэтому он выделен, а не спрятан в общий поток мелкого
+   текста рядом с весом. */
+.order-lines { display: grid; gap: 10px; margin: 6px 0 4px; }
+.order-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.order-line img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--sand);
+  flex-shrink: 0;
+}
+.order-line__body { min-width: 0; flex: 1; }
+.order-line__body strong { display: block; font-weight: 500; font-size: 13.5px; }
+.order-line__body b { color: var(--teal-deep); font-weight: 600; }
+.order-line__sum {
+  font-variant-numeric: tabular-nums;
+  font-size: 13.5px;
+  white-space: nowrap;
+}
+
+/* ── Загрузка обложки ──────────────────────────────────────────────
+   Превью слева от поля: видно, что именно заменяешь, и виден результат
+   кадрирования сразу после выбора файла. */
+.upload { display: grid; gap: 6px; }
+.upload__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.upload__preview {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--radius-s);
+  object-fit: cover;
+  background: var(--sand);
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.upload__control { flex: 1; min-width: 0; display: grid; gap: 6px; }
+.upload__control .field--file { width: 100%; height: 42px; }
+/* Подсказка с требованиями — многострочная, поэтому не в одну строку */
+.upload .help { line-height: 1.4; }
+
+/* ── Состав заказа в таблице ───────────────────────────────────────
+   Список позиций прямо в строке: сборщику не нужно открывать каждый
+   заказ, чтобы понять, что класть в коробку. Количество прижато
+   вправо — по нему глаз идёт вертикально, не читая названий. */
+.order-cell {
+  display: grid;
+  gap: 7px;
+  min-width: 210px;
+}
+.order-cell__row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.order-cell__body { min-width: 0; flex: 1; }
+.order-cell__body strong { display: block; font-weight: 500; }
+.order-cell__body .tiny { display: block; line-height: 1.3; }
+.order-cell__qty {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--grey);
+}
+
+/* Строка стала выше и многострочной — выравнивание по верху читается
+   лучше, чем по центру. */
+.admin-table td:has(.order-cell),
+.admin-table tr:has(.order-cell) td { vertical-align: top; }

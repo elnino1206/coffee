@@ -1,6 +1,8 @@
-# Файл стилей витрины — общий со статикой versions/v2-anim и обязан
-# оставаться побайтово одинаковым с ней. Форматирование его ломает.
+# Файлы стилей витрины и админки — копии из versions/v2-anim и должны
+# совпадать с ними. Форматирование переписывает отступы и кавычки и
+# разводит копии.
 resources/css/storefront.css
+resources/css/admin.css
 
 resources/js/components/ui/*
 resources/views/mail/*
