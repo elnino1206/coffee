@@ -123,7 +123,9 @@ const stops = [
                                 href="/catalog/coffee"
                                 >Смотреть кофе →</Link
                             >
-                            <a class="btn btn--ghost" href="#">Подписка</a>
+                            <Link class="btn btn--ghost" href="/subscription"
+                                >Подписка</Link
+                            >
                         </div>
                         <div class="trust-row">
                             <span class="trust-item">
@@ -324,8 +326,8 @@ const stops = [
                                 <span>Обжарка под дату доставки</span>
                             </div>
                         </div>
-                        <a class="btn btn--primary" href="#"
-                            >Настроить подписку →</a
+                        <Link class="btn btn--primary" href="/subscription"
+                            >Настроить подписку →</Link
                         >
                     </div>
                 </div>
