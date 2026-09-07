@@ -719,18 +719,6 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
    прежней шапки, и менять его вид заодно не за чем. */
 .site-header--plate .site-header__inner { position: relative; }
 
-.wordmark {
-  font-family: var(--font-head);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: .3em;
-  text-transform: uppercase;
-  color: var(--petrol);
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: color .25s;
-}
-
 /* Бирка вынута из потока и притянута к середине шапки: иначе её место
    зависело бы от ширины меню, а оно меняется от страницы к странице.
    Верхних углов нет — она свисает с края, а не лежит на нём. */
@@ -759,11 +747,10 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   padding: 10px 12px 12px;
 }
 
-.site-header__side {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
+/* Кнопки прижаты вправо своим отступом, а не распором: на узком экране
+   меню скрыто, и при `space-between` единственная оставшаяся группа
+   уехала бы к левому краю. */
+.site-header--plate .header-actions { margin-left: auto; }
 
 /* Меню в референсе набрано мелкой прописной вразрядку — так оно читается
    как подпись, а не как список ссылок, и не спорит с биркой. */
@@ -788,10 +775,8 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
 
 @media (max-width: 979px) {
   .brandplate { width: 84px; padding: 10px 11px 12px; }
-  .site-header__side { gap: 12px; }
 }
 @media (max-width: 599px) {
-  .wordmark { font-size: 12px; letter-spacing: .22em; }
   .brandplate { width: 72px; padding: 8px 9px 10px; }
 }
 
@@ -830,7 +815,6 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
     backdrop-filter: none;
     border-bottom-color: transparent;
   }
-  body:has(.rail__panel--hero.is-current) .wordmark { color: var(--white); }
   body:has(.rail__panel--hero.is-current) .nav-desktop a { color: rgba(255, 255, 255, .82); }
   body:has(.rail__panel--hero.is-current) .nav-desktop a:hover,
   body:has(.rail__panel--hero.is-current) .nav-desktop a.is-active { color: var(--white); }

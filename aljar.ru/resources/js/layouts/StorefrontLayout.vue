@@ -208,13 +208,25 @@ router.on('navigate', () =>
 
     <header class="site-header site-header--plate" id="header">
         <div class="site-header__inner container">
-            <Link class="wordmark" href="/">Al Jar</Link>
+            <nav class="nav-desktop" aria-label="Основное меню">
+                <Link
+                    v-for="item in nav"
+                    :key="item.label"
+                    :href="item.href"
+                    :class="{ 'is-active': page === item.page }"
+                >
+                    {{ item.label }}
+                </Link>
+            </nav>
 
             <!-- Бирка с эмблемой: свисает с верхнего края и держит
-                 середину шапки. Для чтения с экрана она спрятана —
-                 рядом уже стоит та же ссылка на главную словом, и
-                 объявлять её дважды незачем. -->
-            <Link class="brandplate" href="/" aria-hidden="true" tabindex="-1">
+                 середину шапки. Она же и ссылка на главную — словесного
+                 логотипа слева больше нет, его место заняло меню. -->
+            <Link
+                class="brandplate"
+                href="/"
+                aria-label="Al Jar Coffee, на главную"
+            >
                 <img
                     src="/img/logo.webp"
                     alt=""
@@ -224,81 +236,68 @@ router.on('navigate', () =>
                 />
             </Link>
 
-            <div class="site-header__side">
-                <nav class="nav-desktop" aria-label="Основное меню">
-                    <Link
-                        v-for="item in nav"
-                        :key="item.label"
-                        :href="item.href"
-                        :class="{ 'is-active': page === item.page }"
+            <div class="header-actions">
+                <button
+                    ref="searchToggle"
+                    class="icon-btn"
+                    type="button"
+                    aria-label="Поиск"
+                    aria-controls="search"
+                    :aria-expanded="searchOpen"
+                    @click="setSearch(!searchOpen)"
+                >
+                    <svg
+                        width="20"
+                        height="20"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
                     >
-                        {{ item.label }}
-                    </Link>
-                </nav>
-
-                <div class="header-actions">
-                    <button
-                        ref="searchToggle"
-                        class="icon-btn"
-                        type="button"
-                        aria-label="Поиск"
-                        aria-controls="search"
-                        :aria-expanded="searchOpen"
-                        @click="setSearch(!searchOpen)"
+                        <circle cx="9" cy="9" r="6" />
+                        <path d="M14 14l4 4" />
+                    </svg>
+                </button>
+                <Link
+                    class="icon-btn"
+                    :href="account"
+                    aria-label="Личный кабинет"
+                >
+                    <svg
+                        width="20"
+                        height="20"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
                     >
-                        <svg
-                            width="20"
-                            height="20"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.7"
-                        >
-                            <circle cx="9" cy="9" r="6" />
-                            <path d="M14 14l4 4" />
-                        </svg>
-                    </button>
-                    <Link
-                        class="icon-btn"
-                        :href="account"
-                        aria-label="Личный кабинет"
+                        <circle cx="10" cy="7" r="3.2" />
+                        <path d="M4 17c1.2-3 3.2-4.5 6-4.5S14.8 14 16 17" />
+                    </svg>
+                </Link>
+                <Link class="icon-btn" href="/cart" aria-label="Корзина">
+                    <svg
+                        width="20"
+                        height="20"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.7"
                     >
-                        <svg
-                            width="20"
-                            height="20"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.7"
-                        >
-                            <circle cx="10" cy="7" r="3.2" />
-                            <path d="M4 17c1.2-3 3.2-4.5 6-4.5S14.8 14 16 17" />
-                        </svg>
-                    </Link>
-                    <Link class="icon-btn" href="/cart" aria-label="Корзина">
-                        <svg
-                            width="20"
-                            height="20"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.7"
-                        >
-                            <path d="M5 7h10l-1 11H6L5 7z" />
-                            <path
-                                d="M8 7V5.5A2 2 0 0 1 10 3.5 2 2 0 0 1 12 5.5V7"
-                            />
-                        </svg>
-                        <!-- Пустая корзина бейджа не показывает: ноль
+                        <path d="M5 7h10l-1 11H6L5 7z" />
+                        <path
+                            d="M8 7V5.5A2 2 0 0 1 10 3.5 2 2 0 0 1 12 5.5V7"
+                        />
+                    </svg>
+                    <!-- Пустая корзина бейджа не показывает: ноль
                              в кружке читается как непрочитанное
                              сообщение. Прячет его CSS по data-count —
                              сам узел остаётся на месте, иначе подскоку
                              при пополнении не за что зацепиться. -->
-                        <span
-                            ref="cartBadge"
-                            class="cart-count"
-                            :data-count="cartCount"
-                            >{{ cartCount }}</span
-                        >
-                    </Link>
-                </div>
+                    <span
+                        ref="cartBadge"
+                        class="cart-count"
+                        :data-count="cartCount"
+                        >{{ cartCount }}</span
+                    >
+                </Link>
             </div>
         </div>
 
