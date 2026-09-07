@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import RailBar from '@/components/RailBar.vue';
 import StorefrontFooter from '@/components/StorefrontFooter.vue';
@@ -13,8 +13,9 @@ import { formatPrice } from '@/lib/money';
  *
  * Отличие от прототипа: конструктор собран на сортах и ценах из базы, а
  * не на списке в разметке — иначе он показывал бы цену, которой в
- * каталоге уже нет. Само оформление подписки появится вместе с
- * рекуррентными списаниями.
+ * каталоге уже нет. Оформление создаёт саму подписку; списания по
+ * карте подключатся отдельно — до тех пор кофе не уезжает автоматически,
+ * и страница говорит об этом прямо.
  */
 
 interface Variant {
@@ -28,6 +29,7 @@ const props = defineProps<{
     grinds: { value: string; label: string }[];
     frequencies: { value: number; label: string }[];
     discount: number;
+    signedIn: boolean;
 }>();
 
 const slug = ref(props.coffee[0]?.slug ?? '');
@@ -55,6 +57,28 @@ const price = computed(() =>
     Math.round((base.value * (100 - props.discount)) / 100),
 );
 const saved = computed(() => base.value - price.value);
+
+/* Оформление. Гостю подписку класть некуда — она принадлежит покупателю,
+   поэтому его сначала отправляем на вход и возвращаем обратно. */
+const placing = ref(false);
+
+function subscribe(): void {
+    if (!variantId.value) {
+        return;
+    }
+
+    placing.value = true;
+
+    router.post(
+        '/subscription',
+        {
+            product_variant_id: variantId.value,
+            grind: grind.value,
+            frequency_weeks: frequency.value,
+        },
+        { onFinish: () => (placing.value = false) },
+    );
+}
 
 const rail = ref<HTMLElement | null>(null);
 
@@ -206,7 +230,7 @@ const stops = [
                         <p class="eyebrow">Конструктор</p>
                         <h2 class="h3">Настройте свою подписку</h2>
                     </div>
-                    <form @submit.prevent>
+                    <form @submit.prevent="subscribe">
                         <div class="constructor-grid">
                             <label class="label">
                                 Кофе
@@ -275,15 +299,23 @@ const stops = [
                             </span>
                         </p>
 
-                        <button class="btn btn--primary" type="submit" disabled>
+                        <button
+                            v-if="signedIn"
+                            class="btn btn--primary"
+                            type="submit"
+                            :disabled="placing || !variantId"
+                        >
                             Оформить подписку
                         </button>
+                        <Link v-else class="btn btn--primary" href="/login">
+                            Войти и оформить
+                        </Link>
                         <p class="tiny">
-                            Оформление подключается вместе со списаниями по
-                            карте: подписка снимает деньги сама, и без
-                            платёжного контура это было бы обещанием без
-                            покрытия. Пока страница считает цену по действующему
-                            прайсу.
+                            Подписка появится в личном кабинете: там её можно
+                            поставить на паузу или отменить в один клик.
+                            Списания по карте подключаются отдельно — пока
+                            отгрузку подтверждает менеджер, и деньги сами никуда
+                            не уходят.
                         </p>
                     </form>
                 </div>

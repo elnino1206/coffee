@@ -30,6 +30,13 @@ Route::middleware(['auth:web', 'verified'])->group(function () {
     Route::get('account', [AccountController::class, 'show'])->name('account');
     Route::post('account/orders/{order:number}/repeat', [AccountController::class, 'repeat'])->name('account.orders.repeat');
 
+    // Подписка принадлежит покупателю, поэтому и оформление, и
+    // управление живут за входом.
+    Route::post('subscription', [SubscriptionController::class, 'store'])->name('info.subscription.store');
+    Route::post('account/subscriptions/{subscription}/pause', [AccountController::class, 'pauseSubscription'])->name('account.subscriptions.pause');
+    Route::post('account/subscriptions/{subscription}/resume', [AccountController::class, 'resumeSubscription'])->name('account.subscriptions.resume');
+    Route::post('account/subscriptions/{subscription}/cancel', [AccountController::class, 'cancelSubscription'])->name('account.subscriptions.cancel');
+
     // Стартовый набор уводил после входа на /dashboard. Кабинет у нас
     // один и живёт по /account — прежний адрес остаётся ссылкой на него,
     // чтобы старые закладки и ссылки набора не упирались в 404.

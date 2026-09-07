@@ -2,25 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Subscriptions\PlaceSubscription;
 use App\Enums\Grind;
+use App\Http\Requests\Shop\SubscriptionRequest;
 use App\Models\Coffee;
 use App\Models\ProductVariant;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 /**
  * Страница подписки.
  *
- * Пока витринная: рассказывает про модель и считает цену в конструкторе.
- * Оформление появится вместе с самими подписками — они опираются на
- * рекуррентные списания, а платёжный контур ещё не подключён.
+ * Конструктор считает цену по базе, а не по списку в разметке: иначе он
+ * показывал бы цену, которой в каталоге уже нет.
  *
- * Сорта и цены берутся из базы, а не из списка в разметке: иначе
- * конструктор показывал бы цену, которой в каталоге уже нет.
+ * Оформление создаёт саму подписку, но не списывает деньги: платёжный
+ * контур с рекуррентными списаниями ещё не подключён. Пока это запись, с
+ * которой работают кабинет и панель управления.
  */
 class SubscriptionController extends Controller
 {
-    public function show(): Response
+    public function show(Request $request): Response
     {
         $coffee = Coffee::query()
             ->visible()
@@ -51,6 +55,27 @@ class SubscriptionController extends Controller
                     'label' => "Каждые {$weeks} недели",
                 ]),
             'discount' => (int) config('subscription.default_discount_percent'),
+            // Оформить может только вошедший: подписка принадлежит
+            // покупателю, и гостю её некуда положить.
+            'signedIn' => $request->user() !== null,
         ]);
+    }
+
+    public function store(SubscriptionRequest $request, PlaceSubscription $placeSubscription): RedirectResponse
+    {
+        $data = $request->validated();
+
+        $subscription = $placeSubscription($this->customer($request), [
+            'product_variant_id' => (int) $data['product_variant_id'],
+            'grind' => isset($data['grind']) ? Grind::from($data['grind']) : null,
+            'frequency_weeks' => (int) $data['frequency_weeks'],
+        ]);
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => "Подписка {$subscription->number} оформлена.",
+        ]);
+
+        return to_route('account');
     }
 }

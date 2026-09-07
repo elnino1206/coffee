@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Cart\ResolveCart;
+use App\Enums\SubscriptionStatus;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderLine;
+use App\Models\Subscription;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -53,6 +56,7 @@ class AccountController extends Controller
                 'email' => $customer->email,
             ],
             'orders' => $orders,
+            'subscriptions' => $this->subscriptions($customer),
         ]);
     }
 
@@ -106,5 +110,126 @@ class AccountController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Состав заказа снова в корзине.']);
 
         return to_route('cart.show');
+    }
+
+    /**
+     * Поставить подписку на паузу.
+     *
+     * Паузу ставит и снимает сам покупатель — этим она и отличается от
+     * блокировки, которую снимает только удачная оплата.
+     */
+    public function pauseSubscription(Request $request, Subscription $subscription): RedirectResponse
+    {
+        $this->ownSubscription($request, $subscription);
+
+        if ($subscription->status !== SubscriptionStatus::Active) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'На паузу можно поставить только активную подписку.']);
+
+            return back();
+        }
+
+        $subscription->pause();
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => "Подписка {$subscription->number} на паузе."]);
+
+        return back();
+    }
+
+    /**
+     * Снять подписку с паузы.
+     */
+    public function resumeSubscription(Request $request, Subscription $subscription): RedirectResponse
+    {
+        $this->ownSubscription($request, $subscription);
+
+        if ($subscription->status !== SubscriptionStatus::Paused) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'Снять с паузы можно только остановленную подписку.']);
+
+            return back();
+        }
+
+        $subscription->resume();
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => "Подписка {$subscription->number} снова активна: ближайшая отгрузка {$subscription->nextDeliveryLabel()}.",
+        ]);
+
+        return back();
+    }
+
+    /**
+     * Отменить подписку.
+     *
+     * Причина не обязательна: требовать объяснение на выходе — способ
+     * удержать силой, а не доводом. Запись остаётся у покупателя в
+     * истории, оформить заново можно в один клик.
+     */
+    public function cancelSubscription(Request $request, Subscription $subscription): RedirectResponse
+    {
+        $this->ownSubscription($request, $subscription);
+
+        $data = $request->validate([
+            'reason' => ['nullable', 'string', 'max:300'],
+        ]);
+
+        if (! $subscription->isCancelable()) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'Подписка уже отменена.']);
+
+            return back();
+        }
+
+        $subscription->cancel($data['reason'] ?? null);
+
+        Inertia::flash('toast', ['type' => 'success', 'message' => "Подписка {$subscription->number} отменена."]);
+
+        return back();
+    }
+
+    /**
+     * Подписки покупателя для кабинета.
+     *
+     * Отменённые уходят вниз, но остаются на виду: по ним видно прежние
+     * условия, и оформить такую же проще, чем вспоминать вес и помол.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function subscriptions(Customer $customer): array
+    {
+        return Subscription::query()
+            ->where('customer_id', $customer->id)
+            ->with('variant.product')
+            ->orderByRaw('case when status = ? then 1 else 0 end', [SubscriptionStatus::Canceled->value])
+            ->latest('id')
+            ->get()
+            ->map(fn (Subscription $subscription) => [
+                'id' => $subscription->id,
+                'number' => $subscription->number,
+                // Вариант мог уйти из продажи — подписка остаётся, но
+                // показывать нечего, кроме прочерка.
+                'product' => $subscription->variant?->product->name,
+                'variant' => $subscription->variant?->title,
+                'grind' => $subscription->grind?->label(),
+                'frequency' => "каждые {$subscription->frequency_weeks} нед.",
+                'next_delivery' => $subscription->nextDeliveryLabel(),
+                'charge' => $subscription->chargeTotal(),
+                'discount_percent' => $subscription->discount_percent,
+                'status' => $subscription->status->value,
+                'status_label' => $subscription->status->label(),
+                'pill' => $subscription->status->pill(),
+                'pausable' => $subscription->status === SubscriptionStatus::Active,
+                'resumable' => $subscription->status === SubscriptionStatus::Paused,
+                'cancelable' => $subscription->isCancelable(),
+            ])
+            ->all();
+    }
+
+    /**
+     * Чужая подписка не существует: 404, а не 403 — по ответу не должно
+     * быть видно, что такой номер вообще есть.
+     */
+    protected function ownSubscription(Request $request, Subscription $subscription): void
+    {
+        abort_if($subscription->customer_id !== $this->customer($request)->id, 404);
     }
 }
