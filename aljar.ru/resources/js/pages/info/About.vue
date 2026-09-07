@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import RailBar from '@/components/RailBar.vue';
 import StorefrontFooter from '@/components/StorefrontFooter.vue';
+import { useHeroSlides } from '@/composables/useHeroSlides';
 import { useRail } from '@/composables/useRail';
 
 /**
@@ -23,6 +24,21 @@ const rail = ref<HTMLElement | null>(null);
 
 const { current, go, progress } = useRail(rail);
 
+/* Кадры героя — как на главной: снимок во всю панель, кадры сменяются
+   перекрёстным затуханием. */
+const heroStage = ref<HTMLElement | null>(null);
+
+const heroSlides = [
+    { src: '/img/hero-about-1.webp', alt: 'Кофейное зерно крупным планом' },
+    {
+        src: '/img/hero-about-2.webp',
+        alt: 'Зерно средней обжарки, макросъёмка',
+    },
+    { src: '/img/hero-about-3.webp', alt: 'Обжаренные зёрна вблизи' },
+];
+
+const { slide } = useHeroSlides(heroStage, heroSlides.length);
+
 /** Подписи остановок на шкале — по одной на панель, в порядке рельса. */
 const stops = [
     'История',
@@ -40,8 +56,33 @@ const stops = [
     <Head title="О бренде" />
 
     <div ref="rail" class="rail">
-        <div class="rail__panel" :class="{ 'is-current': current === 0 }">
-            <section class="hero">
+        <div
+            class="rail__panel rail__panel--hero"
+            :class="{ 'is-current': current === 0 }"
+        >
+            <section class="hero hero--full">
+                <!-- Подложка героя. Вынесена из сетки: абсолютное
+                     позиционирование должно считаться от секции, иначе
+                     снимок садится по ширине контейнера. -->
+                <div ref="heroStage" class="hero__visual">
+                    <!-- Кадры лежат стопкой: показанный проявлен,
+                         остальные прозрачны. Подменять src нельзя — на
+                         новом кадре был бы разрыв. -->
+                    <span class="island__rock island__stack">
+                        <img
+                            v-for="(frame, i) in heroSlides"
+                            :key="frame.src"
+                            :src="frame.src"
+                            :alt="i === slide ? frame.alt : ''"
+                            :class="{ 'is-shown': i === slide }"
+                            width="1920"
+                            height="1080"
+                            :fetchpriority="i === 0 ? 'high' : 'auto'"
+                            :loading="i === 0 ? 'eager' : 'lazy'"
+                            decoding="async"
+                        />
+                    </span>
+                </div>
                 <div class="hero__grid container">
                     <div class="hero__copy">
                         <p class="eyebrow">О бренде</p>
@@ -52,17 +93,6 @@ const stops = [
                             современном формате: семейный бренд, опыт, внимание
                             к деталям.
                         </p>
-                    </div>
-                    <div class="hero__visual">
-                        <span class="blob blob--sand"></span>
-                        <img
-                            src="/img/dallah.webp"
-                            width="1152"
-                            height="864"
-                            fetchpriority="high"
-                            decoding="async"
-                            alt="Медная турка — ритуал восточного кофе"
-                        />
                     </div>
                 </div>
             </section>

@@ -3,6 +3,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import RailBar from '@/components/RailBar.vue';
 import StorefrontFooter from '@/components/StorefrontFooter.vue';
+import { useHeroSlides } from '@/composables/useHeroSlides';
 import { useRail } from '@/composables/useRail';
 import { formatPrice } from '@/lib/money';
 
@@ -84,6 +85,27 @@ const rail = ref<HTMLElement | null>(null);
 
 const { current, go, progress } = useRail(rail);
 
+/* Кадры героя — как на главной: снимок во всю панель, кадры сменяются
+   перекрёстным затуханием. */
+const heroStage = ref<HTMLElement | null>(null);
+
+const heroSlides = [
+    {
+        src: '/img/hero-subscription-1.webp',
+        alt: 'Россыпь свежеобжаренного зерна',
+    },
+    {
+        src: '/img/hero-subscription-2.webp',
+        alt: 'Зерно средней обжарки крупным планом',
+    },
+    {
+        src: '/img/hero-subscription-3.webp',
+        alt: 'Обжаренное зерно, макросъёмка',
+    },
+];
+
+const { slide } = useHeroSlides(heroStage, heroSlides.length);
+
 /** Подписи остановок на шкале — по одной на панель, в порядке рельса. */
 const stops = [
     'Подписка',
@@ -98,8 +120,33 @@ const stops = [
     <Head title="Кофе по подписке" />
 
     <div ref="rail" class="rail">
-        <div class="rail__panel" :class="{ 'is-current': current === 0 }">
-            <section class="hero">
+        <div
+            class="rail__panel rail__panel--hero"
+            :class="{ 'is-current': current === 0 }"
+        >
+            <section class="hero hero--full hero--wide">
+                <!-- Подложка героя. Вынесена из сетки: абсолютное
+                     позиционирование должно считаться от секции, иначе
+                     снимок садится по ширине контейнера. -->
+                <div ref="heroStage" class="hero__visual">
+                    <!-- Кадры лежат стопкой: показанный проявлен,
+                         остальные прозрачны. Подменять src нельзя — на
+                         новом кадре был бы разрыв. -->
+                    <span class="island__rock island__stack">
+                        <img
+                            v-for="(frame, i) in heroSlides"
+                            :key="frame.src"
+                            :src="frame.src"
+                            :alt="i === slide ? frame.alt : ''"
+                            :class="{ 'is-shown': i === slide }"
+                            width="1920"
+                            height="1080"
+                            :fetchpriority="i === 0 ? 'high' : 'auto'"
+                            :loading="i === 0 ? 'eager' : 'lazy'"
+                            decoding="async"
+                        />
+                    </span>
+                </div>
                 <div class="hero__grid container">
                     <div class="hero__copy">
                         <p class="eyebrow">Кофе всегда свежий. Без забот.</p>
@@ -133,17 +180,6 @@ const stops = [
                                 >−{{ discount }}% с каждого заказа</span
                             >
                         </div>
-                    </div>
-                    <div class="hero__visual">
-                        <span class="blob blob--baby"></span>
-                        <img
-                            src="/img/subscription-hero.webp"
-                            width="1152"
-                            height="864"
-                            fetchpriority="high"
-                            decoding="async"
-                            alt="Чашка кофе и гейзерная кофеварка на грифельной доске"
-                        />
                     </div>
                 </div>
             </section>

@@ -3238,7 +3238,13 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   );
 }
 
-/* Текст по центру и в одну колонку. */
+/* Текст по центру и в одну колонку.
+
+   Нижний запас — половина растворения (оно ростом в 20% панели): текст
+   центруется чуть выше середины и не заходит в ту часть, где снимок уже
+   почти ушёл в цвет страницы, а светлые подписи на ней пропадают.
+   Половина, а не всё растворение: полный запас увёл бы текст вверх и
+   оставил под ним пустое поле снимка. */
 .hero--full .hero__grid {
   position: relative;
   z-index: 1;
@@ -3247,12 +3253,19 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   text-align: center;
   align-content: center;
   height: 100%;
+  padding-bottom: clamp(60px, 10dvh, 95px);
 }
 .hero--full .hero__copy {
   justify-items: center;
   max-width: 42rem;
   color: #fff;
 }
+
+/* Колонка шире там, где заголовок длинный. У подписки он в три строки
+   при 42rem, и вместе с кнопками и строкой доверия блок дотягивается до
+   нижнего растворения — белые подписи оказываются на светлом. Шире
+   колонка — заголовок в две строки, и блок укладывается в экран. */
+.hero--full.hero--wide .hero__copy { max-width: 52rem; }
 .hero--full .hero__copy .eyebrow { color: rgba(255, 252, 247, .72); }
 .hero--full .hero__copy .display { color: #fff; }
 .hero--full .hero__copy .lead { color: rgba(255, 252, 247, .82); }
