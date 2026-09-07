@@ -25,7 +25,6 @@ type Subscription = {
     discount_percent: number;
     status: string;
     status_label: string;
-    pill: string;
     pausable: boolean;
     resumable: boolean;
     cancelable: boolean;

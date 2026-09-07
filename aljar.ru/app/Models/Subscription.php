@@ -7,7 +7,6 @@ use App\Enums\Grind;
 use App\Enums\SubscriptionStatus;
 use Database\Factories\SubscriptionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -79,19 +78,6 @@ class Subscription extends Model
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
-    }
-
-    /**
-     * Limit the query to subscriptions that are still alive.
-     *
-     * Активная и поставленная на паузу — обе ещё чьи-то: у отменённой и
-     * заблокированной отгрузок не будет.
-     *
-     * @param  Builder<Subscription>  $query
-     */
-    public function scopeRunning(Builder $query): void
-    {
-        $query->whereIn('status', [SubscriptionStatus::Active, SubscriptionStatus::Paused]);
     }
 
     /**

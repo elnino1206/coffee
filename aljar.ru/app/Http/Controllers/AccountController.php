@@ -216,7 +216,6 @@ class AccountController extends Controller
                 'discount_percent' => $subscription->discount_percent,
                 'status' => $subscription->status->value,
                 'status_label' => $subscription->status->label(),
-                'pill' => $subscription->status->pill(),
                 'pausable' => $subscription->status === SubscriptionStatus::Active,
                 'resumable' => $subscription->status === SubscriptionStatus::Paused,
                 'cancelable' => $subscription->isCancelable(),
