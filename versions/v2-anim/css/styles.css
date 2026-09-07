@@ -3391,7 +3391,11 @@ html:not(.is-enhanced) .hero__visual .island__stack img:first-child { opacity: 1
   padding-bottom: 78px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* safe: содержимое выше панели центрировать нельзя — оно вылезает на
+     обе стороны, и верх становится недостижимым прокруткой. Заявка на
+     опте оказывалась именно такой: начало формы уходило под шапку и не
+     доставалось. При переполнении выравнивание падает к верху. */
+  justify-content: safe center;
   overflow-y: auto;
   overflow-x: hidden;
   scroll-snap-align: start;
