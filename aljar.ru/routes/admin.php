@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\AuthenticatedSessionController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LeadController;
@@ -27,6 +28,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::patch('leads/{lead}', [LeadController::class, 'update'])->name('leads.update');
         Route::get('leads/{lead}/file', [LeadController::class, 'attachment'])->name('leads.attachment');
 
+        Route::get('articles', [ArticleController::class, 'index'])->name('articles.index');
+        Route::post('articles', [ArticleController::class, 'store'])->name('articles.store');
+        Route::patch('articles/{article}', [ArticleController::class, 'update'])->name('articles.update');
+        Route::delete('articles/{article}', [ArticleController::class, 'destroy'])->name('articles.destroy');
         Route::get('products', [ProductController::class, 'index'])->name('products.index');
         Route::patch('products/{product}', [ProductController::class, 'update'])->name('products.update');
 

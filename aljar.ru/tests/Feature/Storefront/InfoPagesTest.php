@@ -3,6 +3,7 @@
 namespace Tests\Feature\Storefront;
 
 use App\Models\Coffee;
+use Database\Seeders\ArticleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -55,6 +56,10 @@ class InfoPagesTest extends TestCase
 
     public function test_blog_lists_articles()
     {
+        // Статьи живут в базе, а не списком в контроллере, поэтому
+        // журналу нужен свой сидер.
+        $this->seed(ArticleSeeder::class);
+
         $this->get(route('info.blog'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
@@ -66,6 +71,8 @@ class InfoPagesTest extends TestCase
 
     public function test_article_page_shows_the_text_and_the_rest_of_the_journal()
     {
+        $this->seed(ArticleSeeder::class);
+
         $this->get(route('info.article', 'how-to-brew-cezve'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
