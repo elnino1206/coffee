@@ -117,9 +117,15 @@ function active(tab: { href: string; exact: boolean }): boolean {
                     <path d="M4 17c1.2-3 3.2-4.5 6-4.5S14.8 14 16 17" />
                 </svg>
 
-                <span v-if="tab.icon === 'bag'" class="cart-count">
-                    {{ page.props.cart.count }}
-                </span>
+                <!-- Пустая корзина бейджа не показывает: ноль в
+                     кружке читается как непрочитанное сообщение.
+                     Прячет его CSS по data-count. -->
+                <span
+                    v-if="tab.icon === 'bag'"
+                    class="cart-count"
+                    :data-count="page.props.cart.count"
+                    >{{ page.props.cart.count }}</span
+                >
             </span>
             <span class="tabbar__label">{{ tab.label }}</span>
         </Link>

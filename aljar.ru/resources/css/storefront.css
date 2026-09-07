@@ -710,6 +710,139 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
 .cart-count:empty,
 .cart-count[data-count="0"] { display: none; }
 
+/* ── Шапка с биркой ────────────────────────────────────────────────
+   Раскладка снята с референса заказчика: словесный логотип слева,
+   фирменная бирка по центру, меню и кнопки справа.
+
+   Живёт под модификатором `--plate`: один файл стилей обслуживает и
+   приложение, и статический прототип, а прототип — утверждённый эталон
+   прежней шапки, и менять его вид заодно не за чем. */
+.site-header--plate .site-header__inner { position: relative; }
+
+.wordmark {
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--petrol);
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color .25s;
+}
+
+/* Бирка вынута из потока и притянута к середине шапки: иначе её место
+   зависело бы от ширины меню, а оно меняется от страницы к странице.
+   Верхних углов нет — она свисает с края, а не лежит на нём. */
+.brandplate {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  width: 104px;
+  padding: 12px 14px 14px;
+  /* Тёплая заливка, а не цвет шапки: бирка должна читаться отдельным
+     предметом и на светлой странице, и на снимке. */
+  background: var(--sand);
+  border-radius: 0 0 var(--radius-m) var(--radius-m);
+  box-shadow: 0 10px 24px rgba(20, 52, 60, .12);
+  transition: width .25s, padding .25s;
+}
+.brandplate img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.site-header--plate.is-scrolled .brandplate {
+  width: 88px;
+  padding: 10px 12px 12px;
+}
+
+.site-header__side {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+/* Меню в референсе набрано мелкой прописной вразрядку — так оно читается
+   как подпись, а не как список ссылок, и не спорит с биркой. */
+/* Кегль и разрядка подобраны так, чтобы русское меню из пяти пунктов
+   не подходило к бирке вплотную. */
+.site-header--plate .nav-desktop {
+  gap: 20px;
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+/* Кнопки — кружки тёплой заливки, как единственная круглая кнопка в
+   референсе. */
+.site-header--plate .icon-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(233, 223, 209, .5);
+  transition: background .25s, color .25s;
+}
+.site-header--plate .icon-btn:hover { background: var(--sand); }
+
+@media (max-width: 979px) {
+  .brandplate { width: 84px; padding: 10px 11px 12px; }
+  .site-header__side { gap: 12px; }
+}
+@media (max-width: 599px) {
+  .wordmark { font-size: 12px; letter-spacing: .22em; }
+  .brandplate { width: 72px; padding: 8px 9px 10px; }
+}
+
+/* Шапка поверх снимка.
+
+   На главной первый кадр — фотография во всю панель, и по референсу
+   шапка лежит на ней без плашки. Для этого она выходит из потока, а
+   рельс занимает весь экран; запас под шапку возвращается отступом
+   панелей, чтобы их содержимое осталось на прежнем месте.
+
+   Только там, где рельс горизонтальный. На узком экране он развёрнут в
+   обычный поток (см. ниже), панели идут одна под другой, и вынутая из
+   потока шапка накрывала бы каждую следующую секцию. */
+@media (min-width: 900px) {
+  body:has(.rail__panel--hero) .site-header {
+    position: fixed;
+    left: 0;
+    right: 0;
+  }
+  body:has(.rail__panel--hero) .rail { height: 100dvh; }
+  body:has(.rail__panel--hero) .rail__panel { padding-top: var(--header-h); }
+  body:has(.rail__panel--hero) .rail__panel--hero { padding-top: 0; }
+  /* Панель героя отступа не получает, а её текст — получает: снимок
+     обязан дойти до верхнего края, а надпись под шапку уходить не должна.
+     Отступ на самой подписи, а не на панели, потому что снимок лежит
+     подложкой внутри секции и поехал бы вместе с ней. */
+  body:has(.rail__panel--hero) .rail__panel--hero .hero__grid {
+    padding-top: var(--header-h);
+  }
+
+  /* Прозрачной шапка становится только пока на экране сам снимок: со
+     второго кадра под ней светлая секция, и светлые буквы на ней
+     пропали бы. Условие на текущую панель, а не на страницу. */
+  body:has(.rail__panel--hero.is-current) .site-header {
+    background: transparent;
+    backdrop-filter: none;
+    border-bottom-color: transparent;
+  }
+  body:has(.rail__panel--hero.is-current) .wordmark { color: var(--white); }
+  body:has(.rail__panel--hero.is-current) .nav-desktop a { color: rgba(255, 255, 255, .82); }
+  body:has(.rail__panel--hero.is-current) .nav-desktop a:hover,
+  body:has(.rail__panel--hero.is-current) .nav-desktop a.is-active { color: var(--white); }
+  body:has(.rail__panel--hero.is-current) .site-header--plate .icon-btn {
+    color: var(--white);
+    background: rgba(255, 255, 255, .16);
+  }
+  body:has(.rail__panel--hero.is-current) .site-header--plate .icon-btn:hover {
+    background: rgba(255, 255, 255, .28);
+  }
+}
+
 .burger { display: grid; }
 @media (min-width: 980px) {
   .nav-desktop { display: flex; }
