@@ -74,13 +74,19 @@ class OrderSeeder extends Seeder
         // предусмотрено, и в выборке админки такие заказы должны быть.
         $customer = fake()->boolean(75) ? $customers->random() : null;
 
-        $order = Order::factory()
-            ->status($status)
-            ->create([
-                'customer_id' => $customer?->id,
-                'contact_name' => $customer->name,
-                'email' => $customer?->email,
-            ]);
+        /* У гостя имя и почту берём из фабрики, а не из учётной записи:
+           её нет, но заказ по телефону всё равно записан на кого-то.
+           Раньше здесь читалось $customer->name без проверки на null, и
+           db:seed падал на первом же гостевом заказе. */
+        $order = $customer === null
+            ? Order::factory()->status($status)->guest()->create()
+            : Order::factory()
+                ->status($status)
+                ->create([
+                    'customer_id' => $customer->id,
+                    'contact_name' => $customer->name,
+                    'email' => $customer->email,
+                ]);
 
         $picked = $variants->random(min($variants->count(), fake()->numberBetween(1, 3)));
 
