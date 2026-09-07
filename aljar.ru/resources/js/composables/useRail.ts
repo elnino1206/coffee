@@ -27,6 +27,16 @@ const LOCK_REDUCED = 40;
 /** Ниже этой ширины рельс разворачивается по вертикали и не листается. */
 const DESKTOP_FROM = 900;
 
+/**
+ * Насколько содержимое уходящей панели отстаёт от неё — доля ширины
+ * панели.
+ *
+ * При 0.46 содержимое идёт примерно вдвое медленнее самой панели, и
+ * следующая наезжает сверху. Больше половины брать нельзя: содержимое
+ * вышло бы за свою рамку, и слева открылась бы пустота.
+ */
+const SLIP = 0.46;
+
 export function useRail(rail: Ref<HTMLElement | null>) {
     /** Индекс текущей панели — по нему подсвечивается подпись на шкале. */
     const current = ref(0);
@@ -46,6 +56,52 @@ export function useRail(rail: Ref<HTMLElement | null>) {
     const panels = (): HTMLElement[] => [
         ...(rail.value?.querySelectorAll<HTMLElement>('.rail__panel') ?? []),
     ];
+
+    /**
+     * Разложить панели по глубине: та, что уехала влево, отстаёт от
+     * прокрутки, та, что въезжает справа, идёт вровень.
+     *
+     * Считается здесь, а не привязанной к прокрутке анимацией в CSS: у
+     * панели включена своя вертикальная прокрутка, из-за чего
+     * `view(inline)` у содержимого разрешается в саму панель вместо
+     * рельса.
+     */
+    function layer(): void {
+        const el = rail.value;
+
+        if (!el || !el.clientWidth) {
+            return;
+        }
+
+        const width = el.clientWidth;
+        const on = desktop() && !reduced();
+
+        panels().forEach((panel, i) => {
+            /* Насколько панель уехала влево от кадра: 0 — она в кадре,
+               1 — ушла целиком. Отрицательное (панель справа) отбрасываем. */
+            const away = Math.min(
+                1,
+                Math.max(0, (el.scrollLeft - i * width) / width),
+            );
+
+            /* Где левая кромка панели: 0 — у левого края экрана, 1 — у
+               правого. Тень на ней нужна только в проезде, поэтому в
+               обоих покоях гасим, а посередине даём в полную силу. */
+            const rim = Math.min(
+                1,
+                Math.max(0, (i * width - el.scrollLeft) / width),
+            );
+
+            panel.style.setProperty(
+                '--slip',
+                on ? `${away * SLIP * width}px` : '0px',
+            );
+            panel.style.setProperty(
+                '--rim',
+                on ? String(1 - Math.abs(2 * rim - 1)) : '0',
+            );
+        });
+    }
 
     /** Индекс панели по фактическому положению рельса. */
     function indexFromScroll(): number {
@@ -221,6 +277,8 @@ export function useRail(rail: Ref<HTMLElement | null>) {
         if (!locked) {
             current.value = indexFromScroll();
         }
+
+        layer();
     }
 
     function onResize(): void {
