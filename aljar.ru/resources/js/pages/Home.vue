@@ -132,45 +132,43 @@ const stops = [
                                 >Подписка</Link
                             >
                         </div>
+                        <!-- Значки нарисованы заказчиком: ливанский
+                             кедр, зерно на обжарке и чашка. Растр, а не
+                             SVG — так их прислали; для кружка 30px
+                             160-пиксельного файла хватает и на экране с
+                             тройной плотностью. -->
                         <div class="trust-row">
                             <span class="trust-item">
-                                <svg
-                                    width="18"
-                                    height="18"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.7"
-                                >
-                                    <path d="M4 16l8-14 8 14H4z" />
-                                </svg>
+                                <img
+                                    src="/img/trust-cedar.webp"
+                                    alt=""
+                                    width="160"
+                                    height="160"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
                                 Прямо из традиции Ливана
                             </span>
                             <span class="trust-item">
-                                <svg
-                                    width="18"
-                                    height="18"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.7"
-                                >
-                                    <path
-                                        d="M12 3c4 4 4 10 0 14-4-4-4-10 0-14z"
-                                    />
-                                    <path d="M12 7v6" />
-                                </svg>
+                                <img
+                                    src="/img/trust-roast.webp"
+                                    alt=""
+                                    width="160"
+                                    height="160"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
                                 Мастерская обжарка
                             </span>
                             <span class="trust-item">
-                                <svg
-                                    width="18"
-                                    height="18"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.7"
-                                >
-                                    <path d="M4 14c4-8 12-8 16 0" />
-                                    <path d="M12 4v4" />
-                                </svg>
+                                <img
+                                    src="/img/trust-cup.webp"
+                                    alt=""
+                                    width="160"
+                                    height="160"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
                                 Свежесть и характер
                             </span>
                         </div>

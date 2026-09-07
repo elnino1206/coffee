@@ -943,6 +943,14 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   color: var(--grey);
 }
 .trust-item svg { color: var(--teal-ink); flex-shrink: 0; }
+/* Значки-кружки из набора заказчика. Фон у них свой, поэтому цвет
+   строки на них не влияет — в отличие от штриховых иконок выше. */
+.trust-item img {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
 
 .section-head {
   display: flex;
@@ -3540,6 +3548,12 @@ html:not(.is-enhanced) .hero__visual .island__stack img:first-child { opacity: 1
   }
   .is-enhanced .rail__panel:not(.is-current) > * { opacity: 1; }
   .railbar { display: none; }
+
+  /* Высота панели героя здесь равна высоте её содержимого, а нижнее
+     растворение отмерено от низа секции — и съедало последнюю строку
+     доверия: белая подпись оказывалась на почти чистом цвете страницы.
+     Запас чуть больше самого растворения. */
+  .rail__panel--hero > .hero--full { padding-bottom: 150px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
