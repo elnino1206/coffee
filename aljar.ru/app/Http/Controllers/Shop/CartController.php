@@ -45,7 +45,7 @@ class CartController extends Controller
             // Доставка курьером считается здесь же: в шаблоне итог корзины
             // её уже включает, а не откладывает до оформления.
             'delivery' => ShipMethod::Courier->price($goodsTotal),
-            'free_delivery_from' => (int) config('checkout.free_delivery_from'),
+            'free_delivery_from' => (int) config('delivery.free_delivery_from'),
             'upsell' => $this->upsell($cart?->items->pluck('variant.product.id')->all() ?? []),
         ]);
     }

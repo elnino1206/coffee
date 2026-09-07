@@ -37,8 +37,9 @@ enum ShipMethod: string
     /**
      * Стоимость доставки в копейках для заказа на указанную сумму.
      *
-     * Тарифы взяты из макета оформления; настоящие появятся вместе со
-     * службами доставки, поэтому лежат в конфиге, а не в коде.
+     * Плоский тариф из настроек доставки. Расчёт у перевозчика его
+     * заменит, а условие «бесплатно от порога» останется: это условие
+     * магазина, а не тариф СДЭК.
      */
     public function price(int $goodsTotal): int
     {
@@ -46,8 +47,8 @@ enum ShipMethod: string
             return 0;
         }
 
-        $freeFrom = (int) config('checkout.free_delivery_from');
+        $freeFrom = (int) config('delivery.free_delivery_from');
 
-        return $goodsTotal >= $freeFrom ? 0 : (int) config('checkout.courier_price');
+        return $goodsTotal >= $freeFrom ? 0 : (int) config('delivery.courier_price');
     }
 }
