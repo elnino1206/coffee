@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Form, Head, Link } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { Form, Head, Link, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 import AddToCartModal from '@/components/AddToCartModal.vue';
 import InputError from '@/components/InputError.vue';
 import RailBar from '@/components/RailBar.vue';
@@ -38,6 +38,10 @@ interface Product {
 }
 
 defineProps<{ featured: Product[] }>();
+
+/* Обещанная скидка берётся с сервера: обещание на витрине и расчёт в
+   корзине обязаны совпадать. */
+const discount = computed(() => Number(usePage().props.subscribeDiscount ?? 0));
 
 /** Товар, для которого открыт выбор веса и помола. */
 const picked = ref<Product | null>(null);
@@ -299,7 +303,7 @@ const stops = [
                                 >
                                     <path d="M5 12l4 4 10-10" />
                                 </svg>
-                                <span>−10% на каждый заказ</span>
+                                <span>−{{ discount }}% на каждый заказ</span>
                             </div>
                             <div class="perk">
                                 <svg

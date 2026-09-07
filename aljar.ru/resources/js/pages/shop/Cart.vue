@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, router } from '@inertiajs/vue3';
-import { nextTick, ref, watch } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { computed, nextTick, ref, watch } from 'vue';
 import AddToCartModal from '@/components/AddToCartModal.vue';
 import type { ModalProduct } from '@/components/AddToCartModal.vue';
 import { formatPrice } from '@/lib/money';
@@ -34,6 +34,9 @@ const props = defineProps<{
     free_delivery_from: number;
     upsell: ModalProduct[];
 }>();
+
+/* Процент приходит с сервера — тем же значением, каким считается цена. */
+const discount = computed(() => Number(usePage().props.subscribeDiscount ?? 0));
 
 const list = ref<HTMLElement | null>(null);
 
@@ -121,7 +124,7 @@ watch(
                                 ><template v-if="item.grind">
                                     · {{ item.grind }}</template
                                 ><template v-if="item.subscribe">
-                                    · Подписка −10%</template
+                                    · Подписка −{{ discount }}%</template
                                 >
                             </div>
                             <div class="qty" style="margin-top: 8px">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, ref, watch } from 'vue';
 import { GRINDS } from '@/lib/grinds';
 import { formatPrice } from '@/lib/money';
@@ -18,8 +18,6 @@ import { animateNumber } from '@/lib/motion';
  * Цена считается от варианта, а не от множителя к базовой: здесь каждый
  * вес — отдельный ProductVariant со своей ценой.
  */
-
-const SUBSCRIBE_DISCOUNT = 0.1;
 
 const ROASTS = [
     { id: 'light', label: 'Светлая' },
@@ -46,6 +44,11 @@ export type ModalProduct = {
 };
 
 const props = defineProps<{ product: ModalProduct | null }>();
+
+/* Скидка приходит с сервера: держать её здесь константой значит однажды
+   поправить настройку и получить в окне старый процент. */
+const inertia = usePage();
+const discount = computed(() => Number(inertia.props.subscribeDiscount ?? 0));
 const emit = defineEmits<{ close: [] }>();
 
 const variantId = ref<number | null>(null);
@@ -67,7 +70,7 @@ const base = computed(
 );
 const price = computed(() =>
     subscribe.value
-        ? Math.round(base.value * (1 - SUBSCRIBE_DISCOUNT))
+        ? Math.round(base.value * (1 - discount.value / 100))
         : base.value,
 );
 
@@ -235,7 +238,7 @@ function submit(): void {
                             name="subscribe"
                         />
                         <span
-                            >Оформить подпиской — −10% и свежая обжарка к дате
+                            >Оформить подпиской — −{{ discount }}% и свежая обжарка к дате
                             доставки</span
                         >
                     </label>

@@ -19,6 +19,8 @@ declare module '@inertiajs/core' {
             name: string;
             auth: Auth;
             cart: { count: number };
+            /** Скидка за подписку, проценты. Задаётся в config/subscription.php. */
+            subscribeDiscount: number;
             sidebarOpen: boolean;
             [key: string]: unknown;
         };

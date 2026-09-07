@@ -61,6 +61,11 @@ class HandleInertiaRequests extends Middleware
             'cart' => fn (): array => [
                 'count' => (int) (app(ResolveCart::class)($request, create: false)?->items()->sum('qty') ?? 0),
             ],
+            // Скидка за подписку раздаётся с сервера: витрине она нужна и
+            // для пересчёта цены в окне выбора, и для подписей. Держать
+            // её второй раз константой в коде значит однажды поправить
+            // настройку и получить на страницах старый процент.
+            'subscribeDiscount' => (int) config('subscription.default_discount_percent'),
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

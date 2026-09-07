@@ -69,7 +69,7 @@ class CartItem extends Model
             return $price;
         }
 
-        return (int) round($price * (1 - (float) config('checkout.subscribe_discount')));
+        return (int) round($price * (1 - (float) config('subscription.default_discount_percent') / 100));
     }
 
     public function total(): int
