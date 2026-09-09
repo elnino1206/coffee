@@ -31,21 +31,21 @@ const brews = [
         label: 'Турка',
         note: 'Плотное тело, восточные специи',
         image: '/img/brew-cezve.webp',
-        alt: 'Медная турка и чашка кофе',
+        alt: 'Медная турка',
     },
     {
         value: 'espresso',
         label: 'Эспрессо',
         note: 'Шоколад, орех, плотная текстура',
         image: '/img/brew-espresso.webp',
-        alt: 'Гейзерная кофеварка и чашка кофе',
+        alt: 'Чашка с восточным орнаментом',
     },
     {
         value: 'filter',
         label: 'Фильтр',
         note: 'Цветы, цитрус, чистота чашки',
         image: '/img/brew-filter.webp',
-        alt: 'Чашка чёрного кофе',
+        alt: 'Пуровер над стеклянным сервером',
     },
 ];
 
@@ -266,12 +266,15 @@ const stops = [
                             :href="`/catalog/coffee?method=${brew.value}`"
                             data-reveal
                         >
-                            <span class="brew-card__media">
+                            <!-- Рисунок лежит отдельным слоем над
+                                 подложкой, а не заполняет карточку
+                                 картинкой: только так он может двигаться
+                                 своим ходом, отставая от карточки. -->
+                            <span class="brew-card__stage">
                                 <img
+                                    class="brew-card__art"
                                     :src="brew.image"
                                     :alt="brew.alt"
-                                    width="800"
-                                    height="600"
                                     loading="lazy"
                                     decoding="async"
                                 />
