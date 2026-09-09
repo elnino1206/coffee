@@ -987,9 +987,14 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   display: grid;
   gap: 20px;
   grid-template-columns: repeat(3, 1fr);
+  /* Запас сверху: рисунок выходит за верхнюю кромку карточки, и без
+     него он налезал бы на подпись блока. */
+  margin-top: 68px;
 }
 .brew-card {
   display: block;
+  position: relative;
+  min-height: 268px;
   padding: 24px;
   border-radius: 20px;
   background: var(--paper);
@@ -1003,7 +1008,11 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
    поддержки контура из картинки. */
 .brew-card__art {
   float: left;
-  width: 46%;
+  /* Рисунок крупнее карточки и выходит за её верхнюю и левую кромку —
+     предмет читается лежащим поверх, а не вложенным внутрь. Обтекание
+     при этом сохраняется: поплавок остаётся поплавком, отрицательные
+     поля только сдвигают его рамку. */
+  width: 58%;
   /* Рамка у всех трёх одна, а рисунки в ней разной формы: иначе высокий
      пуровер уводил бы подпись «Смотреть каталог» ниже, чем у соседей, и
      нижние строки карточек разъезжались бы. Рисунок вписывается в рамку
@@ -1012,7 +1021,7 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   height: auto;
   object-fit: contain;
   object-position: 50% 100%;
-  margin: 0 18px 10px 0;
+  margin: -17% 14px 6px -7%;
   shape-outside: ellipse(48% 50% at 50% 50%);
   shape-margin: 10px;
   /* Сдвиг рельса рисунок отрабатывает не в полную силу: карточка уже
@@ -1021,10 +1030,20 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
      панель, отсюда она видна по наследованию. Обтекание при этом не
      пересчитывается: контур берётся с несдвинутой рамки. */
   --art-slip: calc(var(--slip, 0px) * -.2);
-  transform: translate3d(var(--art-slip), var(--art-lift, 0px), 0) scale(var(--art-scale, 1));
-  transition: transform .55s var(--ease);
-  filter: drop-shadow(0 12px 16px rgba(20, 52, 60, .14));
+  transform: translate3d(var(--art-slip), var(--art-lift, 0px), 0)
+    rotate(var(--art-tilt, 0deg)) scale(var(--art-scale, 1));
+  transition: transform .55s var(--ease), filter .35s var(--ease);
+  /* Тень плотнее прежней: предмет лежит над карточкой, а не в ней. */
+  filter: drop-shadow(0 18px 22px rgba(20, 52, 60, .2));
 }
+
+/* Лёгкий разворот, разный у соседей: три одинаково выставленных предмета
+   читаются как каталожная выкладка, чуть развёрнутые — как разложенные
+   рукой. Угол мелкий, поэтому расхождение обтекания с контуром
+   перекрывается полем вокруг него. */
+.brew-card:nth-child(1) .brew-card__art { --art-tilt: -3deg; }
+.brew-card:nth-child(2) .brew-card__art { --art-tilt: 2deg; }
+.brew-card:nth-child(3) .brew-card__art { --art-tilt: -2deg; }
 
 /* Заголовок встаёт против середины рисунка, а не под верхней кромкой
    карточки: отступ в долях ширины, чтобы держаться при любой колонке. */
@@ -1056,8 +1075,9 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
     transform: translateY(-2px);
   }
   .brew-card:hover .brew-card__art {
-    --art-lift: -8px;
-    --art-scale: 1.04;
+    --art-lift: -12px;
+    --art-scale: 1.05;
+    filter: drop-shadow(0 24px 28px rgba(20, 52, 60, .24));
   }
   .brew-card:hover .brew-card__cta { color: var(--teal-deep); }
 }
@@ -1069,9 +1089,11 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
 }
 /* На узком экране карточки идут стопкой, рисунок остаётся слева. */
 @media (max-width: 899px) {
-  .brew-grid { grid-template-columns: 1fr; }
-  .brew-card__art { width: 38%; }
-  .brew-card__title { padding-top: 4%; font-size: 28px; }
+  .brew-grid { grid-template-columns: 1fr; margin-top: 44px; }
+  .brew-card { min-height: 0; }
+  /* Вылет меньше: на узкой карточке крупный рисунок съедает строку. */
+  .brew-card__art { width: 42%; margin: -10% 14px 6px -5%; }
+  .brew-card__title { padding-top: 2%; font-size: 28px; }
 }
 
 .card {
