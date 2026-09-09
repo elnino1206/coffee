@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Form, Head, Link, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import AddToCartModal from '@/components/AddToCartModal.vue';
 import InputError from '@/components/InputError.vue';
 import RailBar from '@/components/RailBar.vue';
@@ -8,6 +8,7 @@ import StorefrontFooter from '@/components/StorefrontFooter.vue';
 import { useHeroSlides } from '@/composables/useHeroSlides';
 import { useRail } from '@/composables/useRail';
 import { formatPrice } from '@/lib/money';
+import { motionOn } from '@/lib/motion';
 
 /**
  * Главная. Разметка и классы перенесены из прототипа
@@ -63,7 +64,34 @@ const heroSlides = [
 
 const heroStage = ref<HTMLElement | null>(null);
 
-const { slide } = useHeroSlides(heroStage, heroSlides.length);
+/* В герое идёт съёмка с плантации. Без движения её ставить нельзя —
+   вместо неё остаются те же кадры, что были раньше, и первый из них
+   показывается неподвижно.
+
+   Решение принимается один раз при сборке страницы: `is-enhanced` ставит
+   app.ts до монтирования, и переключаться на ходу здесь нечему. */
+const video = motionOn();
+
+const { slide } = useHeroSlides(heroStage, video ? 0 : heroSlides.length);
+
+const heroVideo = ref<HTMLVideoElement | null>(null);
+
+onMounted(() => {
+    const el = heroVideo.value;
+
+    if (!el) {
+        return;
+    }
+
+    /* `muted` Vue выставляет свойством, а часть браузеров решает про
+       автозапуск по разметке — поэтому ставим и атрибут. Запуск руками
+       на случай, когда автозапуск всё же отклонён: без него осталась бы
+       неподвижная заставка. Отказ гасим — тогда заставка и остаётся,
+       это не ошибка. */
+    el.muted = true;
+    el.setAttribute('muted', '');
+    void el.play().catch(() => {});
+});
 
 /** Подписи остановок на шкале — по одной на панель, в порядке рельса. */
 const stops = [
@@ -90,15 +118,35 @@ const stops = [
             class="rail__panel rail__panel--hero"
             :class="{ 'is-current': current === 0 }"
         >
-            <section class="hero hero--full">
+            <section class="hero hero--full" :class="{ 'hero--film': video }">
                 <!-- Подложка героя. Вынесена из сетки: абсолютное позиционирование
              должно считаться от секции, иначе снимок садится по ширине
              контейнера и не закрывает панель. -->
                 <div ref="heroStage" class="hero__visual">
+                    <!-- Съёмка идёт без звука и по кругу: это фон, а не
+                 ролик, который включают. Постер — первый кадр самой
+                 съёмки, поэтому подмены на старте не видно. -->
+                    <video
+                        v-if="video"
+                        ref="heroVideo"
+                        class="hero__video"
+                        poster="/img/hero-video-poster.webp"
+                        width="1280"
+                        height="720"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                        aria-hidden="true"
+                    >
+                        <source src="/video/hero.mp4" type="video/mp4" />
+                    </video>
+
                     <!-- Кадры лежат стопкой: показанный проявлен, остальные
                  прозрачны. Так смена идёт перекрёстным затуханием, а
                  подменять src нельзя — на новом кадре был бы разрыв. -->
-                    <span class="island__rock island__stack">
+                    <span v-else class="island__rock island__stack">
                         <img
                             v-for="(frame, i) in heroSlides"
                             :key="frame.src"
