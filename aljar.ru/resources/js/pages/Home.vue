@@ -15,6 +15,11 @@ import { motionOn } from '@/lib/motion';
  * сервера, а не собирается на клиенте из data.js.
  */
 
+/* Адрес ролика приходит с сервера: под встроенным сервером PHP он идёт
+   через приложение, иначе перемотка невозможна. Подробности — в
+   HomeController::film(). */
+defineProps<{ film: string }>();
+
 /**
  * Три входа в каталог с уже включённым фильтром по способу заваривания.
  *
@@ -74,9 +79,9 @@ const { slide } = useHeroSlides(heroStage, video ? 0 : heroSlides.length);
 /* Сцена первого экрана: ролик листается прокруткой, подпись героя
    уходит, подпись «Свежей партии» приходит. */
 const scene = ref<HTMLElement | null>(null);
-const film = ref<HTMLVideoElement | null>(null);
+const filmEl = ref<HTMLVideoElement | null>(null);
 
-const { roastLive } = useScrollScene(scene, film);
+const { roastLive } = useScrollScene(scene, filmEl);
 </script>
 
 <template>
@@ -104,7 +109,7 @@ const { roastLive } = useScrollScene(scene, film);
                      постер и предзагрузка. -->
                 <video
                     v-if="video"
-                    ref="film"
+                    ref="filmEl"
                     poster="/img/hero-video-poster.webp"
                     width="1280"
                     height="720"
@@ -113,7 +118,7 @@ const { roastLive } = useScrollScene(scene, film);
                     preload="auto"
                     aria-hidden="true"
                 >
-                    <source src="/video/hero.mp4" type="video/mp4" />
+                    <source :src="film" type="video/mp4" />
                 </video>
 
                 <!-- Без движения на месте съёмки остаются прежние кадры;

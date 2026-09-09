@@ -60,6 +60,27 @@ class HomeTest extends TestCase
             );
     }
 
+    /**
+     * Скраб первого экрана держится на перемотке, а перемотка — на
+     * умении сервера отдавать куски файла. Встроенный сервер PHP этого
+     * не умеет и отдаёт файл целиком; браузер тогда считает видео
+     * неперематываемым и молча отбрасывает каждое присвоение
+     * `currentTime` — сцена стоит на первом кадре.
+     */
+    public function test_scene_film_is_served_in_ranges()
+    {
+        $this->get(route('media.film', ['film' => 'hero.mp4']), ['Range' => 'bytes=1000-1999'])
+            ->assertStatus(206)
+            ->assertHeader('Content-Range', 'bytes 1000-1999/'.filesize(public_path('video/hero.mp4')))
+            ->assertHeader('Content-Length', '1000');
+    }
+
+    public function test_scene_film_route_serves_nothing_but_films()
+    {
+        $this->get('/media/../.env')->assertNotFound();
+        $this->get(route('media.film', ['film' => 'no-such.mp4']))->assertNotFound();
+    }
+
     public function test_home_shows_no_more_than_one_row()
     {
         Coffee::factory(7)->create(['is_featured' => true]);
