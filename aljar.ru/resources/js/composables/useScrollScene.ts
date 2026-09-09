@@ -106,6 +106,43 @@ export function useScrollScene(
         });
     }
 
+    /**
+     * Расшевелить ролик.
+     *
+     * Пока видео ни разу не запускали, браузер держит его на метаданных:
+     * `preload` — просьба, а не обязательство, и на телефоне её обычно
+     * игнорируют ради трафика. Перемотка при этом молчит, и на экране
+     * остаётся постер — ровно то, что выглядит как «видео не работает».
+     *
+     * Лечение известное: один раз запустить и тут же остановить. Кадры
+     * декодируются, `readyState` доходит до готовности, и дальше
+     * перемотка отвечает сразу. Звука нет, поэтому запуск разрешён без
+     * участия человека; если всё же откажут — повторим при первом
+     * касании или прокрутке.
+     */
+    function wake(): void {
+        const v = film.value;
+
+        if (!v || v.readyState >= 3) {
+            return;
+        }
+
+        v.muted = true;
+        void v
+            .play()
+            .then(() => {
+                v.pause();
+                paint();
+            })
+            .catch(() => {
+                /* Отказали в запуске — попробуем ещё раз, когда человек
+                   тронет страницу. Такой запуск уже считается ответом на
+                   его действие. */
+                window.addEventListener('pointerdown', wake, { once: true });
+                window.addEventListener('touchstart', wake, { once: true });
+            });
+    }
+
     onMounted(() => {
         if (!motionOn()) {
             /* Без движения сцена не приколота и ролик не листается:
@@ -121,6 +158,7 @@ export function useScrollScene(
            нечего, поэтому первый расчёт повторяем по готовности. */
         film.value?.addEventListener('loadedmetadata', paint);
 
+        wake();
         paint();
     });
 
@@ -128,6 +166,8 @@ export function useScrollScene(
         document.documentElement.classList.remove('is-over-film');
         window.removeEventListener('scroll', onScroll);
         window.removeEventListener('resize', onScroll);
+        window.removeEventListener('pointerdown', wake);
+        window.removeEventListener('touchstart', wake);
         film.value?.removeEventListener('loadedmetadata', paint);
     });
 
