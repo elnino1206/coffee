@@ -104,35 +104,73 @@ export function observeReveals(root: ParentNode = document): void {
  * Показанная страница важнее анимации.
  */
 export function guardReveals(): void {
+    const stuck = (): Element[] =>
+        [...document.querySelectorAll('[data-reveal]:not(.is-in)')].filter(
+            (el) => {
+                const r = el.getBoundingClientRect();
+
+                /* Обе оси обязательны. Раньше смотрели только вертикаль,
+                   и на страницах с горизонтальным рельсом блоки соседних
+                   панелей — они уехали вбок, но по высоте лежат в тех же
+                   пределах — считались застрявшими. */
+                return (
+                    r.bottom > 0 &&
+                    r.top < window.innerHeight &&
+                    r.right > 0 &&
+                    r.left < window.innerWidth
+                );
+            },
+        );
+
     setTimeout(() => {
         if (!motionOn()) {
             return;
         }
 
-        const stuck = [
-            ...document.querySelectorAll('[data-reveal]:not(.is-in)'),
-        ].some((el) => {
-            const r = el.getBoundingClientRect();
+        const first = stuck();
 
-            /* Проверять обе оси обязательно. Раньше здесь смотрели
-               только вертикаль, и на страницах с горизонтальным рельсом
-               блоки соседних панелей — они уехали вбок, но по высоте
-               лежат в тех же пределах — считались застрявшими. Через две
-               секунды страховка снимала усиление со всей витрины, и
-               дальше, до перезагрузки, движение было выключено: съёмка
-               в герое главной подменялась снимками, анимации молчали. */
-            return (
-                r.bottom > 0 &&
-                r.top < window.innerHeight &&
-                r.right > 0 &&
-                r.left < window.innerWidth
-            );
-        });
-
-        if (stuck) {
-            document.documentElement.classList.remove('is-enhanced');
+        if (!first.length) {
+            return;
         }
+
+        /* Второй замер. Блок мог войти в кадр за мгновение до первого, и
+           наблюдатель просто не успел ответить — по одному снимку это не
+           отличить от поломки. Усиление снимаем только с тех, кто застрял
+           в обоих замерах. */
+        setTimeout(() => {
+            if (!motionOn()) {
+                return;
+            }
+
+            const again = stuck();
+
+            if (first.some((el) => again.includes(el))) {
+                document.documentElement.classList.remove('is-enhanced');
+            }
+        }, 700);
     }, 2000);
+}
+
+/**
+ * Проявить всё внутри узла немедленно, не дожидаясь наблюдателя.
+ *
+ * Нужно горизонтальному рельсу. Наблюдатель судит по геометрии, а панель
+ * выезжает вбок и появляется рывком — между сменой кадра и первым
+ * пересечением остаётся зазор, и всё содержимое панели (а оно там целиком
+ * под `data-reveal`) успевает показаться пустым. Рельс же точно знает,
+ * какой кадр сейчас на экране, и говорит об этом прямо.
+ */
+export function revealIn(root: ParentNode): void {
+    if (!motionOn()) {
+        return;
+    }
+
+    root.querySelectorAll<HTMLElement>('[data-reveal]:not(.is-in)').forEach(
+        (el) => {
+            el.classList.add('is-in');
+            revealObserver?.unobserve(el);
+        },
+    );
 }
 
 /**

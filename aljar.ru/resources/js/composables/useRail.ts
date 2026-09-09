@@ -1,5 +1,6 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import type { Ref } from 'vue';
+import { revealIn } from '@/lib/motion';
 
 /**
  * Горизонтальный рельс главной.
@@ -103,6 +104,32 @@ export function useRail(rail: Ref<HTMLElement | null>) {
         });
     }
 
+    /**
+     * Кадр вышел на экран: показать его содержимое и вернуть его к
+     * началу.
+     *
+     * Проявление — не через наблюдателя: панель появляется рывком, и
+     * между сменой кадра и первым пересечением она успевает показаться
+     * пустой (всё её содержимое под `data-reveal`).
+     *
+     * Прокрутка панели сбрасывается, потому что панель — это экран.
+     * Высокая панель прокручивается сама, и оставленная посередине она
+     * встречает вернувшегося человека своей серединой, а не началом.
+     */
+    function enter(i: number): void {
+        const panel = panels()[i];
+
+        if (!panel) {
+            return;
+        }
+
+        revealIn(panel);
+
+        if (panel.scrollTop !== 0) {
+            panel.scrollTop = 0;
+        }
+    }
+
     /** Индекс панели по фактическому положению рельса. */
     function indexFromScroll(): number {
         const el = rail.value;
@@ -144,6 +171,7 @@ export function useRail(rail: Ref<HTMLElement | null>) {
         locked = true;
         acc = 0;
         current.value = n;
+        enter(n);
 
         el.scrollTo({
             left: n * el.clientWidth,
@@ -275,7 +303,12 @@ export function useRail(rail: Ref<HTMLElement | null>) {
         progress.value = max > 0 ? el.scrollLeft / max : 0;
 
         if (!locked) {
-            current.value = indexFromScroll();
+            const at = indexFromScroll();
+
+            if (at !== current.value) {
+                current.value = at;
+                enter(at);
+            }
         }
 
         layer();
@@ -305,6 +338,7 @@ export function useRail(rail: Ref<HTMLElement | null>) {
         rail.value?.addEventListener('scroll', onScroll, { passive: true });
 
         onScroll();
+        enter(current.value);
     });
 
     onBeforeUnmount(() => {
