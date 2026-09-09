@@ -974,6 +974,188 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   .product-grid--upsell { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* ── Сцена первого экрана ──────────────────────────────────────────
+   Секция высотой в два экрана приколота, внутри неё ролик, положение
+   которого задаёт прокрутка. Поверх ролика два слоя: подпись героя
+   уходит, подпись «Свежей партии» приходит. Доли считает
+   `useScrollScene` и кладёт в переменные на секции — стили только
+   применяют.
+
+   Без движения (нет `is-enhanced`) сцена не прикалывается: высота
+   становится обычной, слои идут один под другим, ролика нет вовсе. */
+.scene {
+  --hero-a: 1;
+  --hero-y: 0px;
+  --hero-blur: 0px;
+  --roast-a: 0;
+  --roast-y: 24px;
+}
+.is-enhanced .scene {
+  position: relative;
+  /* 200vh — это ~6 секунд ролика на один проход колеса до конца сцены.
+     Меньше — ролик проматывается рывками, больше — экран «залипает». */
+  height: 200vh;
+}
+.is-enhanced .scene__stage {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* Подложка сцены: ролик или, без движения, прежний снимок. */
+.scene__film {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--petrol-deep);
+}
+.scene__film video,
+.scene__film img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Затемнение то же, что было у полноэкранного героя: подписи ложатся на
+   съёмку, и без него они на светлых кадрах не читаются. */
+.scene__film::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(11, 26, 30, .68) 0%,
+    rgba(11, 26, 30, .60) 38%,
+    rgba(11, 26, 30, .84) 78%,
+    rgba(11, 26, 30, .95) 100%
+  );
+}
+
+.is-enhanced .scene__layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  /* Слой не перехватывает нажатия, пока он прозрачен: под ним живой
+     второй слой, и невидимая плёнка поверх него ловила бы клики. */
+  pointer-events: none;
+}
+.is-enhanced .scene__layer--hero {
+  opacity: var(--hero-a);
+  transform: translateY(var(--hero-y));
+  filter: blur(var(--hero-blur));
+}
+.is-enhanced .scene__layer--roast {
+  opacity: var(--roast-a);
+  transform: translateY(var(--roast-y));
+}
+/* Нажатия принимает только доехавший слой: подпись героя — пока она
+   видна, карточки — когда сцена дошла до конца. */
+.is-enhanced .scene__layer--hero > * { pointer-events: auto; }
+.is-enhanced .scene__layer--roast.is-live { pointer-events: auto; }
+
+/* Подписи героя внутри сцены ведут себя как в полноэкранном герое:
+   по центру, светлым по съёмке. */
+.scene__layer--hero .hero__grid {
+  position: relative;
+  z-index: 1;
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+  align-content: center;
+}
+.scene__layer--hero .hero__copy {
+  justify-items: center;
+  max-width: 42rem;
+  color: #fff;
+}
+.scene__layer--hero .eyebrow { color: rgba(255, 252, 247, .88); }
+.scene__layer--hero .display { color: #fff; }
+.scene__layer--hero .lead { color: rgba(255, 252, 247, .82); }
+.scene__layer--hero .cluster { justify-content: center; }
+.scene__layer--hero .trust-row {
+  justify-content: center;
+  color: rgba(255, 252, 247, .78);
+}
+.scene__layer--hero .trust-item { color: inherit; }
+.scene__layer--hero .btn--ghost {
+  border-color: rgba(255, 252, 247, .55);
+  color: #fff;
+  background: transparent;
+}
+
+/* Вторая подпись лежит на той же съёмке, поэтому светлая. */
+.is-enhanced .scene__layer--roast .h2,
+.is-enhanced .scene__layer--roast .eyebrow,
+.is-enhanced .scene__layer--roast .lead { color: #fff; }
+.is-enhanced .scene__layer--roast .eyebrow { color: rgba(255, 252, 247, .88); }
+.is-enhanced .scene__layer--roast .lead { color: rgba(255, 252, 247, .82); }
+.is-enhanced .scene__layer--roast .section { padding: 0; }
+
+@media (max-width: 899px) {
+  .is-enhanced .scene { height: 180vh; }
+}
+
+/* Без движения сцены нет: секция не приколота, слои идут один за другим,
+   ролика не существует. Съёмка становится обычной подложкой первого
+   экрана, а «Свежая партия» — обычной секцией под ним. */
+html:not(.is-enhanced) .scene__stage {
+  display: grid;
+}
+html:not(.is-enhanced) .scene__film {
+  position: relative;
+  grid-row: 1;
+  grid-column: 1;
+  min-height: 68vh;
+}
+html:not(.is-enhanced) .scene__layer--hero {
+  grid-row: 1;
+  grid-column: 1;
+  display: grid;
+  align-content: center;
+  z-index: 1;
+}
+html:not(.is-enhanced) .scene__layer--roast {
+  grid-row: 2;
+  grid-column: 1;
+  padding: 56px 0;
+}
+/* На светлом фоне подписи второго блока снова тёмные. */
+html:not(.is-enhanced) .scene__layer--roast .h2 { color: var(--petrol); }
+html:not(.is-enhanced) .scene__layer--roast .lead { color: var(--grey); }
+
+/* Шапка поверх сцены.
+
+   Съёмка обязана начинаться от верхнего края экрана, поэтому на главной
+   шапка выходит из потока. Пока сцена не пройдена, она прозрачна и
+   набрана светлым; дальше страница обычная, и шапка возвращается к
+   своему виду. Правила те же, что у полноэкранного героя на страницах с
+   рельсом, только повод другой. */
+.is-enhanced:has(.scene) .site-header {
+  position: fixed;
+  left: 0;
+  right: 0;
+}
+.is-enhanced.is-over-film .site-header {
+  background: transparent;
+  backdrop-filter: none;
+  border-bottom-color: transparent;
+}
+.is-enhanced.is-over-film .nav-desktop a { color: rgba(255, 255, 255, .82); }
+.is-enhanced.is-over-film .nav-desktop a:hover,
+.is-enhanced.is-over-film .nav-desktop a.is-active { color: var(--white); }
+.is-enhanced.is-over-film .site-header--plate .icon-btn {
+  color: var(--white);
+  background: rgba(255, 255, 255, .16);
+}
+.is-enhanced.is-over-film .site-header--plate .icon-btn:hover {
+  background: rgba(255, 255, 255, .28);
+}
+
 /* ── Карточки способов заваривания ─────────────────────────────────
    Блок «Свежая партия» на главной. По документу
    inst_designe/AlJar_Homepage_FreshRoast_Block.docx это не витрина

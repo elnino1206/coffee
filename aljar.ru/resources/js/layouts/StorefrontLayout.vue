@@ -47,8 +47,11 @@ const inertia = usePage();
  * Страницы с горизонтальным рельсом рисуют подвал сами — последней
  * панелью. Здесь его выводить нельзя: он добавил бы странице вторую ось
  * прокрутки, и рельс уезжал бы вверх вместе с ней.
+ *
+ * Главной в этом списке больше нет: она вернулась к обычной прокрутке
+ * ради сцены-скраба на первом экране, и подвал ей рисует раскладка.
  */
-const railPages = ['Home', 'info/About', 'info/Subscription', 'info/Wholesale'];
+const railPages = ['info/About', 'info/Subscription', 'info/Wholesale'];
 
 const ownsFooter = computed(() => railPages.includes(inertia.component));
 

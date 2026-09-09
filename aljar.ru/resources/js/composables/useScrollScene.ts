@@ -1,0 +1,135 @@
+import { onBeforeUnmount, onMounted, ref } from 'vue';
+import type { Ref } from 'vue';
+import { motionOn } from '@/lib/motion';
+
+/**
+ * Сцена с прокруткой-скрабом: первый экран главной.
+ *
+ * Секция высотой в несколько экранов приколота, внутри неё лежит ролик, и
+ * его положение задаётся не воспроизведением, а прокруткой: вниз —
+ * вперёд, вверх — назад, кадр в кадр. Поверх ролика два слоя: подпись
+ * героя уходит, подпись «Свежей партии» приходит, а между ними остаётся
+ * промежуток, где на экране только съёмка.
+ *
+ * Ни `play()`, ни `pause()` здесь нет вовсе. Ролик не идёт сам по себе:
+ * человек его листает.
+ */
+
+/** Доли прокрутки, на которых что происходит. Взяты из хореографии. */
+const FILM_FROM = 0.08;
+const FILM_TO = 0.88;
+const HERO_FROM = 0.08;
+const HERO_TO = 0.4;
+const ROAST_FROM = 0.52;
+const ROAST_TO = 0.88;
+
+/** С этой доли вторая подпись уже принимает нажатия. */
+const ROAST_LIVE = 0.88;
+
+/** Насколько уходит и приходит подпись, в пикселях. */
+const HERO_RISE = 16;
+const ROAST_RISE = 24;
+
+/** Размытие уходящей подписи. */
+const HERO_BLUR = 8;
+
+const clamp = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);
+
+/** Доля внутри отрезка: 0 до его начала, 1 после конца. */
+const span = (v: number, from: number, to: number): number =>
+    clamp((v - from) / (to - from));
+
+export function useScrollScene(
+    scene: Ref<HTMLElement | null>,
+    film: Ref<HTMLVideoElement | null>,
+) {
+    /** Пройденная доля сцены, 0..1. */
+    const progress = ref(0);
+
+    /** Вторая подпись доехала — по ней можно нажимать. */
+    const roastLive = ref(false);
+
+    let ticking = false;
+
+    function paint(): void {
+        const el = scene.value;
+
+        if (!el) {
+            return;
+        }
+
+        const run = el.offsetHeight - window.innerHeight;
+        const p = run > 0 ? clamp(-el.getBoundingClientRect().top / run) : 0;
+
+        progress.value = p;
+        roastLive.value = p >= ROAST_LIVE;
+
+        /* Пока сцена на экране, шапка лежит поверх съёмки и набрана
+           светлым. Класс на корне, а не на самой шапке: шапку рисует
+           раскладка, и страница до неё не дотягивается. */
+        document.documentElement.classList.toggle('is-over-film', p < 0.98);
+
+        const hero = 1 - span(p, HERO_FROM, HERO_TO);
+        const roast = span(p, ROAST_FROM, ROAST_TO);
+
+        el.style.setProperty('--hero-a', String(hero));
+        el.style.setProperty('--hero-y', `${-HERO_RISE * (1 - hero)}px`);
+        el.style.setProperty('--hero-blur', `${HERO_BLUR * (1 - hero)}px`);
+        el.style.setProperty('--roast-a', String(roast));
+        el.style.setProperty('--roast-y', `${ROAST_RISE * (1 - roast)}px`);
+
+        /* Ролик стоит на месте до начала и после конца отрезка: первый и
+           последний кадры должны держаться, чтобы подписи вставали на
+           спокойную картинку. */
+        const v = film.value;
+
+        if (v && Number.isFinite(v.duration) && v.duration > 0) {
+            const t = span(p, FILM_FROM, FILM_TO) * v.duration;
+
+            /* Порог в кадр: без него каждая прокрутка дёргает перемотку
+               на сотые доли и браузер захлёбывается запросами. */
+            if (Math.abs(v.currentTime - t) > 0.03) {
+                v.currentTime = t;
+            }
+        }
+    }
+
+    function onScroll(): void {
+        if (ticking) {
+            return;
+        }
+
+        ticking = true;
+        requestAnimationFrame(() => {
+            ticking = false;
+            paint();
+        });
+    }
+
+    onMounted(() => {
+        if (!motionOn()) {
+            /* Без движения сцена не приколота и ролик не листается:
+               подписи просто стоят одна под другой. Разметка та же,
+               раскладку меняет CSS. */
+            return;
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onScroll);
+
+        /* Длительность приходит позже разметки: до неё перематывать
+           нечего, поэтому первый расчёт повторяем по готовности. */
+        film.value?.addEventListener('loadedmetadata', paint);
+
+        paint();
+    });
+
+    onBeforeUnmount(() => {
+        document.documentElement.classList.remove('is-over-film');
+        window.removeEventListener('scroll', onScroll);
+        window.removeEventListener('resize', onScroll);
+        film.value?.removeEventListener('loadedmetadata', paint);
+    });
+
+    return { progress, roastLive };
+}
