@@ -979,71 +979,99 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
    inst_designe/AlJar_Homepage_FreshRoast_Block.docx это не витрина
    товаров, а три входа в каталог с уже включённым фильтром: ни цены, ни
    кнопки в корзину, ни конкретного сорта. Ссылкой служит вся карточка,
-   поэтому внутри неё только текстовые узлы — вложенных ссылок нет. */
+   поэтому внутри неё только текстовые узлы — вложенных ссылок нет.
+
+   Карточка — одна поверхность: рисунок прижат влево и обтекается
+   текстом, отдельной «шапки с картинкой и подвала с текстом» нет. */
 .brew-grid {
   display: grid;
   gap: 20px;
   grid-template-columns: repeat(3, 1fr);
 }
 .brew-card {
-  grid-template-rows: auto 1fr;
+  display: block;
+  padding: 24px;
+  border-radius: 20px;
+  background: var(--paper);
+  background: color-mix(in srgb, var(--sand) 45%, var(--paper));
   color: inherit;
+  transition: box-shadow .35s var(--ease), transform .35s var(--ease);
 }
 
-/* Подложка под рисунок. Рисунок не заполняет её картинкой, а лежит
-   сверху отдельным слоем — иначе он двигался бы только вместе с
-   карточкой, и никакого разделения планов не вышло бы. */
-.brew-card__stage {
-  position: relative;
-  display: block;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  background:
-    radial-gradient(72% 62% at 50% 78%, rgba(196, 154, 110, .22), rgba(196, 154, 110, 0) 70%),
-    linear-gradient(180deg, var(--paper), var(--sand));
-}
+/* Рисунок обтекается по своему контуру: форму даёт альфа того же файла,
+   адрес приходит из разметки. Эллипс — запасной вариант для движков без
+   поддержки контура из картинки. */
 .brew-card__art {
-  position: absolute;
-  left: 50%;
-  bottom: 6%;
-  width: auto;
-  height: 82%;
+  float: left;
+  width: 46%;
+  /* Рамка у всех трёх одна, а рисунки в ней разной формы: иначе высокий
+     пуровер уводил бы подпись «Смотреть каталог» ниже, чем у соседей, и
+     нижние строки карточек разъезжались бы. Рисунок вписывается в рамку
+     целиком и стоит на её нижней кромке. */
+  aspect-ratio: 4 / 5;
+  height: auto;
+  object-fit: contain;
+  object-position: 50% 100%;
+  margin: 0 18px 10px 0;
+  shape-outside: ellipse(48% 50% at 50% 50%);
+  shape-margin: 10px;
   /* Сдвиг рельса рисунок отрабатывает не в полную силу: карточка уже
      уехала на `--slip`, рисунок отстаёт от неё ещё на пятую часть — так
      между планами появляется глубина. Переменную кладёт useRail на
-     панель, отсюда она видна по наследованию. */
+     панель, отсюда она видна по наследованию. Обтекание при этом не
+     пересчитывается: контур берётся с несдвинутой рамки. */
   --art-slip: calc(var(--slip, 0px) * -.2);
-  transform: translate3d(calc(-50% + var(--art-slip) + var(--art-lift-x, 0px)), var(--art-lift-y, 0px), 0)
-    scale(var(--art-scale, 1));
+  transform: translate3d(var(--art-slip), var(--art-lift, 0px), 0) scale(var(--art-scale, 1));
   transition: transform .55s var(--ease);
-  filter: drop-shadow(0 14px 18px rgba(20, 52, 60, .16));
+  filter: drop-shadow(0 12px 16px rgba(20, 52, 60, .14));
 }
-.brew-card__body {
-  display: grid;
-  gap: 8px;
-  align-content: start;
-  padding: 20px 22px 22px;
+
+/* Заголовок встаёт против середины рисунка, а не под верхней кромкой
+   карточки: отступ в долях ширины, чтобы держаться при любой колонке. */
+.brew-card__title {
+  display: block;
+  padding-top: 16%;
+  font-family: var(--font-head);
+  font-size: clamp(26px, 2.4vw, 34px);
+  line-height: 1.1;
+  color: var(--petrol);
 }
+.brew-card__note {
+  display: block;
+  margin-top: 10px;
+  color: var(--grey);
+  font-size: 14px;
+}
+/* Подпись уходит под рисунок и начинается от левого края карточки. */
 .brew-card__cta {
+  display: block;
+  clear: left;
+  margin-top: 18px;
   color: var(--teal-ink);
   font-size: 14px;
-  margin-top: 4px;
 }
 @media (hover: hover) and (pointer: fine) {
+  .brew-card:hover {
+    box-shadow: var(--shadow-soft);
+    transform: translateY(-2px);
+  }
   .brew-card:hover .brew-card__art {
-    --art-lift-y: -10px;
-    --art-scale: 1.05;
+    --art-lift: -8px;
+    --art-scale: 1.04;
   }
   .brew-card:hover .brew-card__cta { color: var(--teal-deep); }
 }
 /* Без движения рисунок стоит на месте: отставание — тоже движение. */
 @media (prefers-reduced-motion: reduce) {
-  .brew-card__art { --art-slip: 0px; transition: none; }
+  .brew-card,
+  .brew-card__art { transition: none; }
+  .brew-card__art { --art-slip: 0px; }
 }
-/* Стопкой на узком экране — по документу вся карточка остаётся ссылкой. */
+/* На узком экране карточки идут стопкой, рисунок остаётся слева. */
 @media (max-width: 899px) {
   .brew-grid { grid-template-columns: 1fr; }
-  .brew-card__stage { aspect-ratio: 16 / 9; }
+  .brew-card__art { width: 38%; }
+  .brew-card__title { padding-top: 4%; font-size: 28px; }
 }
 
 .card {

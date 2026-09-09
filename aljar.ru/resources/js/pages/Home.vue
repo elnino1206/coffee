@@ -262,30 +262,34 @@ const stops = [
                         <Link
                             v-for="brew in brews"
                             :key="brew.value"
-                            class="card brew-card"
+                            class="brew-card"
                             :href="`/catalog/coffee?method=${brew.value}`"
                             data-reveal
                         >
-                            <!-- Рисунок лежит отдельным слоем над
-                                 подложкой, а не заполняет карточку
-                                 картинкой: только так он может двигаться
-                                 своим ходом, отставая от карточки. -->
-                            <span class="brew-card__stage">
-                                <img
-                                    class="brew-card__art"
-                                    :src="brew.image"
-                                    :alt="brew.alt"
-                                    loading="lazy"
-                                    decoding="async"
-                                />
-                            </span>
-                            <span class="brew-card__body">
-                                <span class="h3">{{ brew.label }}</span>
-                                <span class="muted">{{ brew.note }}</span>
-                                <span class="brew-card__cta">
-                                    Смотреть каталог →
-                                </span>
-                            </span>
+                            <!-- Рисунок обтекается текстом по своему
+                                 контуру: `shape-outside` берёт форму из
+                                 альфы того же файла, поэтому адрес
+                                 задаётся здесь, а не в стилях. Слой
+                                 отдельный — сдвиг он отрабатывает своим
+                                 ходом, а обтекание считается по
+                                 несдвинутой рамке и не пересчитывается. -->
+                            <img
+                                class="brew-card__art"
+                                :src="brew.image"
+                                :alt="brew.alt"
+                                :style="{ shapeOutside: `url(${brew.image})` }"
+                                width="480"
+                                height="600"
+                                loading="eager"
+                                decoding="async"
+                            />
+                            <span class="brew-card__title">{{
+                                brew.label
+                            }}</span>
+                            <span class="brew-card__note">{{ brew.note }}</span>
+                            <span class="brew-card__cta"
+                                >Смотреть каталог →</span
+                            >
                         </Link>
                     </div>
                 </div>
