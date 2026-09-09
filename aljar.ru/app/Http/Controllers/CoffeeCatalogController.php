@@ -84,6 +84,17 @@ class CoffeeCatalogController extends Controller
      */
     protected function filters(Request $request): array
     {
+        /* Ссылки с главной пишутся коротко: `?method=cezve`, а не
+           `?method[]=cezve`. Такой адрес можно продиктовать и положить в
+           рассылку, поэтому одиночное значение приводим к списку до
+           проверки, а не заставляем разметку знать про синтаксис
+           массивов. */
+        foreach (['roast', 'method', 'origin'] as $key) {
+            if ($request->filled($key) && ! is_array($request->input($key))) {
+                $request->merge([$key => [$request->input($key)]]);
+            }
+        }
+
         $validated = $request->validate([
             'roast' => ['array'],
             'roast.*' => ['string', 'in:'.implode(',', array_column(Roast::cases(), 'value'))],

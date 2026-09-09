@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Catalog;
 
+use App\Enums\BrewMethod;
 use App\Enums\Roast;
 use App\Models\Coffee;
 use App\Models\Equipment;
@@ -151,6 +152,30 @@ class CoffeeCatalogTest extends TestCase
 
         $this->get(route('catalog.coffee.index', ['sort' => 'price-desc']))
             ->assertInertia(fn (Assert $page) => $page->where('products.0.slug', $costly->slug));
+    }
+
+    /**
+     * Карточки способов заваривания на главной ведут в каталог коротким
+     * адресом — `?method=cezve`. Такой адрес можно продиктовать и
+     * положить в рассылку, поэтому одиночное значение обязано работать
+     * наравне со списком.
+     */
+    public function test_single_filter_value_works_without_array_syntax()
+    {
+        $cezve = Coffee::factory()->create();
+        $cezve->detail->update(['brew_method' => BrewMethod::Cezve]);
+
+        $espresso = Coffee::factory()->create();
+        $espresso->detail->update(['brew_method' => BrewMethod::Espresso]);
+
+        $this->get('/catalog/coffee?method=cezve')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('total', 1)
+                ->where('products.0.slug', $cezve->slug)
+                // Чип фильтра в каталоге должен встать активным.
+                ->where('filters.method', ['cezve']),
+            );
     }
 
     public function test_unknown_filter_values_are_rejected()

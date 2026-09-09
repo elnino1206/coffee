@@ -974,6 +974,53 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   .product-grid--upsell { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* ── Карточки способов заваривания ─────────────────────────────────
+   Блок «Свежая партия» на главной. По документу
+   inst_designe/AlJar_Homepage_FreshRoast_Block.docx это не витрина
+   товаров, а три входа в каталог с уже включённым фильтром: ни цены, ни
+   кнопки в корзину, ни конкретного сорта. Ссылкой служит вся карточка,
+   поэтому внутри неё только текстовые узлы — вложенных ссылок нет. */
+.brew-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(3, 1fr);
+}
+.brew-card {
+  grid-template-rows: auto 1fr;
+  color: inherit;
+}
+.brew-card__media {
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+.brew-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .6s var(--ease);
+}
+.brew-card__body {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 20px 22px 22px;
+}
+.brew-card__cta {
+  color: var(--teal-ink);
+  font-size: 14px;
+  margin-top: 4px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .brew-card:hover .brew-card__media img { transform: scale(1.04); }
+  .brew-card:hover .brew-card__cta { color: var(--teal-deep); }
+}
+/* Стопкой на узком экране — по документу вся карточка остаётся ссылкой. */
+@media (max-width: 899px) {
+  .brew-grid { grid-template-columns: 1fr; }
+}
+
 .card {
   background: var(--surface);
   border: 1px solid var(--line);

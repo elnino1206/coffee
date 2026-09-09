@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { Form, Head, Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
-import AddToCartModal from '@/components/AddToCartModal.vue';
 import InputError from '@/components/InputError.vue';
 import RailBar from '@/components/RailBar.vue';
 import StorefrontFooter from '@/components/StorefrontFooter.vue';
 import { useHeroSlides } from '@/composables/useHeroSlides';
 import { useRail } from '@/composables/useRail';
-import { formatPrice } from '@/lib/money';
 import { motionOn } from '@/lib/motion';
 
 /**
@@ -19,33 +17,41 @@ import { motionOn } from '@/lib/motion';
  * сервера, а не собирается на клиенте из data.js.
  */
 
-interface Variant {
-    id: number;
-    title: string;
-    price: number;
-    in_stock: boolean;
-}
-
-interface Product {
-    slug: string;
-    name: string;
-    notes: string | null;
-    image: string | null;
-    species: string | null;
-    roast: string | null;
-    roast_value: string | null;
-    price_from: number;
-    variants: Variant[];
-}
-
-defineProps<{ featured: Product[] }>();
+/**
+ * Три входа в каталог с уже включённым фильтром по способу заваривания.
+ *
+ * Блок «Свежая партия» — не витрина товаров: по документу
+ * `inst_designe/AlJar_Homepage_FreshRoast_Block.docx` в нём нет ни цены,
+ * ни кнопки в корзину, ни конкретного сорта. Карточки не меняются от
+ * недели к неделе — меняется то, что каталог по этим фильтрам выдаёт.
+ */
+const brews = [
+    {
+        value: 'cezve',
+        label: 'Турка',
+        note: 'Плотное тело, восточные специи',
+        image: '/img/brew-cezve.webp',
+        alt: 'Медная турка и чашка кофе',
+    },
+    {
+        value: 'espresso',
+        label: 'Эспрессо',
+        note: 'Шоколад, орех, плотная текстура',
+        image: '/img/brew-espresso.webp',
+        alt: 'Гейзерная кофеварка и чашка кофе',
+    },
+    {
+        value: 'filter',
+        label: 'Фильтр',
+        note: 'Цветы, цитрус, чистота чашки',
+        image: '/img/brew-filter.webp',
+        alt: 'Чашка чёрного кофе',
+    },
+];
 
 /* Обещанная скидка берётся с сервера: обещание на витрине и расчёт в
    корзине обязаны совпадать. */
 const discount = computed(() => Number(usePage().props.subscribeDiscount ?? 0));
-
-/** Товар, для которого открыт выбор веса и помола. */
-const picked = ref<Product | null>(null);
 
 /* Горизонтальный рельс — только на главной: в каталоге, корзине и
    оформлении перехватывать колесо нельзя, там человек работает со
@@ -243,71 +249,41 @@ const stops = [
                         <div>
                             <p class="eyebrow">Свежая партия</p>
                             <h2 class="h2">Свежая обжарка этой недели</h2>
+                            <p class="lead" style="margin-top: 10px">
+                                Выберите способ заваривания — откроется каталог
+                                с нужным фильтром.
+                            </p>
                         </div>
-                        <Link
-                            class="btn btn--ghost btn--m"
-                            href="/catalog/coffee"
-                            >Смотреть все</Link
-                        >
                     </div>
-                    <div class="product-grid">
-                        <article
-                            v-for="product in featured"
-                            :key="product.slug"
-                            class="card"
+                    <div class="brew-grid">
+                        <!-- Ссылкой служит вся карточка; подпись
+                             «Смотреть каталог» повторяет тот же переход,
+                             а не ведёт куда-то ещё. -->
+                        <Link
+                            v-for="brew in brews"
+                            :key="brew.value"
+                            class="card brew-card"
+                            :href="`/catalog/coffee?method=${brew.value}`"
                             data-reveal
                         >
-                            <div class="card__media">
-                                <Link :href="`/catalog/coffee/${product.slug}`">
-                                    <img
-                                        :src="`/${product.image}`"
-                                        :alt="product.name"
-                                        loading="lazy"
-                                        decoding="async"
-                                    />
-                                </Link>
-                            </div>
-                            <div class="card__body">
-                                <Link
-                                    class="card__title"
-                                    :href="`/catalog/coffee/${product.slug}`"
-                                >
-                                    {{ product.name }}
-                                </Link>
-                                <p class="card__notes">{{ product.notes }}</p>
-                                <div class="card__meta">
-                                    <span>{{ product.roast }}</span>
-                                    <span>{{ product.species }}</span>
-                                </div>
-                                <div class="card__row">
-                                    <span class="price">{{
-                                        formatPrice(product.price_from)
-                                    }}</span>
-                                    <button
-                                        class="add-quick"
-                                        type="button"
-                                        :aria-label="`Выбрать вес и помол: ${product.name}`"
-                                        @click="picked = product"
-                                    >
-                                        <svg
-                                            width="15"
-                                            height="15"
-                                            viewBox="0 0 20 20"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="1.7"
-                                        >
-                                            <path
-                                                d="M4.5 6.5h11l-1 10h-9l-1-10z"
-                                            />
-                                            <path
-                                                d="M7.5 6.5V5a2.5 2.5 0 0 1 5 0v1.5"
-                                            />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
+                            <span class="brew-card__media">
+                                <img
+                                    :src="brew.image"
+                                    :alt="brew.alt"
+                                    width="800"
+                                    height="600"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
+                            </span>
+                            <span class="brew-card__body">
+                                <span class="h3">{{ brew.label }}</span>
+                                <span class="muted">{{ brew.note }}</span>
+                                <span class="brew-card__cta">
+                                    Смотреть каталог →
+                                </span>
+                            </span>
+                        </Link>
                     </div>
                 </div>
             </section>
@@ -741,6 +717,4 @@ const stops = [
     </div>
 
     <RailBar :stops="stops" :current="current" :progress="progress" @go="go" />
-
-    <AddToCartModal :product="picked" @close="picked = null" />
 </template>
