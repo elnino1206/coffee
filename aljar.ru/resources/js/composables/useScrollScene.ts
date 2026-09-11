@@ -3,34 +3,36 @@ import type { Ref } from 'vue';
 import { motionOn } from '@/lib/motion';
 
 /**
- * Сцена с прокруткой-скрабом: первый экран главной.
+ * Сцена с прокруткой-скрабом: первые экраны главной.
  *
- * Секция высотой в несколько экранов приколота, внутри неё лежит ролик, и
- * его положение задаётся не воспроизведением, а прокруткой: вниз —
- * вперёд, вверх — назад, кадр в кадр. Поверх ролика два слоя: подпись
- * героя уезжает вверх, подпись «Свежей партии» выезжает снизу, а между
- * ними остаётся промежуток, где на экране только съёмка.
+ * Секция высотой в несколько экранов приколота, внутри неё лежат ролики,
+ * и положение ролика задаётся не воспроизведением, а прокруткой: вниз —
+ * вперёд, вверх — назад, кадр в кадр. Поверх роликов лежат подписи
+ * блоков: одна уезжает вверх, следующая выезжает снизу, между ними
+ * остаётся промежуток, где на экране только съёмка.
  *
- * Подписи не растворяются, а именно едут — по устройству острова из
- * героя: сцена гонит одну долю, а каждая строка умножает её на свою
- * глубину. Разные глубины дают расслоение: строки не идут единой
- * плитой. Пустота посередине получается сама собой — обе группы к тому
- * времени за краем экрана.
+ * Переходов столько, сколько передали роликов, блоков на один больше.
+ * Сцена делится между переходами поровну, и внутри своей доли каждый
+ * идёт по одной и той же хореографии.
+ *
+ * Подписи не растворяются, а едут — по устройству острова из героя:
+ * сцена гонит доли, а каждая строка умножает их на свою глубину. Разные
+ * глубины дают расслоение: строки не идут единой плитой.
  *
  * Ни `play()`, ни `pause()` здесь нет вовсе. Ролик не идёт сам по себе:
  * человек его листает.
  */
 
-/** Доли прокрутки, на которых что происходит. Взяты из хореографии. */
+/** Доли внутри одного перехода. Взяты из хореографии. */
 const FILM_FROM = 0.08;
 const FILM_TO = 0.88;
-const HERO_FROM = 0.08;
-const HERO_TO = 0.4;
-const ROAST_FROM = 0.52;
-const ROAST_TO = 0.88;
+const OUT_FROM = 0.08;
+const OUT_TO = 0.4;
+const IN_FROM = 0.52;
+const IN_TO = 0.88;
 
-/** С этой доли вторая подпись уже принимает нажатия. */
-const ROAST_LIVE = 0.88;
+/** Полуширина стыка, на котором следующий ролик подменяет предыдущий. */
+const SWAP = 0.03;
 
 const clamp = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);
 
@@ -40,13 +42,18 @@ const span = (v: number, from: number, to: number): number =>
 
 export function useScrollScene(
     scene: Ref<HTMLElement | null>,
-    film: Ref<HTMLVideoElement | null>,
+    films: Ref<HTMLVideoElement | null>[],
 ) {
     /** Пройденная доля сцены, 0..1. */
     const progress = ref(0);
 
-    /** Вторая подпись доехала — по ней можно нажимать. */
-    const roastLive = ref(false);
+    /**
+     * Какая подпись сейчас принимает нажатия.
+     *
+     * Только одна: у остальных строки либо ещё за краем экрана, либо уже
+     * за ним. `-1` — переход в разгаре, на экране одна съёмка.
+     */
+    const live = ref(0);
 
     let ticking = false;
 
@@ -61,36 +68,71 @@ export function useScrollScene(
         const p = run > 0 ? clamp(-el.getBoundingClientRect().top / run) : 0;
 
         progress.value = p;
-        roastLive.value = p >= ROAST_LIVE;
 
         /* Пока сцена на экране, шапка лежит поверх съёмки и набрана
            светлым. Класс на корне, а не на самой шапке: шапку рисует
            раскладка, и страница до неё не дотягивается. */
         document.documentElement.classList.toggle('is-over-film', p < 0.98);
 
-        /* Доли хода, а не прозрачности: 0 — строка на своём месте,
-           1 — она полностью убрана за край. Насколько это далеко, решает
-           глубина строки в стилях. */
-        el.style.setProperty('--hero-out', String(span(p, HERO_FROM, HERO_TO)));
-        el.style.setProperty(
-            '--roast-in',
-            String(1 - span(p, ROAST_FROM, ROAST_TO)),
-        );
+        const steps = films.length;
+        const out: number[] = [];
+        const arrive: number[] = [];
 
-        /* Ролик стоит на месте до начала и после конца отрезка: первый и
-           последний кадры должны держаться, чтобы подписи вставали на
-           спокойную картинку. */
-        const v = film.value;
+        films.forEach((film, i) => {
+            /* Доля внутри своего перехода: до него 0, после 1. */
+            const q = span(p, i / steps, (i + 1) / steps);
 
-        if (v && Number.isFinite(v.duration) && v.duration > 0) {
-            const t = span(p, FILM_FROM, FILM_TO) * v.duration;
+            /* Доли хода, а не прозрачности: 0 — строка на своём месте,
+               1 — она полностью убрана за край. Насколько это далеко,
+               решает глубина строки в стилях. */
+            out[i] = span(q, OUT_FROM, OUT_TO);
+            arrive[i] = 1 - span(q, IN_FROM, IN_TO);
 
-            /* Порог в кадр: без него каждая прокрутка дёргает перемотку
-               на сотые доли и браузер захлёбывается запросами. */
-            if (Math.abs(v.currentTime - t) > 0.03) {
-                v.currentTime = t;
+            el.style.setProperty(`--out-${i + 1}`, String(out[i]));
+            el.style.setProperty(`--in-${i + 1}`, String(arrive[i]));
+
+            /* Ролики лежат стопкой: следующий проявляется на стыке, где
+               на экране одна съёмка и подписей не видно. Там подмена
+               незаметна, а держать оба видимыми нельзя — нижний
+               просвечивал бы сквозь верхний. */
+            if (i > 0) {
+                el.style.setProperty(
+                    `--film-${i + 1}`,
+                    String(span(p, i / steps - SWAP, i / steps + SWAP)),
+                );
+            }
+
+            /* Ролик стоит на месте до начала и после конца своего
+               отрезка: первый и последний кадры должны держаться, чтобы
+               подписи вставали на спокойную картинку. */
+            const v = film.value;
+
+            if (v && Number.isFinite(v.duration) && v.duration > 0) {
+                const t = span(q, FILM_FROM, FILM_TO) * v.duration;
+
+                /* Порог в кадр: без него каждая прокрутка дёргает
+                   перемотку на сотые доли и браузер захлёбывается
+                   запросами. */
+                if (Math.abs(v.currentTime - t) > 0.03) {
+                    v.currentTime = t;
+                }
+            }
+        });
+
+        /* Подпись живая, когда она уже приехала и ещё не тронулась. У
+           первой приезда нет, у последней — отъезда. */
+        let at = -1;
+
+        for (let i = 0; i <= steps; i += 1) {
+            const came = i === 0 || arrive[i - 1] === 0;
+            const left = i < steps && out[i] > 0;
+
+            if (came && !left) {
+                at = i;
             }
         }
+
+        live.value = at;
     }
 
     function onScroll(): void {
@@ -106,7 +148,7 @@ export function useScrollScene(
     }
 
     /**
-     * Расшевелить ролик.
+     * Расшевелить ролики.
      *
      * Пока видео ни разу не запускали, браузер держит его на метаданных:
      * `preload` — просьба, а не обязательство, и на телефоне её обычно
@@ -114,37 +156,37 @@ export function useScrollScene(
      * остаётся постер — ровно то, что выглядит как «видео не работает».
      *
      * Лечение известное: один раз запустить и тут же остановить. Кадры
-     * декодируются, `readyState` доходит до готовности, и дальше
-     * перемотка отвечает сразу. Звука нет, поэтому запуск разрешён без
-     * участия человека; если всё же откажут — повторим при первом
-     * касании или прокрутке.
+     * декодируются, готовность доходит до нужной, и дальше перемотка
+     * отвечает сразу. Звука нет, поэтому запуск разрешён без участия
+     * человека; если всё же откажут — повторим при первом касании.
      */
     function wake(): void {
-        const v = film.value;
+        films.forEach((film) => {
+            const v = film.value;
 
-        if (!v || v.readyState >= 3) {
-            return;
-        }
+            if (!v || v.readyState >= 3) {
+                return;
+            }
 
-        v.muted = true;
-        void v
-            .play()
-            .then(() => {
-                v.pause();
-                paint();
-            })
-            .catch(() => {
-                /* Отказали в запуске — попробуем ещё раз, когда человек
-                   тронет страницу. Такой запуск уже считается ответом на
-                   его действие. */
-                window.addEventListener('pointerdown', wake, { once: true });
-                window.addEventListener('touchstart', wake, { once: true });
-            });
+            v.muted = true;
+            void v
+                .play()
+                .then(() => {
+                    v.pause();
+                    paint();
+                })
+                .catch(() => {
+                    window.addEventListener('pointerdown', wake, {
+                        once: true,
+                    });
+                    window.addEventListener('touchstart', wake, { once: true });
+                });
+        });
     }
 
     onMounted(() => {
         if (!motionOn()) {
-            /* Без движения сцена не приколота и ролик не листается:
+            /* Без движения сцена не приколота и ролики не листаются:
                подписи просто стоят одна под другой. Разметка та же,
                раскладку меняет CSS. */
             return;
@@ -155,7 +197,9 @@ export function useScrollScene(
 
         /* Длительность приходит позже разметки: до неё перематывать
            нечего, поэтому первый расчёт повторяем по готовности. */
-        film.value?.addEventListener('loadedmetadata', paint);
+        films.forEach((film) =>
+            film.value?.addEventListener('loadedmetadata', paint),
+        );
 
         wake();
         paint();
@@ -167,8 +211,10 @@ export function useScrollScene(
         window.removeEventListener('resize', onScroll);
         window.removeEventListener('pointerdown', wake);
         window.removeEventListener('touchstart', wake);
-        film.value?.removeEventListener('loadedmetadata', paint);
+        films.forEach((film) =>
+            film.value?.removeEventListener('loadedmetadata', paint),
+        );
     });
 
-    return { progress, roastLive };
+    return { progress, live };
 }

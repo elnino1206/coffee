@@ -15,10 +15,10 @@ import { motionOn } from '@/lib/motion';
  * сервера, а не собирается на клиенте из data.js.
  */
 
-/* Адрес ролика приходит с сервера: под встроенным сервером PHP он идёт
-   через приложение, иначе перемотка невозможна. Подробности — в
-   HomeController::film(). */
-defineProps<{ film: string }>();
+/* Адреса роликов приходят с сервера: под встроенным сервером PHP они
+   идут через приложение, иначе перемотка невозможна. Подробности — в
+   HomeController::films(). */
+defineProps<{ films: { hero: string; roast: string } }>();
 
 /**
  * Три входа в каталог с уже включённым фильтром по способу заваривания.
@@ -79,9 +79,11 @@ const { slide } = useHeroSlides(heroStage, video ? 0 : heroSlides.length);
 /* Сцена первого экрана: ролик листается прокруткой, подпись героя
    уходит, подпись «Свежей партии» приходит. */
 const scene = ref<HTMLElement | null>(null);
-const filmEl = ref<HTMLVideoElement | null>(null);
+const heroFilm = ref<HTMLVideoElement | null>(null);
+const roastFilm = ref<HTMLVideoElement | null>(null);
 
-const { roastLive } = useScrollScene(scene, filmEl);
+/* Два перехода, три подписи: герой → свежая партия → подписка. */
+const { live } = useScrollScene(scene, [heroFilm, roastFilm]);
 </script>
 
 <template>
@@ -109,7 +111,7 @@ const { roastLive } = useScrollScene(scene, filmEl);
                      постер и предзагрузка. -->
                 <video
                     v-if="video"
-                    ref="filmEl"
+                    ref="heroFilm"
                     poster="/img/hero-video-poster.webp"
                     width="1280"
                     height="720"
@@ -118,7 +120,23 @@ const { roastLive } = useScrollScene(scene, filmEl);
                     preload="auto"
                     aria-hidden="true"
                 >
-                    <source :src="film" type="video/mp4" />
+                    <source :src="films.hero" type="video/mp4" />
+                </video>
+
+                <!-- Второй ролик лежит поверх первого и проявляется на
+                     стыке переходов, где на экране одна съёмка. -->
+                <video
+                    v-if="video"
+                    ref="roastFilm"
+                    class="scene__film--next"
+                    width="1280"
+                    height="720"
+                    muted
+                    playsinline
+                    preload="auto"
+                    aria-hidden="true"
+                >
+                    <source :src="films.roast" type="video/mp4" />
                 </video>
 
                 <!-- Без движения на месте съёмки остаются прежние кадры;
@@ -139,7 +157,10 @@ const { roastLive } = useScrollScene(scene, filmEl);
                 </span>
             </div>
 
-            <div class="scene__layer scene__layer--hero">
+            <div
+                class="scene__layer scene__layer--hero"
+                :class="{ 'is-live': live === 0 }"
+            >
                 <div class="hero__grid container">
                     <div class="hero__copy">
                         <p class="eyebrow">Спешелти кофе · Ливанские корни</p>
@@ -205,7 +226,7 @@ const { roastLive } = useScrollScene(scene, filmEl);
 
             <div
                 class="scene__layer scene__layer--roast"
-                :class="{ 'is-live': roastLive }"
+                :class="{ 'is-live': live === 1 }"
             >
                 <section class="section">
                     <div class="container">
@@ -263,76 +284,74 @@ const { roastLive } = useScrollScene(scene, filmEl);
                     </div>
                 </section>
             </div>
-        </div>
-    </div>
 
-    <section class="section" style="padding-top: 0">
-        <span
-            class="lamp"
-            aria-hidden="true"
-            style="
-                background: radial-gradient(
-                    52% 60% at 18% 46%,
-                    rgba(10, 186, 181, 0.12),
-                    rgba(10, 186, 181, 0) 70%
-                );
-            "
-        ></span>
-        <div class="container">
-            <div class="subscribe-band" data-reveal>
-                <div class="stack-s">
-                    <p class="eyebrow">Ключевая модель</p>
-                    <h2 class="h3">Кофе по подписке — выгоднее и спокойнее</h2>
-                    <p class="tiny">
-                        Свежая обжарка под ваш ритм. Пауза и отмена — в один
-                        клик.
-                    </p>
-                </div>
-                <div class="perk-list">
-                    <div class="perk">
-                        <svg
-                            width="20"
-                            height="20"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.7"
-                        >
-                            <path d="M5 12l4 4 10-10" />
-                        </svg>
-                        <span>−{{ discount }}% на каждый заказ</span>
+            <div
+                class="scene__layer scene__layer--model"
+                :class="{ 'is-live': live === 2 }"
+            >
+                <section class="section">
+                    <div class="container">
+                        <div class="subscribe-band" data-reveal>
+                            <div class="stack-s">
+                                <p class="eyebrow">Ключевая модель</p>
+                                <h2 class="h3">
+                                    Кофе по подписке — выгоднее и спокойнее
+                                </h2>
+                                <p class="tiny">
+                                    Свежая обжарка под ваш ритм. Пауза и отмена
+                                    — в один клик.
+                                </p>
+                            </div>
+                            <div class="perk-list">
+                                <div class="perk">
+                                    <svg
+                                        width="20"
+                                        height="20"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="1.7"
+                                    >
+                                        <path d="M5 12l4 4 10-10" />
+                                    </svg>
+                                    <span
+                                        >−{{ discount }}% на каждый заказ</span
+                                    >
+                                </div>
+                                <div class="perk">
+                                    <svg
+                                        width="20"
+                                        height="20"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="1.7"
+                                    >
+                                        <path d="M4 12h16M12 4v16" />
+                                    </svg>
+                                    <span>Пауза в 1 клик</span>
+                                </div>
+                                <div class="perk">
+                                    <svg
+                                        width="20"
+                                        height="20"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="1.7"
+                                    >
+                                        <circle cx="10" cy="10" r="7" />
+                                        <path d="M10 6v5l3 2" />
+                                    </svg>
+                                    <span>Обжарка под дату доставки</span>
+                                </div>
+                            </div>
+                            <Link class="btn btn--primary" href="/subscription"
+                                >Настроить подписку →</Link
+                            >
+                        </div>
                     </div>
-                    <div class="perk">
-                        <svg
-                            width="20"
-                            height="20"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.7"
-                        >
-                            <path d="M4 12h16M12 4v16" />
-                        </svg>
-                        <span>Пауза в 1 клик</span>
-                    </div>
-                    <div class="perk">
-                        <svg
-                            width="20"
-                            height="20"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="1.7"
-                        >
-                            <circle cx="10" cy="10" r="7" />
-                            <path d="M10 6v5l3 2" />
-                        </svg>
-                        <span>Обжарка под дату доставки</span>
-                    </div>
-                </div>
-                <Link class="btn btn--primary" href="/subscription"
-                    >Настроить подписку →</Link
-                >
+                </section>
             </div>
         </div>
-    </section>
+    </div>
 
     <section class="section section--sand">
         <span

@@ -28,12 +28,12 @@ class HomeController extends Controller
     {
         return Inertia::render('Home', [
             'featured' => $this->featured(),
-            'film' => $this->film(),
+            'films' => $this->films(),
         ]);
     }
 
     /**
-     * Адрес ролика для сцены первого экрана.
+     * Адреса роликов сцены: по одному на переход между блоками.
      *
      * Скраб держится на перемотке, а перемотка — на умении сервера
      * отдавать куски файла. Встроенный сервер PHP, на котором работает
@@ -43,12 +43,18 @@ class HomeController extends Controller
      *
      * На боевом сервере файл раздаёт nginx — там прямой путь и быстрее,
      * и правильнее.
+     *
+     * @return array<string, string>
      */
-    protected function film(): string
+    protected function films(): array
     {
-        return PHP_SAPI === 'cli-server'
-            ? route('media.film', ['film' => 'hero.mp4'])
-            : '/video/hero.mp4';
+        return collect(['hero', 'roast'])
+            ->mapWithKeys(fn (string $name): array => [
+                $name => PHP_SAPI === 'cli-server'
+                    ? route('media.film', ['film' => "{$name}.mp4"])
+                    : "/video/{$name}.mp4",
+            ])
+            ->all();
     }
 
     /**
