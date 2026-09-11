@@ -292,6 +292,19 @@ const { live } = useScrollScene(scene, [heroFilm, roastFilm]);
                 <section class="section">
                     <div class="container">
                         <div class="subscribe-band" data-reveal>
+                            <!-- Гравюра из документа
+                                 inst_designe/AlJar_Subscription_Block_Illustration.docx:
+                                 мешок зерна, ветка и чашка. Та же манера,
+                                 что на карточках способов заваривания. -->
+                            <img
+                                class="subscribe-band__art"
+                                src="/img/subscription-band.webp"
+                                alt=""
+                                width="640"
+                                height="627"
+                                loading="lazy"
+                                decoding="async"
+                            />
                             <div class="stack-s">
                                 <p class="eyebrow">Ключевая модель</p>
                                 <h2 class="h3">

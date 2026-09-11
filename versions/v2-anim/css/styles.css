@@ -1096,7 +1096,8 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
 /* Нажатия принимает только доехавший слой: подпись героя — пока она
    видна, карточки — когда сцена дошла до конца. */
 .is-enhanced .scene__layer--hero > * { pointer-events: auto; }
-.is-enhanced .scene__layer--roast.is-live { pointer-events: auto; }
+.is-enhanced .scene__layer--roast.is-live,
+.is-enhanced .scene__layer--model.is-live { pointer-events: auto; }
 
 /* Подписи героя внутри сцены ведут себя как в полноэкранном герое:
    по центру, светлым по съёмке. */
@@ -1529,11 +1530,30 @@ html:not(.is-enhanced) .scene__layer--roast .lead { color: var(--grey); }
   gap: 20px;
   align-items: center;
 }
+
+/* Гравюра слева внутри карточки: мешок, ветка и чашка. Вписывается
+   целиком — мешок обрезать нельзя, он держит всю композицию. */
+.subscribe-band__art {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 190px;
+  object-fit: contain;
+  justify-self: center;
+}
 @media (min-width: 800px) {
   .subscribe-band {
-    grid-template-columns: 1.2fr 2fr auto;
+    /* Колонка рисунка из документа — 280–320px; clamp держит её в этих
+       пределах и отдаёт остаток тексту. */
+    grid-template-columns: clamp(190px, 20%, 280px) minmax(260px, 1.4fr) auto auto;
     padding: 32px 36px;
   }
+  .subscribe-band__art { max-height: 240px; }
+
+  /* Выгоды встают столбиком: в ряд они помещались, пока карточка была
+     без рисунка, а теперь на три колонки по 150px строки рвутся по
+     словам. */
+  .subscribe-band .perk-list { grid-template-columns: 1fr; }
 }
 .perk-list {
   display: grid;
