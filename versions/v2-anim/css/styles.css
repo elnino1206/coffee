@@ -984,17 +984,18 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
    Без движения (нет `is-enhanced`) сцена не прикалывается: высота
    становится обычной, слои идут один под другим, ролика нет вовсе. */
 .scene {
-  --hero-a: 1;
-  --hero-y: 0px;
-  --hero-blur: 0px;
-  --roast-a: 0;
-  --roast-y: 24px;
+  /* Доли хода, а не прозрачности: 0 — строка на месте, 1 — убрана за
+     край экрана. Регистрация делает их числами: незарегистрированную
+     переменную браузер считает строкой и переключает скачком. */
+  --hero-out: 0;
+  --roast-in: 1;
 }
 .is-enhanced .scene {
   position: relative;
-  /* 200vh — это ~6 секунд ролика на один проход колеса до конца сцены.
-     Меньше — ролик проматывается рывками, больше — экран «залипает». */
-  height: 200vh;
+  /* Ход сцены. Чем он длиннее, тем медленнее идут и ролик, и подписи:
+     доля считается от пройденного пути, а не от времени. 320vh — это
+     примерно три оборота колеса на весь переход. */
+  height: 320vh;
 }
 .is-enhanced .scene__stage {
   position: sticky;
@@ -1044,15 +1045,39 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
      второй слой, и невидимая плёнка поверх него ловила бы клики. */
   pointer-events: none;
 }
-.is-enhanced .scene__layer--hero {
-  opacity: var(--hero-a);
-  transform: translateY(var(--hero-y));
-  filter: blur(var(--hero-blur));
+/* Подписи едут, а не растворяются.
+
+   Устройство взято у острова в герое: сцена гонит одну долю, а каждая
+   строка умножает её на свою глубину и сама решает, насколько далеко
+   уехать. Разные глубины дают расслоение — строки не идут единой плитой,
+   а разъезжаются и собираются.
+
+   Параллакс идёт через `translate`, чтобы не спорить с `transform`:
+   там у строк собственные превращения. Правило то же, что на острове. */
+.is-enhanced .scene__layer--hero .eyebrow,
+.is-enhanced .scene__layer--hero .display,
+.is-enhanced .scene__layer--hero .lead,
+.is-enhanced .scene__layer--hero .cluster,
+.is-enhanced .scene__layer--hero .trust-row {
+  translate: 0 calc(var(--hero-out) * var(--depth) * -1);
 }
-.is-enhanced .scene__layer--roast {
-  opacity: var(--roast-a);
-  transform: translateY(var(--roast-y));
+.is-enhanced .scene__layer--roast .section-head,
+.is-enhanced .scene__layer--roast .brew-grid {
+  translate: 0 calc(var(--roast-in) * var(--depth));
 }
+
+/* Глубины подобраны по порядку чтения: надзаголовок трогается первым и
+   уходит ближе, нижние строки идут дальше и приходят последними. */
+.is-enhanced .scene__layer--hero .eyebrow { --depth: 64vh; }
+.is-enhanced .scene__layer--hero .display { --depth: 72vh; }
+.is-enhanced .scene__layer--hero .lead { --depth: 78vh; }
+.is-enhanced .scene__layer--hero .cluster { --depth: 84vh; }
+.is-enhanced .scene__layer--hero .trust-row { --depth: 90vh; }
+
+/* Глубже, чем у героя: группа должна начинать путь полностью за нижним
+   краем экрана, а не выглядывать из-за него. */
+.is-enhanced .scene__layer--roast .section-head { --depth: 88vh; }
+.is-enhanced .scene__layer--roast .brew-grid { --depth: 100vh; }
 /* Нажатия принимает только доехавший слой: подпись героя — пока она
    видна, карточки — когда сцена дошла до конца. */
 .is-enhanced .scene__layer--hero > * { pointer-events: auto; }
@@ -1097,7 +1122,15 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
 .is-enhanced .scene__layer--roast .section { padding: 0; }
 
 @media (max-width: 899px) {
-  .is-enhanced .scene { height: 180vh; }
+  .is-enhanced .scene { height: 260vh; }
+  /* На узком экране ход короче: строки уже и уезжают быстрее. */
+  .is-enhanced .scene__layer--hero .eyebrow { --depth: 58vh; }
+  .is-enhanced .scene__layer--hero .display { --depth: 64vh; }
+  .is-enhanced .scene__layer--hero .lead { --depth: 70vh; }
+  .is-enhanced .scene__layer--hero .cluster { --depth: 76vh; }
+  .is-enhanced .scene__layer--hero .trust-row { --depth: 82vh; }
+  .is-enhanced .scene__layer--roast .section-head { --depth: 80vh; }
+  .is-enhanced .scene__layer--roast .brew-grid { --depth: 92vh; }
 }
 
 /* Без движения сцены нет: секция не приколота, слои идут один за другим,
@@ -3306,6 +3339,18 @@ html:not(.is-enhanced) .scene__layer--roast .lead { color: var(--grey); }
 @property --p {
   syntax: "<number>";
   initial-value: 0;
+  inherits: true;
+}
+
+/* Доли сцены первого экрана — по той же причине, что и --p. */
+@property --hero-out {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+@property --roast-in {
+  syntax: "<number>";
+  initial-value: 1;
   inherits: true;
 }
 

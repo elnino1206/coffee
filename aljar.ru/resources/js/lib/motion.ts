@@ -49,6 +49,17 @@ export function enableMotion(): void {
 let revealObserver: IntersectionObserver | null = null;
 
 /**
+ * Какая часть блока должна попасть в кадр, чтобы считать его показанным.
+ *
+ * Одно число на наблюдателя и на страховку. Разойдись они — и появится
+ * зазор, в котором блок для страховки уже виден, а для наблюдателя ещё
+ * нет: страховка решит, что появление сломано, и снимет усиление со всей
+ * витрины. Так и вышло с подписью «Свежей партии», заглянувшей в кадр на
+ * девять пикселей.
+ */
+const REVEAL_PART = 0.12;
+
+/**
  * Один наблюдатель на всю витрину: элементы добавляются по мере того,
  * как Inertia подставляет новые страницы.
  */
@@ -70,7 +81,7 @@ export function observeReveals(root: ParentNode = document): void {
                 revealObserver?.unobserve(entry.target);
             });
         },
-        { rootMargin: '0px 0px -10% 0px', threshold: 0.12 },
+        { rootMargin: '0px 0px -10% 0px', threshold: REVEAL_PART },
     );
 
     /* Ступенька считается внутри группы, а группа — это общий родитель:
@@ -109,16 +120,28 @@ export function guardReveals(): void {
             (el) => {
                 const r = el.getBoundingClientRect();
 
+                if (!r.width || !r.height) {
+                    return false;
+                }
+
                 /* Обе оси обязательны. Раньше смотрели только вертикаль,
                    и на страницах с горизонтальным рельсом блоки соседних
                    панелей — они уехали вбок, но по высоте лежат в тех же
                    пределах — считались застрявшими. */
-                return (
-                    r.bottom > 0 &&
-                    r.top < window.innerHeight &&
-                    r.right > 0 &&
-                    r.left < window.innerWidth
-                );
+                const across =
+                    Math.min(r.right, window.innerWidth) - Math.max(r.left, 0);
+                const down =
+                    Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0);
+
+                if (across <= 0 || down <= 0) {
+                    return false;
+                }
+
+                /* Вопрос тот же, что задаёт наблюдатель: попала ли в кадр
+                   заметная часть блока. Иначе краешек, заглянувший на
+                   пару пикселей, наблюдателя не будит, а страховке
+                   кажется застрявшим. */
+                return (across * down) / (r.width * r.height) >= REVEAL_PART;
             },
         );
 
