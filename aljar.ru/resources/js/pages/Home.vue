@@ -362,6 +362,19 @@ const { live } = useScrollScene(scene, filmEls);
             >
                 <section class="section">
                     <div class="heritage container">
+                        <!-- Гравюра из документа
+                             inst_designe/AlJar_Heritage_Block.docx: далла,
+                             финжан, зерно и лист. Стоит слева, текст и
+                             кнопка справа — как в макете. -->
+                        <img
+                            class="heritage__art"
+                            src="/img/heritage-band.webp"
+                            alt=""
+                            width="760"
+                            height="510"
+                            loading="lazy"
+                            decoding="async"
+                        />
                         <div class="stack">
                             <p class="eyebrow">Наше наследие</p>
                             <h2 class="h2">Больше, чем кофе. Наша история.</h2>
@@ -381,122 +394,6 @@ const { live } = useScrollScene(scene, filmEls);
                                     >Узнать нашу историю</Link
                                 >
                             </div>
-                        </div>
-                        <div class="heritage__photo">
-                            <!-- Рваная кайма: белый лист под фотографией, его край
-                             размывается фильтром смещения. Само фото фильтр не
-                             трогает — иначе турка пошла бы волнами. -->
-                            <div class="torn">
-                                <img
-                                    src="/img/dallah.webp"
-                                    width="1152"
-                                    height="864"
-                                    loading="lazy"
-                                    decoding="async"
-                                    alt="Медная турка и чашка кофе на грифельной доске"
-                                />
-                            </div>
-
-                            <svg
-                                class="stamp"
-                                viewBox="0 0 130 130"
-                                role="img"
-                                aria-label="Корни в Ливане с 1970-х. Сделано с любовью"
-                            >
-                                <defs>
-                                    <!-- Дуги для текста. Верхняя идёт слева направо поверху,
-                                     нижняя — слева направо понизу: на обеих буквы стоят
-                                     ровно, без переворота. -->
-                                    <path
-                                        id="stamp-top"
-                                        d="M 17,65 A 48,48 0 0 1 113,65"
-                                        fill="none"
-                                    ></path>
-                                    <path
-                                        id="stamp-bottom"
-                                        d="M 18,65 A 47,47 0 0 0 112,65"
-                                        fill="none"
-                                    ></path>
-                                </defs>
-
-                                <circle
-                                    class="stamp__disc"
-                                    cx="65"
-                                    cy="65"
-                                    r="64"
-                                ></circle>
-                                <circle
-                                    class="stamp__ring"
-                                    cx="65"
-                                    cy="65"
-                                    r="60"
-                                ></circle>
-                                <circle
-                                    class="stamp__ring stamp__ring--thin"
-                                    cx="65"
-                                    cy="65"
-                                    r="52"
-                                ></circle>
-
-                                <text class="stamp__arc">
-                                    <textPath
-                                        href="#stamp-top"
-                                        startOffset="50%"
-                                        text-anchor="middle"
-                                    >
-                                        Корни в Ливане
-                                    </textPath>
-                                </text>
-                                <text class="stamp__arc">
-                                    <textPath
-                                        href="#stamp-bottom"
-                                        startOffset="50%"
-                                        text-anchor="middle"
-                                    >
-                                        Сделано с любовью
-                                    </textPath>
-                                </text>
-
-                                <!-- Разделители на оси: отбивают начало и конец надписей -->
-                                <circle
-                                    class="stamp__dot"
-                                    cx="13.5"
-                                    cy="65"
-                                    r="2"
-                                ></circle>
-                                <circle
-                                    class="stamp__dot"
-                                    cx="116.5"
-                                    cy="65"
-                                    r="2"
-                                ></circle>
-
-                                <text
-                                    class="stamp__year"
-                                    x="65"
-                                    y="72"
-                                    text-anchor="middle"
-                                >
-                                    С 1970-х
-                                </text>
-                                <!-- Росчерк уводим под год: без сдвига листья приходились
-                                 на 69.6-80 по вертикали, а строка «С 1970-х» занимает
-                                 53.7-76.1 — орнамент ложился прямо на цифры. -->
-                                <g transform="translate(0, 14)">
-                                    <path
-                                        class="stamp__leaf"
-                                        d="M65 80c5-.6 8.4-5 9-10.4-5 .6-8.4 4.6-9 10.4z"
-                                    ></path>
-                                    <path
-                                        class="stamp__leaf"
-                                        d="M65 80c-5-.6-8.4-5-9-10.4 5 .6 8.4 4.6 9 10.4z"
-                                    ></path>
-                                    <path
-                                        class="stamp__stem"
-                                        d="M65 81v-6"
-                                    ></path>
-                                </g>
-                            </svg>
                         </div>
                     </div>
                 </section>

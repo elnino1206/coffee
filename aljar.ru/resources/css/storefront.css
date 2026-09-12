@@ -1156,22 +1156,33 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   background: transparent;
 }
 
-/* «Наследие» лежало на песочной секции, теперь — на съёмке: подписи
-   светлеют, а собственный фон секции ей больше не нужен. */
-.is-enhanced .scene__layer--heritage .h2,
-.is-enhanced .scene__layer--heritage .lead,
-.is-enhanced .scene__layer--heritage .muted { color: #fff; }
-.is-enhanced .scene__layer--heritage .lead,
-.is-enhanced .scene__layer--heritage .muted { color: rgba(255, 252, 247, .82); }
-.is-enhanced .scene__layer--heritage .eyebrow { color: rgba(255, 252, 247, .88); }
-.is-enhanced .scene__layer--heritage .btn--petrol {
-  background: var(--surface);
-  color: var(--petrol);
+/* «Наследие» по документу inst_designe/AlJar_Heritage_Block.docx —
+   светлая карточка на съёмке: слева гравюра, справа текст и кнопка.
+   Подписи внутри карточки остаются тёмными, как были на песочной
+   секции. */
+.heritage__art {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  object-fit: contain;
+  justify-self: center;
 }
-/* Снимок в «Наследии» на съёмке лишний: два изображения друг на друге
-   спорят. Остаётся текст. */
-.is-enhanced .scene__layer--heritage .heritage__photo { display: none; }
-.is-enhanced .scene__layer--heritage .heritage { grid-template-columns: 1fr; }
+.is-enhanced .scene__layer--heritage .heritage {
+  padding: 32px 28px;
+  border-radius: var(--radius-l);
+  background: var(--paper);
+  background: color-mix(in srgb, var(--sand) 45%, var(--paper));
+  gap: 28px;
+}
+@media (min-width: 900px) {
+  .is-enhanced .scene__layer--heritage .heritage {
+    grid-template-columns: minmax(240px, 0.9fr) 1.1fr;
+    padding: 36px 44px;
+    gap: 40px;
+  }
+  .heritage__art { max-height: 320px; }
+}
 
 /* Отзывы стояли на тёмной секции и уже набраны светлым — им хватает
    снятого фона. */
@@ -1237,6 +1248,7 @@ html:not(.is-enhanced) .scene__layer--heritage {
   grid-column: 1;
   background: var(--sand);
 }
+html:not(.is-enhanced) .heritage__art { max-height: 260px; }
 html:not(.is-enhanced) .scene__layer--reviews {
   grid-row: 5;
   grid-column: 1;
