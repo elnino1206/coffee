@@ -69,9 +69,9 @@ class HomeTest extends TestCase
      */
     public function test_scene_film_is_served_in_ranges()
     {
-        $this->get(route('media.film', ['film' => 'hero.mp4']), ['Range' => 'bytes=1000-1999'])
+        $this->get(route('media.film', ['film' => 'scene-1.mp4']), ['Range' => 'bytes=1000-1999'])
             ->assertStatus(206)
-            ->assertHeader('Content-Range', 'bytes 1000-1999/'.filesize(public_path('video/hero.mp4')))
+            ->assertHeader('Content-Range', 'bytes 1000-1999/'.filesize(public_path('video/scene-1.mp4')))
             ->assertHeader('Content-Length', '1000');
     }
 

@@ -18,7 +18,7 @@ import { motionOn } from '@/lib/motion';
 /* Адреса роликов приходят с сервера: под встроенным сервером PHP они
    идут через приложение, иначе перемотка невозможна. Подробности — в
    HomeController::films(). */
-defineProps<{ films: { hero: string; roast: string } }>();
+defineProps<{ films: string[] }>();
 
 /**
  * Три входа в каталог с уже включённым фильтром по способу заваривания.
@@ -79,11 +79,13 @@ const { slide } = useHeroSlides(heroStage, video ? 0 : heroSlides.length);
 /* Сцена первого экрана: ролик листается прокруткой, подпись героя
    уходит, подпись «Свежей партии» приходит. */
 const scene = ref<HTMLElement | null>(null);
-const heroFilm = ref<HTMLVideoElement | null>(null);
-const roastFilm = ref<HTMLVideoElement | null>(null);
 
-/* Два перехода, три подписи: герой → свежая партия → подписка. */
-const { live } = useScrollScene(scene, [heroFilm, roastFilm]);
+/* Узлы роликов по порядку: сколько роликов пришло с сервера, столько и
+   переходов. Блоков на один больше — герой, свежая партия, подписка,
+   наследие, отзывы. */
+const filmEls = ref<(HTMLVideoElement | null)[]>([]);
+
+const { live } = useScrollScene(scene, filmEls);
 </script>
 
 <template>
@@ -106,38 +108,28 @@ const { live } = useScrollScene(scene, [heroFilm, roastFilm]);
     <div ref="scene" class="scene">
         <div class="scene__stage">
             <div class="scene__film">
-                <!-- Ролик не идёт сам: ни autoplay, ни loop. Его
-                     положение задаёт прокрутка, поэтому здесь только
-                     постер и предзагрузка. -->
-                <video
-                    v-if="video"
-                    ref="heroFilm"
-                    poster="/img/hero-video-poster.webp"
-                    width="1280"
-                    height="720"
-                    muted
-                    playsinline
-                    preload="auto"
-                    aria-hidden="true"
-                >
-                    <source :src="films.hero" type="video/mp4" />
-                </video>
-
-                <!-- Второй ролик лежит поверх первого и проявляется на
-                     стыке переходов, где на экране одна съёмка. -->
-                <video
-                    v-if="video"
-                    ref="roastFilm"
-                    class="scene__film--next"
-                    width="1280"
-                    height="720"
-                    muted
-                    playsinline
-                    preload="auto"
-                    aria-hidden="true"
-                >
-                    <source :src="films.roast" type="video/mp4" />
-                </video>
+                <template v-if="video">
+                    <!-- Ролик не идёт сам: ни autoplay, ни loop. Его
+                         положение задаёт прокрутка, поэтому здесь только
+                         постер у первого и предзагрузка. Остальные лежат
+                         сверху и проявляются на стыках переходов. -->
+                    <video
+                        v-for="(src, i) in films"
+                        :key="src"
+                        :ref="(el) => (filmEls[i] = el as HTMLVideoElement)"
+                        :poster="
+                            i === 0 ? '/img/hero-video-poster.webp' : undefined
+                        "
+                        width="1280"
+                        height="720"
+                        muted
+                        playsinline
+                        preload="auto"
+                        aria-hidden="true"
+                    >
+                        <source :src="src" type="video/mp4" />
+                    </video>
+                </template>
 
                 <!-- Без движения на месте съёмки остаются прежние кадры;
                      листать их тоже не нужно, показывается первый. -->
@@ -363,201 +355,226 @@ const { live } = useScrollScene(scene, [heroFilm, roastFilm]);
                     </div>
                 </section>
             </div>
+
+            <div
+                class="scene__layer scene__layer--heritage"
+                :class="{ 'is-live': live === 3 }"
+            >
+                <section class="section">
+                    <div class="heritage container">
+                        <div class="stack">
+                            <p class="eyebrow">Наше наследие</p>
+                            <h2 class="h2">Больше, чем кофе. Наша история.</h2>
+                            <p class="lead">
+                                С XVI века кофе в Ливане — знак уважения и живая
+                                традиция. Al Jar продолжает её в современном
+                                формате: семейный бренд, полное производство в
+                                России, внимание к зерну и ритуалу.
+                            </p>
+                            <p class="muted">
+                                Мы специализируемся на эспрессо и ливанском
+                                кофе, а также обжариваем под гейзер,
+                                френч-пресс, фильтр и турку.
+                            </p>
+                            <div class="cluster">
+                                <Link class="btn btn--petrol" href="/about"
+                                    >Узнать нашу историю</Link
+                                >
+                            </div>
+                        </div>
+                        <div class="heritage__photo">
+                            <!-- Рваная кайма: белый лист под фотографией, его край
+                             размывается фильтром смещения. Само фото фильтр не
+                             трогает — иначе турка пошла бы волнами. -->
+                            <div class="torn">
+                                <img
+                                    src="/img/dallah.webp"
+                                    width="1152"
+                                    height="864"
+                                    loading="lazy"
+                                    decoding="async"
+                                    alt="Медная турка и чашка кофе на грифельной доске"
+                                />
+                            </div>
+
+                            <svg
+                                class="stamp"
+                                viewBox="0 0 130 130"
+                                role="img"
+                                aria-label="Корни в Ливане с 1970-х. Сделано с любовью"
+                            >
+                                <defs>
+                                    <!-- Дуги для текста. Верхняя идёт слева направо поверху,
+                                     нижняя — слева направо понизу: на обеих буквы стоят
+                                     ровно, без переворота. -->
+                                    <path
+                                        id="stamp-top"
+                                        d="M 17,65 A 48,48 0 0 1 113,65"
+                                        fill="none"
+                                    ></path>
+                                    <path
+                                        id="stamp-bottom"
+                                        d="M 18,65 A 47,47 0 0 0 112,65"
+                                        fill="none"
+                                    ></path>
+                                </defs>
+
+                                <circle
+                                    class="stamp__disc"
+                                    cx="65"
+                                    cy="65"
+                                    r="64"
+                                ></circle>
+                                <circle
+                                    class="stamp__ring"
+                                    cx="65"
+                                    cy="65"
+                                    r="60"
+                                ></circle>
+                                <circle
+                                    class="stamp__ring stamp__ring--thin"
+                                    cx="65"
+                                    cy="65"
+                                    r="52"
+                                ></circle>
+
+                                <text class="stamp__arc">
+                                    <textPath
+                                        href="#stamp-top"
+                                        startOffset="50%"
+                                        text-anchor="middle"
+                                    >
+                                        Корни в Ливане
+                                    </textPath>
+                                </text>
+                                <text class="stamp__arc">
+                                    <textPath
+                                        href="#stamp-bottom"
+                                        startOffset="50%"
+                                        text-anchor="middle"
+                                    >
+                                        Сделано с любовью
+                                    </textPath>
+                                </text>
+
+                                <!-- Разделители на оси: отбивают начало и конец надписей -->
+                                <circle
+                                    class="stamp__dot"
+                                    cx="13.5"
+                                    cy="65"
+                                    r="2"
+                                ></circle>
+                                <circle
+                                    class="stamp__dot"
+                                    cx="116.5"
+                                    cy="65"
+                                    r="2"
+                                ></circle>
+
+                                <text
+                                    class="stamp__year"
+                                    x="65"
+                                    y="72"
+                                    text-anchor="middle"
+                                >
+                                    С 1970-х
+                                </text>
+                                <!-- Росчерк уводим под год: без сдвига листья приходились
+                                 на 69.6-80 по вертикали, а строка «С 1970-х» занимает
+                                 53.7-76.1 — орнамент ложился прямо на цифры. -->
+                                <g transform="translate(0, 14)">
+                                    <path
+                                        class="stamp__leaf"
+                                        d="M65 80c5-.6 8.4-5 9-10.4-5 .6-8.4 4.6-9 10.4z"
+                                    ></path>
+                                    <path
+                                        class="stamp__leaf"
+                                        d="M65 80c-5-.6-8.4-5-9-10.4 5 .6 8.4 4.6 9 10.4z"
+                                    ></path>
+                                    <path
+                                        class="stamp__stem"
+                                        d="M65 81v-6"
+                                    ></path>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div
+                class="scene__layer scene__layer--reviews"
+                :class="{ 'is-live': live === 4 }"
+            >
+                <section class="section">
+                    <div class="container">
+                        <p class="eyebrow">Что говорят о нас</p>
+                        <h2 class="h2" style="color: #fff; margin: 8px 0 28px">
+                            Любимый кофе. Настоящие истории.
+                        </h2>
+                        <div class="reviews">
+                            <article class="review" data-reveal>
+                                <div
+                                    class="stars"
+                                    role="img"
+                                    aria-label="Оценка 5 из 5"
+                                >
+                                    ★★★★★
+                                </div>
+                                <p class="review__text">
+                                    Потрясающий кофе с душой и историей.
+                                    Чувствуется качество в каждой чашке.
+                                </p>
+                                <footer class="review__author">
+                                    <span class="review__name">— Мария П.</span>
+                                    <span class="review__city">Москва</span>
+                                </footer>
+                            </article>
+                            <article class="review" data-reveal>
+                                <div
+                                    class="stars"
+                                    role="img"
+                                    aria-label="Оценка 5 из 5"
+                                >
+                                    ★★★★★
+                                </div>
+                                <p class="review__text">
+                                    Подписка — лучшее решение. Кофе всегда
+                                    свежий, а доставка как по волшебству.
+                                </p>
+                                <footer class="review__author">
+                                    <span class="review__name"
+                                        >— Дмитрий К.</span
+                                    >
+                                    <span class="review__city"
+                                        >Санкт-Петербург</span
+                                    >
+                                </footer>
+                            </article>
+                            <article class="review" data-reveal>
+                                <div
+                                    class="stars"
+                                    role="img"
+                                    aria-label="Оценка 5 из 5"
+                                >
+                                    ★★★★★
+                                </div>
+                                <p class="review__text">
+                                    Премиум-качество и вдохновляющая история.
+                                    Гордимся тем, что выбираем Al Jar.
+                                </p>
+                                <footer class="review__author">
+                                    <span class="review__name">— Елена К.</span>
+                                    <span class="review__city">Казань</span>
+                                </footer>
+                            </article>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </div>
     </div>
 
-    <section class="section section--sand">
-        <span
-            class="lamp"
-            aria-hidden="true"
-            style="
-                background: radial-gradient(
-                    64% 52% at 78% 30%,
-                    rgba(255, 252, 247, 0.55),
-                    rgba(255, 252, 247, 0) 72%
-                );
-            "
-        ></span>
-        <div class="heritage container">
-            <div class="stack">
-                <p class="eyebrow">Наше наследие</p>
-                <h2 class="h2">Больше, чем кофе. Наша история.</h2>
-                <p class="lead">
-                    С XVI века кофе в Ливане — знак уважения и живая традиция.
-                    Al Jar продолжает её в современном формате: семейный бренд,
-                    полное производство в России, внимание к зерну и ритуалу.
-                </p>
-                <p class="muted">
-                    Мы специализируемся на эспрессо и ливанском кофе, а также
-                    обжариваем под гейзер, френч-пресс, фильтр и турку.
-                </p>
-                <div class="cluster">
-                    <Link class="btn btn--petrol" href="/about"
-                        >Узнать нашу историю</Link
-                    >
-                </div>
-            </div>
-            <div class="heritage__photo">
-                <!-- Рваная кайма: белый лист под фотографией, его край
-                     размывается фильтром смещения. Само фото фильтр не
-                     трогает — иначе турка пошла бы волнами. -->
-                <div class="torn">
-                    <img
-                        src="/img/dallah.webp"
-                        width="1152"
-                        height="864"
-                        loading="lazy"
-                        decoding="async"
-                        alt="Медная турка и чашка кофе на грифельной доске"
-                    />
-                </div>
-
-                <svg
-                    class="stamp"
-                    viewBox="0 0 130 130"
-                    role="img"
-                    aria-label="Корни в Ливане с 1970-х. Сделано с любовью"
-                >
-                    <defs>
-                        <!-- Дуги для текста. Верхняя идёт слева направо поверху,
-                             нижняя — слева направо понизу: на обеих буквы стоят
-                             ровно, без переворота. -->
-                        <path
-                            id="stamp-top"
-                            d="M 17,65 A 48,48 0 0 1 113,65"
-                            fill="none"
-                        ></path>
-                        <path
-                            id="stamp-bottom"
-                            d="M 18,65 A 47,47 0 0 0 112,65"
-                            fill="none"
-                        ></path>
-                    </defs>
-
-                    <circle class="stamp__disc" cx="65" cy="65" r="64"></circle>
-                    <circle class="stamp__ring" cx="65" cy="65" r="60"></circle>
-                    <circle
-                        class="stamp__ring stamp__ring--thin"
-                        cx="65"
-                        cy="65"
-                        r="52"
-                    ></circle>
-
-                    <text class="stamp__arc">
-                        <textPath
-                            href="#stamp-top"
-                            startOffset="50%"
-                            text-anchor="middle"
-                        >
-                            Корни в Ливане
-                        </textPath>
-                    </text>
-                    <text class="stamp__arc">
-                        <textPath
-                            href="#stamp-bottom"
-                            startOffset="50%"
-                            text-anchor="middle"
-                        >
-                            Сделано с любовью
-                        </textPath>
-                    </text>
-
-                    <!-- Разделители на оси: отбивают начало и конец надписей -->
-                    <circle class="stamp__dot" cx="13.5" cy="65" r="2"></circle>
-                    <circle
-                        class="stamp__dot"
-                        cx="116.5"
-                        cy="65"
-                        r="2"
-                    ></circle>
-
-                    <text
-                        class="stamp__year"
-                        x="65"
-                        y="72"
-                        text-anchor="middle"
-                    >
-                        С 1970-х
-                    </text>
-                    <!-- Росчерк уводим под год: без сдвига листья приходились
-                         на 69.6-80 по вертикали, а строка «С 1970-х» занимает
-                         53.7-76.1 — орнамент ложился прямо на цифры. -->
-                    <g transform="translate(0, 14)">
-                        <path
-                            class="stamp__leaf"
-                            d="M65 80c5-.6 8.4-5 9-10.4-5 .6-8.4 4.6-9 10.4z"
-                        ></path>
-                        <path
-                            class="stamp__leaf"
-                            d="M65 80c-5-.6-8.4-5-9-10.4 5 .6 8.4 4.6 9 10.4z"
-                        ></path>
-                        <path class="stamp__stem" d="M65 81v-6"></path>
-                    </g>
-                </svg>
-            </div>
-        </div>
-    </section>
-
-    <section class="section section--petrol">
-        <span
-            class="lamp"
-            aria-hidden="true"
-            style="
-                background: radial-gradient(
-                    58% 62% at 34% 26%,
-                    rgba(255, 240, 214, 0.16),
-                    rgba(255, 240, 214, 0) 70%
-                );
-            "
-        ></span>
-        <div class="container">
-            <p class="eyebrow">Что говорят о нас</p>
-            <h2 class="h2" style="color: #fff; margin: 8px 0 28px">
-                Любимый кофе. Настоящие истории.
-            </h2>
-            <div class="reviews">
-                <article class="review" data-reveal>
-                    <div class="stars" role="img" aria-label="Оценка 5 из 5">
-                        ★★★★★
-                    </div>
-                    <p class="review__text">
-                        Потрясающий кофе с душой и историей. Чувствуется
-                        качество в каждой чашке.
-                    </p>
-                    <footer class="review__author">
-                        <span class="review__name">— Мария П.</span>
-                        <span class="review__city">Москва</span>
-                    </footer>
-                </article>
-                <article class="review" data-reveal>
-                    <div class="stars" role="img" aria-label="Оценка 5 из 5">
-                        ★★★★★
-                    </div>
-                    <p class="review__text">
-                        Подписка — лучшее решение. Кофе всегда свежий, а
-                        доставка как по волшебству.
-                    </p>
-                    <footer class="review__author">
-                        <span class="review__name">— Дмитрий К.</span>
-                        <span class="review__city">Санкт-Петербург</span>
-                    </footer>
-                </article>
-                <article class="review" data-reveal>
-                    <div class="stars" role="img" aria-label="Оценка 5 из 5">
-                        ★★★★★
-                    </div>
-                    <p class="review__text">
-                        Премиум-качество и вдохновляющая история. Гордимся тем,
-                        что выбираем Al Jar.
-                    </p>
-                    <footer class="review__author">
-                        <span class="review__name">— Елена К.</span>
-                        <span class="review__city">Казань</span>
-                    </footer>
-                </article>
-            </div>
-        </div>
-    </section>
     <section class="section">
         <span
             class="lamp"

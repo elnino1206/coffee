@@ -24,6 +24,14 @@ class HomeController extends Controller
      */
     protected const FEATURED_LIMIT = 4;
 
+    /**
+     * Сколько роликов в сцене первых экранов.
+     *
+     * Переходов столько же, блоков на один больше: герой, свежая партия,
+     * подписка, наследие, отзывы.
+     */
+    protected const SCENE_FILMS = 4;
+
     public function index(): Response
     {
         return Inertia::render('Home', [
@@ -33,7 +41,8 @@ class HomeController extends Controller
     }
 
     /**
-     * Адреса роликов сцены: по одному на переход между блоками.
+     * Адреса роликов сцены: по одному на переход между блоками, по
+     * порядку.
      *
      * Скраб держится на перемотке, а перемотка — на умении сервера
      * отдавать куски файла. Встроенный сервер PHP, на котором работает
@@ -44,17 +53,19 @@ class HomeController extends Controller
      * На боевом сервере файл раздаёт nginx — там прямой путь и быстрее,
      * и правильнее.
      *
-     * @return array<string, string>
+     * @return list<string>
      */
     protected function films(): array
     {
-        return collect(['hero', 'roast'])
-            ->mapWithKeys(fn (string $name): array => [
-                $name => PHP_SAPI === 'cli-server'
-                    ? route('media.film', ['film' => "{$name}.mp4"])
-                    : "/video/{$name}.mp4",
-            ])
-            ->all();
+        $films = [];
+
+        for ($n = 1; $n <= self::SCENE_FILMS; $n++) {
+            $films[] = PHP_SAPI === 'cli-server'
+                ? route('media.film', ['film' => "scene-{$n}.mp4"])
+                : "/video/scene-{$n}.mp4";
+        }
+
+        return $films;
     }
 
     /**

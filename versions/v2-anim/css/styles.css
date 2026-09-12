@@ -991,14 +991,20 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   --in-1: 1;
   --out-2: 0;
   --in-2: 1;
+  --out-3: 0;
+  --in-3: 1;
+  --out-4: 0;
+  --in-4: 1;
   --film-2: 0;
+  --film-3: 0;
+  --film-4: 0;
 }
 .is-enhanced .scene {
   position: relative;
   /* Ход сцены. Чем он длиннее, тем медленнее идут и ролики, и подписи:
      доля считается от пройденного пути, а не от времени. По 320vh на
      переход — примерно три оборота колеса на каждый. */
-  height: 640vh;
+  height: 1280vh;
 }
 .is-enhanced .scene__stage {
   position: sticky;
@@ -1023,9 +1029,12 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   object-fit: cover;
   display: block;
 }
-/* Второй ролик лежит поверх первого и проявляется на стыке переходов —
-   там на экране одна съёмка, и подмены не видно. */
-.scene__film--next { opacity: var(--film-2); }
+/* Ролики лежат стопкой, каждый следующий проявляется на своём стыке —
+   там на экране одна съёмка, и подмены не видно. Порядок в разметке
+   совпадает с порядком переходов, поэтому отбор по номеру узла. */
+.scene__film video:nth-child(2) { opacity: var(--film-2); }
+.scene__film video:nth-child(3) { opacity: var(--film-3); }
+.scene__film video:nth-child(4) { opacity: var(--film-4); }
 /* Затемнение то же, что было у полноэкранного героя: подписи ложатся на
    съёмку, и без него они на светлых кадрах не читаются. */
 .scene__film::after {
@@ -1076,7 +1085,16 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   translate: 0 calc((var(--in-1) - var(--out-2)) * var(--depth));
 }
 .is-enhanced .scene__layer--model .subscribe-band {
-  translate: 0 calc(var(--in-2) * var(--depth));
+  translate: 0 calc((var(--in-2) - var(--out-3)) * var(--depth));
+}
+.is-enhanced .scene__layer--heritage .stack,
+.is-enhanced .scene__layer--heritage .heritage__photo {
+  translate: 0 calc((var(--in-3) - var(--out-4)) * var(--depth));
+}
+.is-enhanced .scene__layer--reviews .eyebrow,
+.is-enhanced .scene__layer--reviews .h2,
+.is-enhanced .scene__layer--reviews .reviews {
+  translate: 0 calc(var(--in-4) * var(--depth));
 }
 
 /* Глубины подобраны по порядку чтения: надзаголовок трогается первым и
@@ -1093,11 +1111,20 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
 .is-enhanced .scene__layer--roast .brew-grid { --depth: 100vh; }
 
 .is-enhanced .scene__layer--model .subscribe-band { --depth: 92vh; }
+
+.is-enhanced .scene__layer--heritage .stack { --depth: 88vh; }
+.is-enhanced .scene__layer--heritage .heritage__photo { --depth: 100vh; }
+
+.is-enhanced .scene__layer--reviews .eyebrow { --depth: 84vh; }
+.is-enhanced .scene__layer--reviews .h2 { --depth: 92vh; }
+.is-enhanced .scene__layer--reviews .reviews { --depth: 104vh; }
 /* Нажатия принимает только доехавший слой: подпись героя — пока она
    видна, карточки — когда сцена дошла до конца. */
 .is-enhanced .scene__layer--hero > * { pointer-events: auto; }
 .is-enhanced .scene__layer--roast.is-live,
-.is-enhanced .scene__layer--model.is-live { pointer-events: auto; }
+.is-enhanced .scene__layer--model.is-live,
+.is-enhanced .scene__layer--heritage.is-live,
+.is-enhanced .scene__layer--reviews.is-live { pointer-events: auto; }
 
 /* Подписи героя внутри сцены ведут себя как в полноэкранном герое:
    по центру, светлым по съёмке. */
@@ -1129,6 +1156,27 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   background: transparent;
 }
 
+/* «Наследие» лежало на песочной секции, теперь — на съёмке: подписи
+   светлеют, а собственный фон секции ей больше не нужен. */
+.is-enhanced .scene__layer--heritage .h2,
+.is-enhanced .scene__layer--heritage .lead,
+.is-enhanced .scene__layer--heritage .muted { color: #fff; }
+.is-enhanced .scene__layer--heritage .lead,
+.is-enhanced .scene__layer--heritage .muted { color: rgba(255, 252, 247, .82); }
+.is-enhanced .scene__layer--heritage .eyebrow { color: rgba(255, 252, 247, .88); }
+.is-enhanced .scene__layer--heritage .btn--petrol {
+  background: var(--surface);
+  color: var(--petrol);
+}
+/* Снимок в «Наследии» на съёмке лишний: два изображения друг на друге
+   спорят. Остаётся текст. */
+.is-enhanced .scene__layer--heritage .heritage__photo { display: none; }
+.is-enhanced .scene__layer--heritage .heritage { grid-template-columns: 1fr; }
+
+/* Отзывы стояли на тёмной секции и уже набраны светлым — им хватает
+   снятого фона. */
+.is-enhanced .scene__layer--reviews .eyebrow { color: rgba(255, 252, 247, .88); }
+
 /* Вторая подпись лежит на той же съёмке, поэтому светлая. */
 .is-enhanced .scene__layer--roast .h2,
 .is-enhanced .scene__layer--roast .eyebrow,
@@ -1138,7 +1186,7 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
 .is-enhanced .scene__layer--roast .section { padding: 0; }
 
 @media (max-width: 899px) {
-  .is-enhanced .scene { height: 520vh; }
+  .is-enhanced .scene { height: 1040vh; }
   /* На узком экране ход короче: строки уже и уезжают быстрее. */
   .is-enhanced .scene__layer--hero .eyebrow { --depth: 58vh; }
   .is-enhanced .scene__layer--hero .display { --depth: 64vh; }
@@ -1148,6 +1196,10 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   .is-enhanced .scene__layer--roast .section-head { --depth: 80vh; }
   .is-enhanced .scene__layer--roast .brew-grid { --depth: 92vh; }
   .is-enhanced .scene__layer--model .subscribe-band { --depth: 86vh; }
+  .is-enhanced .scene__layer--heritage .stack { --depth: 82vh; }
+  .is-enhanced .scene__layer--reviews .eyebrow { --depth: 78vh; }
+  .is-enhanced .scene__layer--reviews .h2 { --depth: 86vh; }
+  .is-enhanced .scene__layer--reviews .reviews { --depth: 96vh; }
 }
 
 /* Без движения сцены нет: секция не приколота, слои идут один за другим,
@@ -1178,8 +1230,20 @@ html:not(.is-enhanced) .scene__layer--model {
   grid-row: 3;
   grid-column: 1;
 }
-/* Второй ролик без движения не нужен вовсе: листать его нечем. */
-html:not(.is-enhanced) .scene__film--next { display: none; }
+html:not(.is-enhanced) .scene__layer--heritage {
+  grid-row: 4;
+  grid-column: 1;
+  background: var(--sand);
+}
+html:not(.is-enhanced) .scene__layer--reviews {
+  grid-row: 5;
+  grid-column: 1;
+  background: var(--petrol);
+}
+html:not(.is-enhanced) .scene__layer--reviews .eyebrow,
+html:not(.is-enhanced) .scene__layer--reviews .h2 { color: #fff; }
+/* Остальные ролики без движения не нужны вовсе: листать их нечем. */
+html:not(.is-enhanced) .scene__film video:not(:first-child) { display: none; }
 /* На светлом фоне подписи второго блока снова тёмные. */
 html:not(.is-enhanced) .scene__layer--roast .h2 { color: var(--petrol); }
 html:not(.is-enhanced) .scene__layer--roast .lead { color: var(--grey); }
@@ -3406,6 +3470,36 @@ html:not(.is-enhanced) .scene__layer--roast .lead { color: var(--grey); }
   inherits: true;
 }
 @property --film-2 {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+@property --out-4 {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+@property --in-4 {
+  syntax: "<number>";
+  initial-value: 1;
+  inherits: true;
+}
+@property --film-4 {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+@property --out-3 {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+@property --in-3 {
+  syntax: "<number>";
+  initial-value: 1;
+  inherits: true;
+}
+@property --film-3 {
   syntax: "<number>";
   initial-value: 0;
   inherits: true;

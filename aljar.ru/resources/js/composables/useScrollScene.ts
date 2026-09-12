@@ -42,7 +42,7 @@ const span = (v: number, from: number, to: number): number =>
 
 export function useScrollScene(
     scene: Ref<HTMLElement | null>,
-    films: Ref<HTMLVideoElement | null>[],
+    films: Ref<(HTMLVideoElement | null)[]>,
 ) {
     /** Пройденная доля сцены, 0..1. */
     const progress = ref(0);
@@ -74,11 +74,11 @@ export function useScrollScene(
            раскладка, и страница до неё не дотягивается. */
         document.documentElement.classList.toggle('is-over-film', p < 0.98);
 
-        const steps = films.length;
+        const steps = films.value.length;
         const out: number[] = [];
         const arrive: number[] = [];
 
-        films.forEach((film, i) => {
+        films.value.forEach((v, i) => {
             /* Доля внутри своего перехода: до него 0, после 1. */
             const q = span(p, i / steps, (i + 1) / steps);
 
@@ -105,8 +105,6 @@ export function useScrollScene(
             /* Ролик стоит на месте до начала и после конца своего
                отрезка: первый и последний кадры должны держаться, чтобы
                подписи вставали на спокойную картинку. */
-            const v = film.value;
-
             if (v && Number.isFinite(v.duration) && v.duration > 0) {
                 const t = span(q, FILM_FROM, FILM_TO) * v.duration;
 
@@ -161,9 +159,7 @@ export function useScrollScene(
      * человека; если всё же откажут — повторим при первом касании.
      */
     function wake(): void {
-        films.forEach((film) => {
-            const v = film.value;
-
+        films.value.forEach((v) => {
             if (!v || v.readyState >= 3) {
                 return;
             }
@@ -197,9 +193,7 @@ export function useScrollScene(
 
         /* Длительность приходит позже разметки: до неё перематывать
            нечего, поэтому первый расчёт повторяем по готовности. */
-        films.forEach((film) =>
-            film.value?.addEventListener('loadedmetadata', paint),
-        );
+        films.value.forEach((v) => v?.addEventListener('loadedmetadata', paint));
 
         wake();
         paint();
@@ -211,8 +205,8 @@ export function useScrollScene(
         window.removeEventListener('resize', onScroll);
         window.removeEventListener('pointerdown', wake);
         window.removeEventListener('touchstart', wake);
-        films.forEach((film) =>
-            film.value?.removeEventListener('loadedmetadata', paint),
+        films.value.forEach((v) =>
+            v?.removeEventListener('loadedmetadata', paint),
         );
     });
 
