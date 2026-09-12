@@ -1002,9 +1002,9 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
 .is-enhanced .scene {
   position: relative;
   /* Ход сцены. Чем он длиннее, тем медленнее идут и ролики, и подписи:
-     доля считается от пройденного пути, а не от времени. По 320vh на
-     переход — примерно три оборота колеса на каждый. */
-  height: 1280vh;
+     доля считается от пройденного пути, а не от времени. По 240vh на
+     переход — около двух с половиной оборотов колеса на каждый. */
+  height: 960vh;
 }
 .is-enhanced .scene__stage {
   position: sticky;
@@ -1186,7 +1186,9 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
 .is-enhanced .scene__layer--roast .section { padding: 0; }
 
 @media (max-width: 899px) {
-  .is-enhanced .scene { height: 1040vh; }
+  /* На узком экране шаг короче: там и подписи ниже, и прокрутка
+     пальцем длиннее по ощущению. */
+  .is-enhanced .scene { height: 800vh; }
   /* На узком экране ход короче: строки уже и уезжают быстрее. */
   .is-enhanced .scene__layer--hero .eyebrow { --depth: 58vh; }
   .is-enhanced .scene__layer--hero .display { --depth: 64vh; }
