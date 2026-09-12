@@ -1087,8 +1087,10 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
 .is-enhanced .scene__layer--model .subscribe-band {
   translate: 0 calc((var(--in-2) - var(--out-3)) * var(--depth));
 }
-.is-enhanced .scene__layer--heritage .stack,
-.is-enhanced .scene__layer--heritage .heritage__photo {
+/* Уезжает и приезжает вся карточка целиком: поверхность у неё своя, и
+   двигать одни строки нельзя — карточка осталась бы висеть на экране
+   пустой рамкой поверх соседних блоков. */
+.is-enhanced .scene__layer--heritage .heritage {
   translate: 0 calc((var(--in-3) - var(--out-4)) * var(--depth));
 }
 .is-enhanced .scene__layer--reviews .eyebrow,
@@ -1112,8 +1114,7 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
 
 .is-enhanced .scene__layer--model .subscribe-band { --depth: 92vh; }
 
-.is-enhanced .scene__layer--heritage .stack { --depth: 88vh; }
-.is-enhanced .scene__layer--heritage .heritage__photo { --depth: 100vh; }
+.is-enhanced .scene__layer--heritage .heritage { --depth: 92vh; }
 
 .is-enhanced .scene__layer--reviews .eyebrow { --depth: 84vh; }
 .is-enhanced .scene__layer--reviews .h2 { --depth: 92vh; }
@@ -1209,7 +1210,7 @@ input[type="checkbox"]:disabled { opacity: .45; cursor: not-allowed; }
   .is-enhanced .scene__layer--roast .section-head { --depth: 80vh; }
   .is-enhanced .scene__layer--roast .brew-grid { --depth: 92vh; }
   .is-enhanced .scene__layer--model .subscribe-band { --depth: 86vh; }
-  .is-enhanced .scene__layer--heritage .stack { --depth: 82vh; }
+  .is-enhanced .scene__layer--heritage .heritage { --depth: 86vh; }
   .is-enhanced .scene__layer--reviews .eyebrow { --depth: 78vh; }
   .is-enhanced .scene__layer--reviews .h2 { --depth: 86vh; }
   .is-enhanced .scene__layer--reviews .reviews { --depth: 96vh; }
