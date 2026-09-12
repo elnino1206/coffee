@@ -32,21 +32,21 @@ const brews = [
     {
         value: 'cezve',
         label: 'Турка',
-        note: 'Плотное тело, восточные специи',
+        note: 'Насыщенный, восточный вкус с медными нотами и мягкой пенкой.',
         image: '/img/brew-cezve.webp',
         alt: 'Медная турка',
     },
     {
         value: 'espresso',
         label: 'Эспрессо',
-        note: 'Шоколад, орех, плотная текстура',
+        note: 'Плотное тело, crema и яркий характер в каждой чашке.',
         image: '/img/brew-espresso.webp',
         alt: 'Чашка с восточным орнаментом',
     },
     {
         value: 'filter',
         label: 'Фильтр',
-        note: 'Цветы, цитрус, чистота чашки',
+        note: 'Чистый, прозрачный вкус с цветочными и фруктовыми оттенками.',
         image: '/img/brew-filter.webp',
         alt: 'Пуровер над стеклянным сервером',
     },
@@ -222,14 +222,12 @@ const { live } = useScrollScene(scene, filmEls);
             >
                 <section class="section">
                     <div class="container">
-                        <div class="section-head" data-reveal>
+                        <div class="section-head section-head--mid" data-reveal>
                             <div>
-                                <p class="eyebrow">Свежая партия</p>
-                                <h2 class="h2">Свежая обжарка этой недели</h2>
-                                <p class="lead" style="margin-top: 10px">
-                                    Выберите способ заваривания — откроется
-                                    каталог с нужным фильтром.
+                                <p class="eyebrow eyebrow--ruled">
+                                    Свежая партия
                                 </p>
+                                <h2 class="h2">Свежая обжарка этой недели.</h2>
                             </div>
                         </div>
                         <div class="brew-grid">
@@ -243,34 +241,36 @@ const { live } = useScrollScene(scene, filmEls);
                                 :href="`/catalog/coffee?method=${brew.value}`"
                                 data-reveal
                             >
-                                <!-- Рисунок обтекается текстом по своему
-                                 контуру: `shape-outside` берёт форму из
-                                 альфы того же файла, поэтому адрес
-                                 задаётся здесь, а не в стилях. Слой
-                                 отдельный — сдвиг он отрабатывает своим
-                                 ходом, а обтекание считается по
-                                 несдвинутой рамке и не пересчитывается. -->
-                                <img
-                                    class="brew-card__art"
-                                    :src="brew.image"
-                                    :alt="brew.alt"
-                                    :style="{
-                                        shapeOutside: `url(${brew.image})`,
-                                    }"
-                                    width="480"
-                                    height="600"
-                                    loading="eager"
-                                    decoding="async"
-                                />
-                                <span class="brew-card__title">{{
-                                    brew.label
-                                }}</span>
-                                <span class="brew-card__note">{{
-                                    brew.note
-                                }}</span>
-                                <span class="brew-card__cta"
-                                    >Смотреть каталог →</span
-                                >
+                                <!-- Медальон сидит в вырезе верхней
+                                     кромки — форма из нового документа.
+                                     Круг лежит отдельным слоем поверх
+                                     карточки, вырез делает маска. -->
+                                <span class="brew-card__medal">
+                                    <img
+                                        :src="brew.image"
+                                        :alt="brew.alt"
+                                        width="480"
+                                        height="600"
+                                        loading="eager"
+                                        decoding="async"
+                                    />
+                                </span>
+                                <!-- Плита отделена от карточки: вырез
+                                     делает маска, а маска обрезает всё
+                                     внутри себя — медальон обязан лежать
+                                     снаружи, иначе его срежет тем же
+                                     полукругом. -->
+                                <span class="brew-card__plate">
+                                    <span class="brew-card__title">{{
+                                        brew.label
+                                    }}</span>
+                                    <span class="brew-card__note">{{
+                                        brew.note
+                                    }}</span>
+                                    <span class="brew-card__cta"
+                                        >Смотреть каталог →</span
+                                    >
+                                </span>
                             </Link>
                         </div>
                     </div>

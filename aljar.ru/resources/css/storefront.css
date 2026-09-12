@@ -1280,125 +1280,154 @@ html:not(.is-enhanced) .scene__layer--roast .lead { color: var(--grey); }
 
 /* ── Карточки способов заваривания ─────────────────────────────────
    Блок «Свежая партия» на главной. По документу
-   inst_designe/AlJar_Homepage_FreshRoast_Block.docx это не витрина
+   inst_designe/AlJar_Homepage_FreshRoast_Block_new.docx это не витрина
    товаров, а три входа в каталог с уже включённым фильтром: ни цены, ни
    кнопки в корзину, ни конкретного сорта. Ссылкой служит вся карточка,
    поэтому внутри неё только текстовые узлы — вложенных ссылок нет.
 
-   Карточка — одна поверхность: рисунок прижат влево и обтекается
-   текстом, отдельной «шапки с картинкой и подвала с текстом» нет. */
+   Форма из нового документа: круглый медальон сидит в вырезе верхней
+   кромки. Вырез делает маска, а не clip-path: одного радиального
+   градиента хватает, чтобы вынуть из карточки полукруг, и составлять
+   слои не нужно. */
 .brew-grid {
   display: grid;
-  gap: 20px;
+  gap: 24px;
   grid-template-columns: repeat(3, 1fr);
-  /* Запас сверху: рисунок выходит за верхнюю кромку карточки, и без
-     него он налезал бы на подпись блока. */
-  margin-top: 68px;
+  /* Запас под медальон: он наполовину выступает над карточкой. */
+  margin-top: 96px;
 }
 .brew-card {
-  display: block;
+  --medal: 140px;
+  /* Вырез чуть шире медальона — между ними остаётся ровный поясок. */
+  --notch: calc(var(--medal) / 2 + 12px);
+
   position: relative;
-  min-height: 268px;
-  padding: 24px;
-  border-radius: 20px;
+  display: block;
+  color: inherit;
+  transition: transform .35s var(--ease);
+}
+
+/* Плита карточки. Вырез живёт здесь, а не на самой карточке: маска
+   обрезает всё, что внутри неё, и медальон, лежи он внутри, срезало бы
+   тем же полукругом. */
+.brew-card__plate {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  text-align: center;
+  gap: 10px;
+  padding: calc(var(--medal) / 2 + 34px) 26px 28px;
+  border-radius: 22px;
   background: var(--paper);
   background: color-mix(in srgb, var(--sand) 45%, var(--paper));
-  color: inherit;
-  transition: box-shadow .35s var(--ease), transform .35s var(--ease);
+  transition: box-shadow .35s var(--ease);
+
+  /* Полукруг вынут из верхней кромки: радиальный градиент прозрачен
+     внутри круга и плотен снаружи — маска и есть вырез. */
+  mask: radial-gradient(
+    circle var(--notch) at 50% 0,
+    transparent 99%,
+    #000 100%
+  );
 }
 
-/* Рисунок обтекается по своему контуру: форму даёт альфа того же файла,
-   адрес приходит из разметки. Эллипс — запасной вариант для движков без
-   поддержки контура из картинки. */
-.brew-card__art {
-  float: left;
-  /* Рисунок крупнее карточки и выходит за её верхнюю и левую кромку —
-     предмет читается лежащим поверх, а не вложенным внутрь. Обтекание
-     при этом сохраняется: поплавок остаётся поплавком, отрицательные
-     поля только сдвигают его рамку. */
-  width: 58%;
-  /* Рамка у всех трёх одна, а рисунки в ней разной формы: иначе высокий
-     пуровер уводил бы подпись «Смотреть каталог» ниже, чем у соседей, и
-     нижние строки карточек разъезжались бы. Рисунок вписывается в рамку
-     целиком и стоит на её нижней кромке. */
-  aspect-ratio: 4 / 5;
-  height: auto;
+/* Медальон лежит поверх карточки, центром на её верхней кромке. */
+.brew-card__medal {
+  position: absolute;
+  top: calc(var(--medal) / -2);
+  left: 50%;
+  width: var(--medal);
+  height: var(--medal);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(20, 52, 60, .16);
+
+  /* Сдвиг рельса медальон отрабатывает не в полную силу: карточка уже
+     уехала на `--slip`, он отстаёт ещё на пятую часть — так между
+     планами появляется глубина. Переменную кладёт useRail на панель. */
+  --art-slip: calc(var(--slip, 0px) * -.2);
+  transform: translate3d(calc(-50% + var(--art-slip)), var(--art-lift, 0px), 0)
+    scale(var(--art-scale, 1));
+  transition: transform .55s var(--ease), box-shadow .35s var(--ease);
+}
+.brew-card__medal img {
+  width: 74%;
+  height: 74%;
   object-fit: contain;
   object-position: 50% 100%;
-  margin: -17% 14px 6px -7%;
-  shape-outside: ellipse(48% 50% at 50% 50%);
-  shape-margin: 10px;
-  /* Сдвиг рельса рисунок отрабатывает не в полную силу: карточка уже
-     уехала на `--slip`, рисунок отстаёт от неё ещё на пятую часть — так
-     между планами появляется глубина. Переменную кладёт useRail на
-     панель, отсюда она видна по наследованию. Обтекание при этом не
-     пересчитывается: контур берётся с несдвинутой рамки. */
-  --art-slip: calc(var(--slip, 0px) * -.2);
-  transform: translate3d(var(--art-slip), var(--art-lift, 0px), 0)
-    rotate(var(--art-tilt, 0deg)) scale(var(--art-scale, 1));
-  transition: transform .55s var(--ease), filter .35s var(--ease);
-  /* Тень плотнее прежней: предмет лежит над карточкой, а не в ней. */
-  filter: drop-shadow(0 18px 22px rgba(20, 52, 60, .2));
+  display: block;
 }
 
-/* Лёгкий разворот, разный у соседей: три одинаково выставленных предмета
-   читаются как каталожная выкладка, чуть развёрнутые — как разложенные
-   рукой. Угол мелкий, поэтому расхождение обтекания с контуром
-   перекрывается полем вокруг него. */
-.brew-card:nth-child(1) .brew-card__art { --art-tilt: -3deg; }
-.brew-card:nth-child(2) .brew-card__art { --art-tilt: 2deg; }
-.brew-card:nth-child(3) .brew-card__art { --art-tilt: -2deg; }
-
-/* Заголовок встаёт против середины рисунка, а не под верхней кромкой
-   карточки: отступ в долях ширины, чтобы держаться при любой колонке. */
 .brew-card__title {
-  display: block;
-  padding-top: 16%;
   font-family: var(--font-head);
-  font-size: clamp(26px, 2.4vw, 34px);
+  font-size: clamp(24px, 2.2vw, 30px);
   line-height: 1.1;
   color: var(--petrol);
 }
 .brew-card__note {
-  display: block;
-  margin-top: 10px;
   color: var(--grey);
   font-size: 14px;
+  max-width: 22em;
 }
-/* Подпись уходит под рисунок и начинается от левого края карточки. */
 .brew-card__cta {
-  display: block;
-  clear: left;
-  margin-top: 18px;
   color: var(--teal-ink);
   font-size: 14px;
+  margin-top: 8px;
 }
 @media (hover: hover) and (pointer: fine) {
-  .brew-card:hover {
-    box-shadow: var(--shadow-soft);
-    transform: translateY(-2px);
-  }
-  .brew-card:hover .brew-card__art {
-    --art-lift: -12px;
-    --art-scale: 1.05;
-    filter: drop-shadow(0 24px 28px rgba(20, 52, 60, .24));
+  .brew-card:hover { transform: translateY(-2px); }
+  .brew-card:hover .brew-card__plate { box-shadow: var(--shadow-soft); }
+  .brew-card:hover .brew-card__medal {
+    --art-lift: -6px;
+    --art-scale: 1.04;
+    box-shadow: 0 16px 26px rgba(20, 52, 60, .2);
   }
   .brew-card:hover .brew-card__cta { color: var(--teal-deep); }
 }
-/* Без движения рисунок стоит на месте: отставание — тоже движение. */
+/* Без движения медальон стоит на месте: отставание — тоже движение. */
 @media (prefers-reduced-motion: reduce) {
   .brew-card,
-  .brew-card__art { transition: none; }
-  .brew-card__art { --art-slip: 0px; }
+  .brew-card__medal { transition: none; }
+  .brew-card__medal { --art-slip: 0px; }
 }
-/* На узком экране карточки идут стопкой, рисунок остаётся слева. */
+/* Стопкой на узком экране — вырез и медальон те же, только мельче. */
 @media (max-width: 899px) {
-  .brew-grid { grid-template-columns: 1fr; margin-top: 44px; }
-  .brew-card { min-height: 0; }
-  /* Вылет меньше: на узкой карточке крупный рисунок съедает строку. */
-  .brew-card__art { width: 42%; margin: -10% 14px 6px -5%; }
-  .brew-card__title { padding-top: 2%; font-size: 28px; }
+  .brew-grid {
+    grid-template-columns: 1fr;
+    margin-top: 82px;
+    /* Между карточками нужен запас под медальон следующей: иначе он
+       ложится на подпись предыдущей. */
+    row-gap: 84px;
+  }
+  .brew-card { --medal: 116px; }
 }
+
+/* ── Шапка блока по центру ─────────────────────────────────────────
+   Надзаголовок с линейками по бокам и заголовок посередине — так он
+   набран в новом документе. */
+.section-head--mid {
+  justify-content: center;
+  text-align: center;
+}
+.section-head--mid > div { display: grid; justify-items: center; gap: 6px; }
+.eyebrow--ruled {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.eyebrow--ruled::before,
+.eyebrow--ruled::after {
+  content: "";
+  width: clamp(28px, 6vw, 64px);
+  height: 1px;
+  background: currentColor;
+  opacity: .5;
+}
+
 
 .card {
   background: var(--surface);
