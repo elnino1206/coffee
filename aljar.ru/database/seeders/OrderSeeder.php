@@ -55,9 +55,12 @@ class OrderSeeder extends Seeder
             [OrderStatus::Canceled, 2],
         ];
 
+        $n = 0;
+
         foreach ($plan as [$status, $count]) {
             for ($i = 0; $i < $count; $i++) {
-                $this->order($status, $variants, $customers);
+                $this->order($status, $variants, $customers, $n % 4 === 3);
+                $n++;
             }
         }
     }
@@ -68,11 +71,14 @@ class OrderSeeder extends Seeder
      * @param  Collection<int, ProductVariant>  $variants
      * @param  Collection<int, Customer>  $customers
      */
-    protected function order(OrderStatus $status, Collection $variants, Collection $customers): void
+    protected function order(OrderStatus $status, Collection $variants, Collection $customers, bool $guest): void
     {
-        // Каждый четвёртый — гостевой: оформление без учётной записи
-        // предусмотрено, и в выборке админки такие заказы должны быть.
-        $customer = fake()->boolean(75) ? $customers->random() : null;
+        /* Каждый четвёртый — гостевой: оформление без учётной записи
+           предусмотрено, и в выборке админки такие заказы должны быть.
+           Раньше гость выпадал жребием в четверти случаев, и на девятнадцати
+           заказах примерно один прогон из двадцати обходился вовсе без
+           гостевых — проверка сидера падала на ровном месте. */
+        $customer = $guest ? null : $customers->random();
 
         /* У гостя имя и почту берём из фабрики, а не из учётной записи:
            её нет, но заказ по телефону всё равно записан на кого-то.

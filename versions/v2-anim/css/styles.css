@@ -1786,24 +1786,30 @@ html:not(.is-enhanced) .scene__layer--roast .lead { color: var(--grey); }
   .reviews { grid-template-columns: repeat(3, 1fr); }
 }
 .review {
-  /* Плотная кремовая карточка, а не полупрозрачная плашка: на тёмной
-     секции просвечивающий фон снижал контраст текста. */
+  /* Плотная кремовая карточка, а не полупрозрачная плашка: на съёмке
+     просвечивающий фон снижал контраст текста.
+
+     По документу inst_designe/AlJar_Testimonials_Block.docx край ровный:
+     прежняя рваная маска убрана, остался обычный радиус. */
+  position: relative;
   background: var(--paper);
-  padding: 32px 24px 28px;
+  border-radius: 20px;
+  padding: 26px 26px 24px;
   display: grid;
   gap: 14px;
   align-content: start;
+}
 
-  /* Рваный край сверху и снизу, бока прямые. Скруглением этого не
-     сделать — даже разные радиусы у углов дают ровную дугу. Режем
-     маской по кривой: та же техника, что у волн между секциями.
-
-     preserveAspectRatio='none' растягивает контур под размер карточки,
-     поэтому глубина волны остаётся соразмерной её высоте. Вертикальные
-     отступы увеличены — волна заходит внутрь примерно на 14px. */
-  --tear: url("data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20400%20260'%20preserveAspectRatio='none'><path%20d='M0,8%20C50,2%2090,14%20140,8%20C190,2%20230,14%20280,8%20C330,2%20370,13%20400,7%20L400,253%20C370,258%20330,247%20280,252%20C230,258%20190,246%20140,252%20C90,258%2050,247%200,253%20Z'%20fill='%23000'/></svg>");
-  -webkit-mask: var(--tear) no-repeat center / 100% 100%;
-  mask: var(--tear) no-repeat center / 100% 100%;
+/* Гравюра в правом верхнем углу. Кавычка слева уже есть — её рисует
+   псевдоэлемент карточки, второй такой же не нужен. */
+.review__mark {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  width: 62px;
+  height: auto;
+  opacity: .9;
+  pointer-events: none;
 }
 
 /* Три контура по кругу: соседние карточки не должны выглядеть одним и
@@ -1816,12 +1822,14 @@ html:not(.is-enhanced) .scene__layer--roast .lead { color: var(--grey); }
 .review::before {
   content: "“";
   font-family: var(--font-head);
-  font-size: 64px;
+  font-size: 52px;
   line-height: .7;
-  color: var(--clay);
-  margin-bottom: -14px;
+  color: var(--teal);
+  margin-bottom: -18px;
 }
-.stars { color: var(--warning); letter-spacing: 3px; font-size: 15px; }
+/* Звёзды бирюзовые, как в документе. Оттенок — тот, что проходит по
+   контрасту: чистый tiffany на бумаге едва читается. */
+.stars { color: var(--teal-ink); letter-spacing: 3px; font-size: 15px; }
 .review__text {
   font-style: italic;
   color: var(--petrol);

@@ -411,6 +411,17 @@ const { live } = useScrollScene(scene, filmEls);
                         </h2>
                         <div class="reviews">
                             <article class="review" data-reveal>
+                                <!-- Гравюра в углу — та же манера, что
+                                     на карточках заваривания. -->
+                                <img
+                                    class="review__mark"
+                                    src="/img/review-mark-1.webp"
+                                    alt=""
+                                    width="260"
+                                    height="230"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
                                 <div
                                     class="stars"
                                     role="img"
@@ -428,6 +439,17 @@ const { live } = useScrollScene(scene, filmEls);
                                 </footer>
                             </article>
                             <article class="review" data-reveal>
+                                <!-- Гравюра в углу — та же манера, что
+                                     на карточках заваривания. -->
+                                <img
+                                    class="review__mark"
+                                    src="/img/review-mark-2.webp"
+                                    alt=""
+                                    width="260"
+                                    height="230"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
                                 <div
                                     class="stars"
                                     role="img"
@@ -449,6 +471,17 @@ const { live } = useScrollScene(scene, filmEls);
                                 </footer>
                             </article>
                             <article class="review" data-reveal>
+                                <!-- Гравюра в углу — та же манера, что
+                                     на карточках заваривания. -->
+                                <img
+                                    class="review__mark"
+                                    src="/img/review-mark-3.webp"
+                                    alt=""
+                                    width="260"
+                                    height="230"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
                                 <div
                                     class="stars"
                                     role="img"
